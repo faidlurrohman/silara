@@ -1,6 +1,7 @@
 import { BrowserRouter, Outlet, Route, Routes } from "react-router-dom";
 
 import Login from "./pages/auth/Login";
+import ForgotPassword from "./pages/auth/ForgotPassword";
 import NotFound from "./pages/404";
 import Dashboard from "./pages/Dashboard";
 
@@ -30,6 +31,14 @@ function App() {
             element={
               <UnprotectedRoute>
                 <Login />
+              </UnprotectedRoute>
+            }
+          />
+          <Route
+            path="forgot-password"
+            element={
+              <UnprotectedRoute>
+                <ForgotPassword />
               </UnprotectedRoute>
             }
           />

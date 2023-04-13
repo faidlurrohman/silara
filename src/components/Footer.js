@@ -1,4 +1,5 @@
-import { Box, Link, Typography } from "@mui/material";
+import { Box } from "@mui/material";
+import Copyright from "./Copyright";
 
 export default function Footer() {
   return (
@@ -10,19 +11,7 @@ export default function Footer() {
         alignItems: "center",
       }}
     >
-      <Typography
-        variant="body2"
-        color="text.secondary"
-        align="center"
-        fontSize={12}
-      >
-        {"Copyright © "}
-        <Link color="inherit" href="#">
-          Silara
-        </Link>{" "}
-        {new Date().getFullYear()}
-        {"."}
-      </Typography>
+      <Copyright />
     </Box>
   );
 }

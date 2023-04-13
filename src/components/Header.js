@@ -2,7 +2,6 @@ import {
   AppBar,
   Avatar,
   Box,
-  CssBaseline,
   IconButton,
   Menu,
   MenuItem,
@@ -28,7 +27,6 @@ export default function Header({ handleDrawerToggle }) {
 
   return (
     <>
-      <CssBaseline />
       <AppBar
         position="fixed"
         sx={{
