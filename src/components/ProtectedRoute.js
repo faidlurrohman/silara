@@ -1,7 +1,7 @@
 import { Navigate } from "react-router-dom";
 
 export default function ProtectedRoute({ children }) {
-  const isLoggin = false;
+  const isLoggin = true;
 
   if (isLoggin) {
     return children;

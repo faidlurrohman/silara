@@ -12,6 +12,7 @@ import Header from "./Header";
 import Footer from "./Footer";
 import { useState } from "react";
 import { ExpandLess, ExpandMore } from "@mui/icons-material";
+import { Link } from "react-router-dom";
 
 const drawerWidth = 300;
 
@@ -43,7 +44,7 @@ export default function Wrapper({ window, children }) {
       <Toolbar />
       <Divider />
       <List>
-        <ListItemButton>
+        <ListItemButton component={Link} to="/">
           <ListItemText
             primary="Beranda"
             primaryTypographyProps={{ fontSize: 14, fontWeight: "medium" }}
@@ -58,25 +59,37 @@ export default function Wrapper({ window, children }) {
         </ListItemButton>
         <Collapse in={openRekening} timeout="auto" unmountOnExit>
           <List component="div" disablePadding>
-            <ListItemButton sx={{ pl: 4 }}>
+            <ListItemButton sx={{ pl: 4 }} component={Link} to="/rekening/akun">
               <ListItemText
                 primary="Akun"
                 primaryTypographyProps={{ fontSize: 14, fontWeight: "medium" }}
               />
             </ListItemButton>
-            <ListItemButton sx={{ pl: 4 }}>
+            <ListItemButton
+              sx={{ pl: 4 }}
+              component={Link}
+              to="/rekening/kelompok"
+            >
               <ListItemText
                 primary="Kelompok"
                 primaryTypographyProps={{ fontSize: 14, fontWeight: "medium" }}
               />
             </ListItemButton>
-            <ListItemButton sx={{ pl: 4 }}>
+            <ListItemButton
+              sx={{ pl: 4 }}
+              component={Link}
+              to="/rekening/jenis"
+            >
               <ListItemText
                 primary="Jenis"
                 primaryTypographyProps={{ fontSize: 14, fontWeight: "medium" }}
               />
             </ListItemButton>
-            <ListItemButton sx={{ pl: 4 }}>
+            <ListItemButton
+              sx={{ pl: 4 }}
+              component={Link}
+              to="/rekening/objek"
+            >
               <ListItemText
                 primary="Objek"
                 primaryTypographyProps={{ fontSize: 14, fontWeight: "medium" }}
@@ -84,7 +97,7 @@ export default function Wrapper({ window, children }) {
             </ListItemButton>
           </List>
         </Collapse>
-        <ListItemButton>
+        <ListItemButton component={Link} to="/transaksi">
           <ListItemText
             primary="Transaksi"
             primaryTypographyProps={{ fontSize: 14, fontWeight: "medium" }}
@@ -99,19 +112,31 @@ export default function Wrapper({ window, children }) {
         </ListItemButton>
         <Collapse in={openLaporan} timeout="auto" unmountOnExit>
           <List component="div" disablePadding>
-            <ListItemButton sx={{ pl: 4 }}>
+            <ListItemButton
+              sx={{ pl: 4 }}
+              component={Link}
+              to="/laporan/realisasi-anggaran-kota"
+            >
               <ListItemText
                 primary="Realisasi Anggaran Kota"
                 primaryTypographyProps={{ fontSize: 14, fontWeight: "medium" }}
               />
             </ListItemButton>
-            <ListItemButton sx={{ pl: 4 }}>
+            <ListItemButton
+              sx={{ pl: 4 }}
+              component={Link}
+              to="/laporan/realisasi-anggaran-gabungan-kota"
+            >
               <ListItemText
                 primary="Realisasi Anggaran Gabungan Kota"
                 primaryTypographyProps={{ fontSize: 14, fontWeight: "medium" }}
               />
             </ListItemButton>
-            <ListItemButton sx={{ pl: 4 }}>
+            <ListItemButton
+              sx={{ pl: 4 }}
+              component={Link}
+              to="/laporan/rekapitulasi-pendapatan-dan-belanja"
+            >
               <ListItemText
                 primary="Rekapitulasi Pendapatan & Belanja"
                 primaryTypographyProps={{ fontSize: 14, fontWeight: "medium" }}
@@ -128,19 +153,31 @@ export default function Wrapper({ window, children }) {
         </ListItemButton>
         <Collapse in={openPengaturan} timeout="auto" unmountOnExit>
           <List component="div" disablePadding>
-            <ListItemButton sx={{ pl: 4 }}>
+            <ListItemButton
+              sx={{ pl: 4 }}
+              component={Link}
+              to="/pengaturan/kota"
+            >
               <ListItemText
                 primary="Kota"
                 primaryTypographyProps={{ fontSize: 14, fontWeight: "medium" }}
               />
             </ListItemButton>
-            <ListItemButton sx={{ pl: 4 }}>
+            <ListItemButton
+              sx={{ pl: 4 }}
+              component={Link}
+              to="/pengaturan/penanda-tangan"
+            >
               <ListItemText
                 primary="Penanda Tangan"
                 primaryTypographyProps={{ fontSize: 14, fontWeight: "medium" }}
               />
             </ListItemButton>
-            <ListItemButton sx={{ pl: 4 }}>
+            <ListItemButton
+              sx={{ pl: 4 }}
+              component={Link}
+              to="/pengaturan/pengguna"
+            >
               <ListItemText
                 primary="Pengguna"
                 primaryTypographyProps={{ fontSize: 14, fontWeight: "medium" }}

@@ -16,7 +16,7 @@ import { LockOutlined, Visibility, VisibilityOff } from "@mui/icons-material";
 import Copyright from "../../components/Copyright";
 import { useState } from "react";
 
-export default function Login() {
+export default function Masuk() {
   const [showPassword, setShowPassword] = useState(false);
 
   const handleClickShowPassword = () => setShowPassword((show) => !show);
