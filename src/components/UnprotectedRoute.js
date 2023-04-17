@@ -1,9 +1,10 @@
 import { Navigate } from "react-router-dom";
+import { useAppSelector } from "../hooks/useRedux";
 
 export default function UnprotectedRoute({ children }) {
-  const isLoggin = true;
+  const session = useAppSelector((state) => state.session.user);
 
-  if (isLoggin) {
+  if (session) {
     return <Navigate to={"/"} replace />;
   }
 

@@ -1,3 +1,5 @@
+import ComingSoon from "../../components/ComingSoon";
+
 export default function LupaSandi() {
-  return <div>Lupa Sandi</div>;
+  return <ComingSoon />;
 }

@@ -1,86 +1,69 @@
+import { Avatar, Button, Dropdown, Modal, Tooltip } from "antd";
 import {
-  AppBar,
-  Avatar,
-  Box,
-  IconButton,
-  Menu,
-  MenuItem,
-  Toolbar,
-  Typography,
-} from "@mui/material";
-import MenuIcon from "@mui/icons-material/Menu";
-import { useState } from "react";
+  MenuFoldOutlined,
+  MenuUnfoldOutlined,
+  QuestionCircleFilled,
+  UserOutlined,
+} from "@ant-design/icons";
+import { Layout } from "antd";
+import { useAppDispatch } from "../hooks/useRedux";
+import { logoutAction } from "../store/actions/session";
+const { Header: HeaderAntd } = Layout;
 
-const drawerWidth = 300;
-const menuPopUp = ["Ganti Password", "Keluar"];
+const showConfirm = (dispatch) => {
+  Modal.confirm({
+    title: "Apakah anda yakin untuk keluar?",
+    icon: <QuestionCircleFilled />,
+    okText: "Ya",
+    cancelText: "Tidak",
+    centered: true,
+    onOk() {
+      dispatch(logoutAction());
+    },
+  });
+};
 
-export default function Header({ handleDrawerToggle }) {
-  const [anchorElUser, setAnchorElUser] = useState(null);
-
-  const handleOpenUserMenu = (event) => {
-    setAnchorElUser(event.currentTarget);
-  };
-
-  const handleCloseUserMenu = () => {
-    setAnchorElUser(null);
-  };
+export default function Header({ onCollapse, collapsed }) {
+  const dispatch = useAppDispatch();
 
   return (
-    <>
-      <AppBar
-        position="fixed"
-        sx={{
-          width: { sm: `calc(100% - ${drawerWidth}px)` },
-          ml: { sm: `${drawerWidth}px` },
-        }}
-      >
-        <Toolbar>
-          <Box sx={{ flexGrow: 1 }}>
-            <IconButton
-              color="inherit"
-              aria-label="open drawer"
-              edge="start"
-              onClick={handleDrawerToggle}
-              sx={{ mr: 2, display: { sm: "none" } }}
-            >
-              <MenuIcon />
-            </IconButton>
-          </Box>
-          <Box sx={{ flexGrow: 0 }}>
-            <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-              <Avatar>A</Avatar>
-            </IconButton>
-            <Menu
-              sx={{ mt: "45px" }}
-              id="menu-appbar"
-              anchorEl={anchorElUser}
-              anchorOrigin={{
-                vertical: "top",
-                horizontal: "right",
-              }}
-              keepMounted
-              transformOrigin={{
-                vertical: "top",
-                horizontal: "right",
-              }}
-              open={Boolean(anchorElUser)}
-              onClose={handleCloseUserMenu}
-            >
-              {menuPopUp.map((menu) => (
-                <MenuItem key={menu} onClick={handleCloseUserMenu}>
-                  <Typography
-                    textAlign="center"
-                    fontSize={14}
-                    fontWeight="medium"
-                  >
-                    {menu}
-                  </Typography>
-                </MenuItem>
-              ))}
-            </Menu>
-          </Box>
-        </Toolbar>
-      </AppBar>
-    </>
+    <HeaderAntd className="bg-white px-2.5 sticky top-0 z-1 w-full shadow-sm">
+      <div className="flex justify-between">
+        <div className="relative">
+          <Tooltip title={`${collapsed ? `Show` : `Hide`} Menu`}>
+            <Button
+              type="text"
+              shape="circle"
+              icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+              onClick={onCollapse}
+            />
+          </Tooltip>
+        </div>
+        <div className="float-left">
+          <Dropdown
+            className="cursor-pointer"
+            placement="bottomLeft"
+            menu={{
+              items: [
+                {
+                  key: "1",
+                  label: "Ubah Kata Sandi",
+                },
+                {
+                  key: "2",
+                  label: "Keluar",
+                  onClick: () => showConfirm(dispatch),
+                },
+              ],
+            }}
+            arrow={{
+              pointAtCenter: true,
+            }}
+          >
+            <Avatar size="default" icon={<UserOutlined />} />
+          </Dropdown>
+        </div>
+      </div>
+    </HeaderAntd>
   );
 }

@@ -1,246 +1,146 @@
-import {
-  Box,
-  Collapse,
-  Divider,
-  Drawer,
-  List,
-  ListItemButton,
-  ListItemText,
-  Toolbar,
-} from "@mui/material";
-import Header from "./Header";
-import Footer from "./Footer";
+import { Layout, Menu } from "antd";
 import { useState } from "react";
-import { ExpandLess, ExpandMore } from "@mui/icons-material";
-import { Link } from "react-router-dom";
+import HeaderComponent from "./Header";
+import { useNavigate } from "react-router-dom";
+import Copyright from "./Copyright";
 
-const drawerWidth = 300;
+const { Content, Footer, Sider } = Layout;
+const rootSubmenuKeys = ["1", "2", "3", "4", "5"];
 
-export default function Wrapper({ window, children }) {
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [openRekening, setOpenRekening] = useState(true);
-  const [openLaporan, setOpenLaporan] = useState(true);
-  const [openPengaturan, setOpenPengaturan] = useState(true);
+export default function Wrapper({ children }) {
+  const [collapsed, setCollapsed] = useState(false);
+  const [openKeys, setOpenKeys] = useState(["1"]);
+  const navigate = useNavigate();
 
-  const handleMenuClick = (which) => {
-    if (which === "rekening") {
-      setOpenRekening(!openRekening);
-    } else if (which === "laporan") {
-      setOpenLaporan(!openLaporan);
-    } else if (which === "pengaturan") {
-      setOpenPengaturan(!openPengaturan);
+  const onOpenChange = (keys) => {
+    const latestOpenKey = keys.find((key) => openKeys.indexOf(key) === -1);
+    if (rootSubmenuKeys.indexOf(latestOpenKey) === -1) {
+      setOpenKeys(keys);
+    } else {
+      setOpenKeys(latestOpenKey ? [latestOpenKey] : []);
     }
   };
 
-  const handleDrawerToggle = () => {
-    setMobileOpen(!mobileOpen);
-  };
-
-  const container =
-    window !== undefined ? () => window().document.body : undefined;
-
-  const drawer = (
-    <div>
-      <Toolbar />
-      <Divider />
-      <List>
-        <ListItemButton component={Link} to="/">
-          <ListItemText
-            primary="Beranda"
-            primaryTypographyProps={{ fontSize: 14, fontWeight: "medium" }}
-          />
-        </ListItemButton>
-        <ListItemButton onClick={() => handleMenuClick("rekening")}>
-          <ListItemText
-            primary="Master Rekening"
-            primaryTypographyProps={{ fontSize: 14, fontWeight: "medium" }}
-          />
-          {openRekening ? <ExpandLess /> : <ExpandMore />}
-        </ListItemButton>
-        <Collapse in={openRekening} timeout="auto" unmountOnExit>
-          <List component="div" disablePadding>
-            <ListItemButton sx={{ pl: 4 }} component={Link} to="/rekening/akun">
-              <ListItemText
-                primary="Akun"
-                primaryTypographyProps={{ fontSize: 14, fontWeight: "medium" }}
-              />
-            </ListItemButton>
-            <ListItemButton
-              sx={{ pl: 4 }}
-              component={Link}
-              to="/rekening/kelompok"
-            >
-              <ListItemText
-                primary="Kelompok"
-                primaryTypographyProps={{ fontSize: 14, fontWeight: "medium" }}
-              />
-            </ListItemButton>
-            <ListItemButton
-              sx={{ pl: 4 }}
-              component={Link}
-              to="/rekening/jenis"
-            >
-              <ListItemText
-                primary="Jenis"
-                primaryTypographyProps={{ fontSize: 14, fontWeight: "medium" }}
-              />
-            </ListItemButton>
-            <ListItemButton
-              sx={{ pl: 4 }}
-              component={Link}
-              to="/rekening/objek"
-            >
-              <ListItemText
-                primary="Objek"
-                primaryTypographyProps={{ fontSize: 14, fontWeight: "medium" }}
-              />
-            </ListItemButton>
-          </List>
-        </Collapse>
-        <ListItemButton component={Link} to="/transaksi">
-          <ListItemText
-            primary="Transaksi"
-            primaryTypographyProps={{ fontSize: 14, fontWeight: "medium" }}
-          />
-        </ListItemButton>
-        <ListItemButton onClick={() => handleMenuClick("laporan")}>
-          <ListItemText
-            primary="Laporan"
-            primaryTypographyProps={{ fontSize: 14, fontWeight: "medium" }}
-          />
-          {openLaporan ? <ExpandLess /> : <ExpandMore />}
-        </ListItemButton>
-        <Collapse in={openLaporan} timeout="auto" unmountOnExit>
-          <List component="div" disablePadding>
-            <ListItemButton
-              sx={{ pl: 4 }}
-              component={Link}
-              to="/laporan/realisasi-anggaran-kota"
-            >
-              <ListItemText
-                primary="Realisasi Anggaran Kota"
-                primaryTypographyProps={{ fontSize: 14, fontWeight: "medium" }}
-              />
-            </ListItemButton>
-            <ListItemButton
-              sx={{ pl: 4 }}
-              component={Link}
-              to="/laporan/realisasi-anggaran-gabungan-kota"
-            >
-              <ListItemText
-                primary="Realisasi Anggaran Gabungan Kota"
-                primaryTypographyProps={{ fontSize: 14, fontWeight: "medium" }}
-              />
-            </ListItemButton>
-            <ListItemButton
-              sx={{ pl: 4 }}
-              component={Link}
-              to="/laporan/rekapitulasi-pendapatan-dan-belanja"
-            >
-              <ListItemText
-                primary="Rekapitulasi Pendapatan & Belanja"
-                primaryTypographyProps={{ fontSize: 14, fontWeight: "medium" }}
-              />
-            </ListItemButton>
-          </List>
-        </Collapse>
-        <ListItemButton onClick={() => handleMenuClick("pengaturan")}>
-          <ListItemText
-            primary="Pengaturan"
-            primaryTypographyProps={{ fontSize: 14, fontWeight: "medium" }}
-          />
-          {openPengaturan ? <ExpandLess /> : <ExpandMore />}
-        </ListItemButton>
-        <Collapse in={openPengaturan} timeout="auto" unmountOnExit>
-          <List component="div" disablePadding>
-            <ListItemButton
-              sx={{ pl: 4 }}
-              component={Link}
-              to="/pengaturan/kota"
-            >
-              <ListItemText
-                primary="Kota"
-                primaryTypographyProps={{ fontSize: 14, fontWeight: "medium" }}
-              />
-            </ListItemButton>
-            <ListItemButton
-              sx={{ pl: 4 }}
-              component={Link}
-              to="/pengaturan/penanda-tangan"
-            >
-              <ListItemText
-                primary="Penanda Tangan"
-                primaryTypographyProps={{ fontSize: 14, fontWeight: "medium" }}
-              />
-            </ListItemButton>
-            <ListItemButton
-              sx={{ pl: 4 }}
-              component={Link}
-              to="/pengaturan/pengguna"
-            >
-              <ListItemText
-                primary="Pengguna"
-                primaryTypographyProps={{ fontSize: 14, fontWeight: "medium" }}
-              />
-            </ListItemButton>
-          </List>
-        </Collapse>
-      </List>
-    </div>
-  );
-
   return (
-    <Box sx={{ display: "flex" }}>
-      <Header handleDrawerToggle={() => handleDrawerToggle()} />
-      <Box
-        component="nav"
-        sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}
-        aria-label="mailbox folders"
-      >
-        <Drawer
-          container={container}
-          variant="temporary"
-          open={mobileOpen}
-          onClose={handleDrawerToggle}
-          ModalProps={{
-            keepMounted: true, // Better open performance on mobile.
-          }}
-          sx={{
-            display: { xs: "block", sm: "none" },
-            "& .MuiDrawer-paper": {
-              boxSizing: "border-box",
-              width: drawerWidth,
-            },
-          }}
-        >
-          {drawer}
-        </Drawer>
-        <Drawer
-          variant="permanent"
-          sx={{
-            display: { xs: "none", sm: "block" },
-            "& .MuiDrawer-paper": {
-              boxSizing: "border-box",
-              width: drawerWidth,
-            },
-          }}
-          open
-        >
-          {drawer}
-        </Drawer>
-      </Box>
-      <Box
-        component="main"
-        sx={{
-          flexGrow: 1,
-          p: 3,
-          width: { sm: `calc(100% - ${drawerWidth}px)` },
+    <Layout>
+      <Sider
+        style={{
+          overflow: "auto",
+          height: "100vh",
+          position: "sticky",
+          top: 0,
+          left: 0,
         }}
+        width={250}
+        trigger={null}
+        collapsible
+        collapsed={collapsed}
       >
-        <Toolbar />
-        {children}
-        <Footer />
-      </Box>
-    </Box>
+        <div className="h-8 m-4 bg-gray-400" />
+        <Menu
+          theme="dark"
+          mode="inline"
+          className="text-xs"
+          defaultSelectedKeys={["1"]}
+          openKeys={openKeys}
+          onOpenChange={onOpenChange}
+          items={[
+            {
+              key: "1",
+              label: "Beranda",
+              onClick: () => navigate("/"),
+            },
+            {
+              key: "2",
+              label: "Master Rekening",
+              style: {
+                fontSize: 12,
+              },
+              children: [
+                {
+                  key: "2_1",
+                  label: "Akun",
+                  onClick: () => navigate("rekening/akun"),
+                },
+                {
+                  key: "2_2",
+                  label: "Kelompok",
+                  onClick: () => navigate("rekening/kelompok"),
+                },
+                {
+                  key: "2_3",
+                  label: "Jenis",
+                  onClick: () => navigate("rekening/jenis"),
+                },
+                {
+                  key: "2_4",
+                  label: "Objek",
+                  onClick: () => navigate("rekening/objek"),
+                },
+              ],
+            },
+            {
+              key: "3",
+              label: "Transaksi",
+              onClick: () => navigate("transaksi"),
+            },
+            {
+              key: "4",
+              label: "Laporan",
+              children: [
+                {
+                  key: "4_1",
+                  label: "Anggaran Kota",
+                  onClick: () => navigate("laporan/realisasi-anggaran-kota"),
+                },
+                {
+                  key: "4_2",
+                  label: "Anggaran Gabungan Kota",
+                  onClick: () =>
+                    navigate("laporan/realisasi-anggaran-gabungan-kota"),
+                },
+                {
+                  key: "4_3",
+                  label: "Pendapatan & Belanja",
+                  onClick: () =>
+                    navigate("laporan/rekapitulasi-pendapatan-dan-belanja"),
+                },
+              ],
+            },
+            {
+              key: "5",
+              label: "Pengaturan",
+              children: [
+                {
+                  key: "5_1",
+                  label: "Kota",
+                  onClick: () => navigate("pengaturan/kota"),
+                },
+                {
+                  key: "5_2",
+                  label: "Penanda Tangan",
+                  onClick: () => navigate("pengaturan/penanda-tangan"),
+                },
+                {
+                  key: "5_3",
+                  label: "Pengguna",
+                  onClick: () => navigate("pengaturan/pengguna"),
+                },
+              ],
+            },
+          ]}
+        />
+      </Sider>
+      <Layout className="site-layout">
+        <HeaderComponent
+          onCollapse={() => setCollapsed(!collapsed)}
+          collapsed={collapsed}
+        />
+        <Content className="p-2.5 m-2.5 bg-white min-h-fit">{children}</Content>
+        <Footer className="text-center m-0 p-4">
+          <Copyright />
+        </Footer>
+      </Layout>
+    </Layout>
   );
 }

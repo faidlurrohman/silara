@@ -1,20 +1,8 @@
-import { Link, Typography } from "@mui/material";
-
-export default function Copyright(props) {
+export default function Copyright() {
   return (
-    <Typography
-      variant="body2"
-      color="text.secondary"
-      align="center"
-      fontSize={12}
-      {...props}
-    >
-      {"Copyright © "}
-      <Link color="inherit" href="#">
-        Silara
-      </Link>{" "}
+    <div className="text-center text-xs font-light">
+      {`Copyright ©`} <a href="#">{` Silara Kab Kota `}</a>
       {new Date().getFullYear()}
-      {"."}
-    </Typography>
+    </div>
   );
 }

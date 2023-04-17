@@ -1,114 +1,76 @@
-import {
-  Avatar,
-  Box,
-  Button,
-  Checkbox,
-  Container,
-  FormControlLabel,
-  Grid,
-  IconButton,
-  InputAdornment,
-  Link,
-  TextField,
-  Typography,
-} from "@mui/material";
-import { LockOutlined, Visibility, VisibilityOff } from "@mui/icons-material";
-import Copyright from "../../components/Copyright";
-import { useState } from "react";
+import { Form, Input, Button } from "antd";
+import { useEffect } from "react";
+import { Link } from "react-router-dom";
+import { useAppDispatch, useAppSelector } from "../../hooks/useRedux";
+import { loginAction } from "../../store/actions/session";
 
 export default function Masuk() {
-  const [showPassword, setShowPassword] = useState(false);
+  const dispatch = useAppDispatch();
+  const loading = useAppSelector(
+    (state) => state.session.request_login?.loading
+  );
+  const errors = useAppSelector((state) => state.session.request_login?.errors);
+  const [form] = Form.useForm();
 
-  const handleClickShowPassword = () => setShowPassword((show) => !show);
-  const handleMouseDownPassword = (event) => event.preventDefault();
-
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
-
-    console.log({
-      username: data.get("username"),
-      password: data.get("password"),
-    });
+  const handleSubmit = (params) => {
+    console.log("params", params);
+    dispatch(loginAction(params));
   };
 
+  useEffect(() => {
+    if (errors) {
+      console.log("errors", errors);
+    }
+  }, [errors, form]);
+
   return (
-    <Container component="main" maxWidth="xs">
-      <Box
-        sx={{
-          marginTop: 8,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-        }}
-      >
-        <Typography component="h1" variant="h5" sx={{ mb: 1, fontWeight: 500 }}>
-          SILARA KAB KOTA
-        </Typography>
-        <Avatar sx={{ m: 1, width: 120, height: 120 }}>
-          <LockOutlined />
-        </Avatar>
-        <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 3 }}>
-          <Grid container spacing={2}>
-            <Grid item xs={12}>
-              <TextField
-                required
-                fullWidth
-                id="username"
-                name="username"
-                label="Nama Pengguna"
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                required
-                fullWidth
-                id="password"
-                name="password"
-                label="Kata Sandi"
-                type={showPassword ? "text" : "password"}
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton
-                        aria-label="toggle password visibility"
-                        onClick={handleClickShowPassword}
-                        onMouseDown={handleMouseDownPassword}
-                        edge="end"
-                      >
-                        {showPassword ? <VisibilityOff /> : <Visibility />}
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                }}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <FormControlLabel
-                control={<Checkbox value="allowExtraEmails" color="primary" />}
-                label="Pengingat Saya"
-              />
-            </Grid>
-          </Grid>
-          <Button
-            type="submit"
-            fullWidth
-            variant="contained"
-            size="large"
-            sx={{ mt: 3, mb: 2 }}
+    <section className="flex w-full h-screen place-items-center items-center flex-col">
+      <div className="relative mx-6 my-auto md:m-auto w-full md:w-6/12 lg:w-3/12 rounded-md p-8 h-auto">
+        <div className="mb-10 flex flex-col items-center">
+          <img alt="Logo" className="w-40 mb-2" src="/img_tmp.jpg" />
+          <h1 className="font-bold text-xl md:text-3xl mt-2">
+            {process.env.REACT_APP_NAME}
+          </h1>
+        </div>
+        <Form
+          form={form}
+          layout="vertical"
+          name="basic"
+          onFinish={handleSubmit}
+        >
+          <Form.Item
+            label="Nama Pengguna"
+            name="username"
+            rules={[{ required: true, message: "Nama Pengguna dibutuhkan" }]}
           >
-            Masuk
-          </Button>
-          <Grid container justifyContent="flex-end">
-            <Grid item>
-              <Link href="#" variant="body2">
-                Lupa Sandi ?
-              </Link>
-            </Grid>
-          </Grid>
-        </Box>
-      </Box>
-      <Copyright sx={{ mt: 5 }} />
-    </Container>
+            <Input size="large" allowClear />
+          </Form.Item>
+
+          <Form.Item
+            label="Kata Sandi"
+            name="password"
+            rules={[{ required: true, message: "Kata Sandi dibutuhkan" }]}
+          >
+            <Input.Password size="large" allowClear />
+          </Form.Item>
+          <p className="text-right text-gray-500">
+            <Link to="/auth/lupa-sandi">Lupa Kata Sandi</Link>
+          </p>
+
+          <Form.Item className="mt-8">
+            <Button
+              loading={loading}
+              block
+              shape="round"
+              size="large"
+              type="primary"
+              htmlType="submit"
+            >
+              Masuk
+            </Button>
+          </Form.Item>
+        </Form>
+      </div>
+    </section>
   );
 }
