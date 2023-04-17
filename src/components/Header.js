@@ -13,7 +13,6 @@ const { Header: HeaderAntd } = Layout;
 const showConfirm = (dispatch) => {
   Modal.confirm({
     title: "Apakah anda yakin untuk keluar?",
-    icon: <QuestionCircleFilled />,
     okText: "Ya",
     cancelText: "Tidak",
     centered: true,
