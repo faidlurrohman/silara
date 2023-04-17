@@ -1,6 +1,4 @@
-# Getting Started
-
-## Like always :
+## GETTING STARTED!!! -> Like always :
 
     - clone this repo
     - run `npm install`
