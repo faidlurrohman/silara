@@ -1,4 +1,4 @@
-## GETTING STARTED!!! -> Like always :
+## Like always :
 
     - clone this repo
     - run `npm install`
@@ -6,6 +6,6 @@
     - run `npm start`
     - done!!!
 
-### Note :
+## Note :
 
 **if getting error after hit command `npm install`, try using `npm install --save --legacy-peer-deps`**
