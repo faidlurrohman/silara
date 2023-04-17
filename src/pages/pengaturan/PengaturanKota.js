@@ -11,7 +11,7 @@ import { CSVLink } from "react-csv";
 import { useRef, useState } from "react";
 
 export default function PengaturanKota() {
-  const [modalHolder] = Modal.useModal();
+  const [modal, modalHolder] = Modal.useModal();
   const dispatch = useAppDispatch();
   const [form] = Form.useForm();
   const searchInput = useRef(null);
@@ -125,7 +125,7 @@ export default function PengaturanKota() {
   ];
 
   const deleteRow = (value) => {
-    Modal.warning({
+    modal.warning({
       title: `Hapus Data`,
       content: (
         <p>

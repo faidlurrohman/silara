@@ -26,7 +26,10 @@ export default function Header({ onCollapse, collapsed }) {
   const dispatch = useAppDispatch();
 
   return (
-    <HeaderAntd className="bg-white px-2.5 sticky top-0 z-1 w-full shadow-sm">
+    <HeaderAntd
+      className="bg-white px-2.5 sticky top-0 w-full shadow-sm"
+      style={{ zIndex: 1 }}
+    >
       <div className="flex justify-between">
         <div className="relative">
           <Tooltip title={`${collapsed ? `Show` : `Hide`} Menu`}>
