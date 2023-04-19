@@ -9,6 +9,7 @@ import { Button, Divider, Form, Input, Modal, Radio, Space, Table } from "antd";
 import { useAppDispatch } from "../../hooks/useRedux";
 import { CSVLink } from "react-csv";
 import { useRef, useState } from "react";
+import { KOTA_TMP } from "../../helpers/constants";
 
 export default function PengaturanKota() {
   const [modal, modalHolder] = Modal.useModal();
@@ -25,9 +26,7 @@ export default function PengaturanKota() {
           <Input
             allowClear
             ref={searchInput}
-            placeholder={`Cari ${
-              dataIndex === `nama` ? `nama kota` : dataIndex
-            }`}
+            placeholder={`Cari nama kota`}
             value={selectedKeys[0]}
             onChange={(e) =>
               setSelectedKeys(e.target.value ? [e.target.value] : [])
@@ -48,46 +47,13 @@ export default function PengaturanKota() {
       record[dataIndex].toString().toLowerCase().includes(value.toLowerCase()),
   });
 
-  const dummies = [
-    {
-      key: "1",
-      nama: "Gresik",
-      isActive: 0,
-    },
-    {
-      key: "2",
-      nama: "Surabaya",
-      isActive: 0,
-    },
-    {
-      key: "3",
-      nama: "Jakarta",
-      isActive: 1,
-    },
-    {
-      key: "4",
-      nama: "Batam",
-      isActive: 0,
-    },
-    {
-      key: "5",
-      nama: "Tanjung Pinang",
-      isActive: 1,
-    },
-    {
-      key: "6",
-      nama: "Belakang Padang",
-      isActive: 1,
-    },
-  ];
-
   const columns = [
     {
       title: "Nama Kota",
-      dataIndex: "nama",
+      dataIndex: "name",
       defaultSortOrder: "ascend",
-      sorter: (a, b) => a.nama.localeCompare(b.nama),
-      ...getColumnSearchProps("nama"),
+      sorter: (a, b) => a.name.localeCompare(b.name),
+      ...getColumnSearchProps("name"),
     },
     {
       title: "Aktif",
@@ -97,7 +63,6 @@ export default function PengaturanKota() {
     },
     {
       title: "Action",
-      key: "operation",
       width: 200,
       render: (value) => (
         <Space size="middle">
@@ -131,7 +96,7 @@ export default function PengaturanKota() {
         <p>
           Data{" "}
           <b>
-            <u>{value?.nama}</u>
+            <u>{value?.name}</u>
           </b>{" "}
           akan di hapus, apakah anda yakin untuk melanjutkan?
         </p>
@@ -153,8 +118,8 @@ export default function PengaturanKota() {
     } else {
       setEdit(true);
       form.setFieldsValue({
-        key: value?.key,
-        nama: value?.nama,
+        id: value?.id,
+        name: value?.name,
         isActive: value?.isActive,
       });
     }
@@ -164,12 +129,12 @@ export default function PengaturanKota() {
     <>
       <div className="flex flex-row space-x-2">
         <CSVLink
-          data={dummies.map(({ nama, isActive }) => ({
-            nama,
+          data={KOTA_TMP.map(({ name, isActive }) => ({
+            name,
             isActive: isActive ? `Ya` : `Tidak`,
           }))}
           headers={[
-            { label: "Nama Kota", key: "nama" },
+            { label: "Nama Kota", key: "name" },
             { label: "Aktif", key: "isActive" },
           ]}
           filename={"DATA_KOTA.csv"}
@@ -183,7 +148,7 @@ export default function PengaturanKota() {
         </Button>
       </div>
       <div className="mt-4">
-        <Table dataSource={dummies} columns={columns} />
+        <Table dataSource={KOTA_TMP} columns={columns} />
       </div>
       <Modal
         centered
@@ -201,10 +166,10 @@ export default function PengaturanKota() {
           // onFinish={handleAdd}
           autoComplete="off"
         >
-          <Form.Item name="key" hidden>
+          <Form.Item name="id" hidden>
             <Input />
           </Form.Item>
-          <Form.Item label="Nama Kota" name="nama">
+          <Form.Item label="Nama Kota" name="name">
             <Input />
           </Form.Item>
           <Form.Item label="Aktif" name="isActive">
