@@ -31,7 +31,7 @@ export default function Wrapper({ children }) {
           top: 0,
           left: 0,
         }}
-        width={250}
+        width={280}
         trigger={null}
         collapsible
         collapsed={collapsed}
@@ -40,7 +40,7 @@ export default function Wrapper({ children }) {
         <Menu
           theme="dark"
           mode="inline"
-          className="text-xs"
+          className="text-sm"
           defaultSelectedKeys={["1"]}
           openKeys={openKeys}
           onOpenChange={onOpenChange}
@@ -53,9 +53,6 @@ export default function Wrapper({ children }) {
             {
               key: "2",
               label: "Master Rekening",
-              style: {
-                fontSize: 12,
-              },
               children: [
                 {
                   key: "2_1",
