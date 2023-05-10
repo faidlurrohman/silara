@@ -213,6 +213,19 @@ const REKENING_OBJEK_TMP = [
   },
 ];
 
+const TRANSAKSI_TMP = [
+  {
+    id: Math.floor(Math.random() * 1000),
+    key: Math.floor(Math.random() * 1000),
+    date: "2022-04-04",
+    city: "Label 1",
+    object_account: "Label 1",
+    object_id: "1",
+    budget: 500000,
+    realization: 340000,
+  },
+];
+
 export {
   KOTA_TMP,
   PENANDA_TANGAN_TMP,
@@ -221,4 +234,5 @@ export {
   REKENING_KELOMPOK_TMP,
   REKENING_JENIS_TMP,
   REKENING_OBJEK_TMP,
+  TRANSAKSI_TMP,
 };
