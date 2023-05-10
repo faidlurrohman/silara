@@ -2,9 +2,9 @@
 
     - clone this repo
     - run `npm install`
-    - rename `.env_example` to `.env`
+    - rename `.env_example` to `.env` || create new `.env` file
     - run `npm start`
-    - done!!!
+    - enjoy!!!
 
 ## Note :
 
