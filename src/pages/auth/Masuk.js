@@ -37,9 +37,6 @@ export default function Masuk() {
           layout="vertical"
           name="basic"
           onFinish={handleSubmit}
-          autoComplete={false}
-          autoCorrect={false}
-          autoCapitalize={false}
         >
           <Form.Item
             label="Nama Pengguna"
