@@ -1,7 +1,6 @@
 import { BrowserRouter, Outlet, Route, Routes } from "react-router-dom";
 
 import Masuk from "./pages/auth/Masuk";
-import LupaSandi from "./pages/auth/LupaSandi";
 import NotFound from "./pages/404";
 import Beranda from "./pages/Beranda";
 
@@ -71,14 +70,6 @@ function App() {
             element={
               <UnprotectedRoute>
                 <Masuk />
-              </UnprotectedRoute>
-            }
-          />
-          <Route
-            path="lupa-sandi"
-            element={
-              <UnprotectedRoute>
-                <LupaSandi />
               </UnprotectedRoute>
             }
           />

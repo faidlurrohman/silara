@@ -1,4 +1,4 @@
-import { Form, Input, Button } from "antd";
+import { Form, Input, Button, Checkbox } from "antd";
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../../hooks/useRedux";
@@ -37,6 +37,9 @@ export default function Masuk() {
           layout="vertical"
           name="basic"
           onFinish={handleSubmit}
+          autoComplete={false}
+          autoCorrect={false}
+          autoCapitalize={false}
         >
           <Form.Item
             label="Nama Pengguna"
@@ -53,10 +56,9 @@ export default function Masuk() {
           >
             <Input.Password size="large" allowClear />
           </Form.Item>
-          <p className="text-right text-gray-500">
-            <Link to="/auth/lupa-sandi">Lupa Kata Sandi</Link>
-          </p>
-
+          <Form.Item name="remember" valuePropName="checked">
+            <Checkbox>Pengingat Saya</Checkbox>
+          </Form.Item>
           <Form.Item className="mt-8">
             <Button
               loading={loading}
