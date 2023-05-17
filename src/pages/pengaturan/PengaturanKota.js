@@ -301,7 +301,7 @@ export default function PengaturanKota() {
             rules={[
               {
                 required: true,
-                message: "Nama kota tidak boleh kosong!",
+                message: "Nama Kota tidak boleh kosong!",
               },
             ]}
           >

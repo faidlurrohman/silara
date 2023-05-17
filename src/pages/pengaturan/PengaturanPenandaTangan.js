@@ -2,7 +2,9 @@ import {
   DeleteOutlined,
   EditOutlined,
   ExportOutlined,
+  LoadingOutlined,
   PlusOutlined,
+  ReloadOutlined,
   SearchOutlined,
 } from "@ant-design/icons";
 import {
@@ -15,75 +17,114 @@ import {
   Radio,
   Space,
   Table,
+  message,
 } from "antd";
-import { useAppDispatch } from "../../hooks/useRedux";
 import { CSVLink } from "react-csv";
-import { useRef, useState } from "react";
-import { PENANDA_TANGAN_TMP } from "../../helpers/constants";
+import { useEffect, useRef, useState } from "react";
+import { addSigner, getSigner, removeSigner } from "../../services/signer";
+import { PAGINATION } from "../../helpers/constants";
 
 export default function PengaturanPenandaTangan() {
-  const [modal, modalHolder] = Modal.useModal();
-  const dispatch = useAppDispatch();
   const [form] = Form.useForm();
+
   const searchInput = useRef(null);
+
+  const [filtered, setFiltered] = useState({});
+  const [sorted, setSorted] = useState({});
+  const [tableParams, setTableParams] = useState(PAGINATION);
+
+  const [modal, modalHolder] = Modal.useModal();
   const [isShow, setShow] = useState(false);
   const [isEdit, setEdit] = useState(false);
+  const [confirmLoading, setConfirmLoading] = useState(false);
 
-  const getColumnSearchProps = (dataIndex) => ({
-    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm }) => (
+  const [signer, setSigner] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const getColumnSearchProps = (dataIndex, header) => ({
+    filterDropdown: ({
+      setSelectedKeys,
+      selectedKeys,
+      confirm,
+      clearFilters,
+    }) => (
       <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
+        <Input
+          ref={searchInput}
+          placeholder={`Cari ${header}`}
+          value={selectedKeys[0]}
+          onChange={(e) =>
+            setSelectedKeys(e.target.value ? [e.target.value] : [])
+          }
+          onPressEnter={() => confirm()}
+          style={{
+            marginBottom: 8,
+            display: "block",
+          }}
+        />
         <Space>
-          <Input
-            allowClear
-            ref={searchInput}
-            placeholder={`Cari ${dataIndex === `name` ? `nama` : dataIndex}`}
-            value={selectedKeys[0]}
-            onChange={(e) =>
-              setSelectedKeys(e.target.value ? [e.target.value] : [])
-            }
-            onPressEnter={() => confirm()}
-          />
+          <Button
+            type="primary"
+            onClick={() => confirm()}
+            icon={<SearchOutlined />}
+            size="small"
+          >
+            Cari
+          </Button>
+          <Button onClick={() => clearFilters()} size="small">
+            Hapus
+          </Button>
         </Space>
       </div>
     ),
     filterIcon: (filtered) => (
-      <SearchOutlined
-        style={{
-          color: filtered ? "#1890ff" : undefined,
-        }}
-      />
+      <SearchOutlined style={{ color: filtered ? "#1890ff" : undefined }} />
     ),
+    filteredValue: filtered[dataIndex] || null,
     onFilter: (value, record) =>
       record[dataIndex].toString().toLowerCase().includes(value.toLowerCase()),
+    onFilterDropdownOpenChange: (visible) => {
+      if (visible) {
+        setTimeout(() => searchInput.current?.select(), 100);
+      }
+    },
   });
 
   const columns = [
     {
       title: "NIP",
       dataIndex: "nip",
-      defaultSortOrder: "ascend",
+      key: "nip",
       sorter: (a, b) => a.nip - b.nip,
-      ...getColumnSearchProps("nip"),
+      sortOrder: sorted.columnKey === "nip" ? sorted.order : null,
+      ...getColumnSearchProps("nip", "NIP"),
     },
     {
       title: "Nama",
-      dataIndex: "name",
-      defaultSortOrder: "ascend",
-      sorter: (a, b) => a.name.localeCompare(b.name),
-      ...getColumnSearchProps("name"),
+      dataIndex: "fullname",
+      key: "fullname",
+      sorter: (a, b) => a.fullname.localeCompare(b.fullname),
+      sortOrder: sorted.columnKey === "fullname" ? sorted.order : null,
+      ...getColumnSearchProps("fullname", "Nama"),
     },
     {
       title: "Jabatan",
-      dataIndex: "position",
-      defaultSortOrder: "ascend",
-      sorter: (a, b) => a.position.localeCompare(b.position),
-      ...getColumnSearchProps("jabatan"),
+      dataIndex: "title",
+      key: "title",
+      sorter: (a, b) => a.title.localeCompare(b.title),
+      sortOrder: sorted.columnKey === "title" ? sorted.order : null,
+      ...getColumnSearchProps("title", "Jabatan"),
     },
     {
       title: "Aktif",
-      dataIndex: "isActive",
+      dataIndex: "active",
+      filters: [
+        { text: "Ya", value: true },
+        { text: "Tidak", value: false },
+      ],
+      onFilter: (value, record) => record?.active === value,
+      filteredValue: filtered.active || null,
       render: (value) => (value ? "Ya" : "Tidak"),
-      sorter: (a, b) => a.isActive - b.isActive,
     },
     {
       title: "Action",
@@ -95,7 +136,7 @@ export default function PengaturanPenandaTangan() {
             size="small"
             icon={<EditOutlined />}
             style={{ color: "#1677FF" }}
-            onClick={() => addRow(true, value)}
+            onClick={() => addUpdateRow(true, value)}
           >
             Ubah
           </Button>
@@ -113,27 +154,49 @@ export default function PengaturanPenandaTangan() {
     },
   ];
 
-  const deleteRow = (value) => {
-    modal.warning({
-      title: `Hapus Data`,
-      content: (
-        <p>
-          Data{" "}
-          <b>
-            <u>{value?.name}</u>
-          </b>{" "}
-          akan di hapus, apakah anda yakin untuk melanjutkan?
-        </p>
-      ),
-      width: 500,
-      okText: "Ya",
-      cancelText: "Tidak",
-      centered: true,
-      okCancel: true,
+  const fetchDataSigner = () => {
+    setLoading(true);
+    getSigner().then((response) => {
+      setLoading(false);
+      setSigner(response?.data?.data);
+      setTableParams({
+        ...tableParams,
+        pagination: {
+          ...tableParams.pagination,
+          total: tableParams?.extra
+            ? tableParams?.extra?.currentDataSource.length
+            : response?.data?.total_count,
+        },
+      });
     });
   };
 
-  const addRow = (isEdit = false, value = null) => {
+  const onTableChange = (pagination, filters, sorter, extra) => {
+    setFiltered(filters);
+    setSorted(sorter);
+
+    pagination = { ...pagination, total: extra?.currentDataSource?.length };
+
+    setTableParams({
+      pagination,
+      filters,
+      extra,
+      ...sorter,
+    });
+
+    // `dataSource` is useless since `pageSize` changed
+    if (pagination.pageSize !== tableParams.pagination?.pageSize) {
+      setSigner([]);
+    }
+  };
+
+  const reloadTable = () => {
+    setFiltered({});
+    setSorted({});
+    setTableParams(PAGINATION);
+  };
+
+  const addUpdateRow = (isEdit = false, value = null) => {
     setShow(!isShow);
 
     if (!isEdit) {
@@ -144,47 +207,106 @@ export default function PengaturanPenandaTangan() {
       form.setFieldsValue({
         id: value?.id,
         nip: value?.nip,
-        name: value?.name,
-        position: value?.position,
-        isActive: value?.isActive,
+        fullname: value?.fullname,
+        title: value?.title,
+        active: value?.active ? 1 : 0,
       });
     }
   };
+
+  const deleteRow = (values) => {
+    modal.warning({
+      title: `Hapus Data`,
+      content: (
+        <p>
+          Data{" "}
+          <b>
+            <u>{values?.nip}</u>
+          </b>{" "}
+          akan di hapus, apakah anda yakin untuk melanjutkan?
+        </p>
+      ),
+      width: 500,
+      okText: "Ya",
+      cancelText: "Tidak",
+      centered: true,
+      okCancel: true,
+      onOk() {
+        removeSigner(values?.id).then(() => {
+          message.success(`Data ${values?.nip} berhasil di hapus`);
+          reloadTable();
+        });
+      },
+    });
+  };
+
+  const handleAddUpdate = (values) => {
+    setConfirmLoading(true);
+    addSigner(values).then(() => {
+      message.success(`Data berhasil di ${isEdit ? `perbarui` : `tambahkan`}`);
+      addUpdateRow(isEdit);
+      setConfirmLoading(false);
+      reloadTable();
+    });
+  };
+
+  useEffect(() => {
+    fetchDataSigner();
+  }, [JSON.stringify(tableParams)]);
 
   return (
     <>
       <div className="flex flex-row space-x-2">
         <CSVLink
-          data={PENANDA_TANGAN_TMP.map(({ nip, name, position, isActive }) => ({
+          data={signer.map(({ nip, fullname, title, active }) => ({
             nip,
-            name,
-            position,
-            isActive: isActive ? `Ya` : `Tidak`,
+            fullname,
+            title,
+            active: active ? `Ya` : `Tidak`,
           }))}
           headers={[
             { label: "NIP", key: "nip" },
-            { label: "Nama", key: "name" },
-            { label: "Jabatan", key: "position" },
-            { label: "Aktif", key: "isActive" },
+            { label: "Nama", key: "fullnase" },
+            { label: "Jabatan", key: "title" },
+            { label: "Aktif", key: "active" },
           ]}
           filename={"DATA_PENANDA_TANGAN.csv"}
         >
-          <Button type="primary" icon={<ExportOutlined />}>
+          <Button type="primary" icon={<ExportOutlined />} disabled={loading}>
             Export
           </Button>
         </CSVLink>
-        <Button type="primary" icon={<PlusOutlined />} onClick={() => addRow()}>
+        <Button
+          type="primary"
+          icon={loading ? <LoadingOutlined /> : <ReloadOutlined />}
+          disabled={loading}
+          onClick={() => reloadTable()}
+        >
+          Perbarui
+        </Button>
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
+          onClick={() => addUpdateRow()}
+        >
           Tambah Data
         </Button>
       </div>
       <div className="mt-4">
-        <Table dataSource={PENANDA_TANGAN_TMP} columns={columns} />
+        <Table
+          loading={loading}
+          dataSource={signer}
+          columns={columns}
+          rowKey={(record) => record?.id}
+          onChange={onTableChange}
+          pagination={tableParams.pagination}
+        />
       </div>
       <Modal
         centered
         open={isShow}
         title={`${isEdit ? `Ubah` : `Tambah`} Data Penanda Tangan`}
-        onCancel={() => addRow(isEdit)}
+        onCancel={() => addUpdateRow(isEdit)}
         footer={null}
       >
         <Divider />
@@ -193,32 +315,65 @@ export default function PengaturanPenandaTangan() {
           name="basic"
           labelCol={{ span: 6 }}
           labelAlign="left"
-          // onFinish={handleAdd}
+          onFinish={handleAddUpdate}
           autoComplete="off"
+          initialValues={{ id: "", active: 1 }}
         >
           <Form.Item name="id" hidden>
             <Input />
           </Form.Item>
-          <Form.Item label="NIP" name="nip">
-            <InputNumber className="w-full" />
+          <Form.Item
+            label="NIP"
+            name="nip"
+            rules={[
+              {
+                required: true,
+                message: "NIP tidak boleh kosong!",
+              },
+            ]}
+          >
+            <InputNumber className="w-full" disabled={confirmLoading} />
           </Form.Item>
-          <Form.Item label="Nama" name="name">
-            <Input />
+          <Form.Item
+            label="Nama"
+            name="fullname"
+            rules={[
+              {
+                required: true,
+                message: "Nama tidak boleh kosong!",
+              },
+            ]}
+          >
+            <Input disabled={confirmLoading} />
           </Form.Item>
-          <Form.Item label="Jabatan" name="position">
-            <Input />
+          <Form.Item
+            label="Jabatan"
+            name="title"
+            rules={[
+              {
+                required: true,
+                message: "Jabatan tidak boleh kosong!",
+              },
+            ]}
+          >
+            <Input disabled={confirmLoading} />
           </Form.Item>
-          <Form.Item label="Aktif" name="isActive">
-            <Radio.Group>
+          <Form.Item label="Aktif" name="active">
+            <Radio.Group disabled={confirmLoading}>
               <Radio value={1}>Ya</Radio>
               <Radio value={0}>Tidak</Radio>
             </Radio.Group>
           </Form.Item>
           <Divider />
-          <Form.Item className="text-right">
+          <Form.Item className="text-right mb-0">
             <Space direction="horizontal">
-              <Button onClick={() => addRow(isEdit)}>Kembali</Button>
-              <Button htmlType="submit" type="primary">
+              <Button
+                disabled={confirmLoading}
+                onClick={() => addUpdateRow(isEdit)}
+              >
+                Kembali
+              </Button>
+              <Button loading={confirmLoading} htmlType="submit" type="primary">
                 Simpan
               </Button>
             </Space>
