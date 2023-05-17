@@ -2,7 +2,6 @@ import { Form, Input, Button, Checkbox } from "antd";
 import { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "../../hooks/useRedux";
 import { loginAction } from "../../store/actions/session";
-import { getUsers } from "../../services/auth";
 
 export default function Masuk() {
   const dispatch = useAppDispatch();
@@ -21,10 +20,6 @@ export default function Masuk() {
     if (errors) {
       console.log("errors", errors);
     }
-
-    getUsers().then((response) => {
-      console.log("response", response);
-    });
   }, [errors, form]);
 
   return (
