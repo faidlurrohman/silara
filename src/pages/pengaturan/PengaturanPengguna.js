@@ -21,7 +21,7 @@ import {
 } from "antd";
 import { CSVLink } from "react-csv";
 import { useEffect, useRef, useState } from "react";
-import { getCities } from "../../services/city";
+import { getCityList } from "../../services/city";
 import { getRoles } from "../../services/role";
 import { addUser, getUsers, removeUser } from "../../services/user";
 import { PAGINATION } from "../../helpers/constants";
@@ -181,7 +181,7 @@ export default function PengaturanPengguna() {
 
   const fetchDataCities = () => {
     setLoadingCity(true);
-    getCities().then((response) => {
+    getCityList().then((response) => {
       setLoadingCity(false);
       setCities(response?.data?.data);
     });
