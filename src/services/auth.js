@@ -1,5 +1,5 @@
 import axios from "./axios";
 
-export const getUsers = () => {
-  return axios.get("/api/user/data");
+export const doLogin = (values) => {
+  return axios.post("/api/auth/login", values);
 };

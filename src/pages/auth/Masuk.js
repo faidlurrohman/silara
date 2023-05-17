@@ -12,7 +12,6 @@ export default function Masuk() {
   const [form] = Form.useForm();
 
   const handleSubmit = (params) => {
-    console.log("params", params);
     dispatch(loginAction(params));
   };
 
@@ -40,7 +39,9 @@ export default function Masuk() {
           <Form.Item
             label="Nama Pengguna"
             name="username"
-            rules={[{ required: true, message: "Nama Pengguna dibutuhkan" }]}
+            rules={[
+              { required: true, message: "Nama Pengguna tidak boleh kosong" },
+            ]}
           >
             <Input size="large" allowClear />
           </Form.Item>
@@ -48,7 +49,9 @@ export default function Masuk() {
           <Form.Item
             label="Kata Sandi"
             name="password"
-            rules={[{ required: true, message: "Kata Sandi dibutuhkan" }]}
+            rules={[
+              { required: true, message: "Kata Sandi tidak boleh kosong" },
+            ]}
           >
             <Input.Password size="large" allowClear />
           </Form.Item>
