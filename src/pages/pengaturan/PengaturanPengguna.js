@@ -270,7 +270,7 @@ export default function PengaturanPengguna() {
   const handleAddUpdate = (values) => {
     setConfirmLoading(true);
     addUser(values).then(() => {
-      message.success(`Data berhasil di ${isEdit ? `perbarui` : `tambahan`}`);
+      message.success(`Data berhasil di ${isEdit ? `perbarui` : `tambahkan`}`);
       addUpdateRow(isEdit);
       setConfirmLoading(false);
       reloadTable();
