@@ -44,6 +44,7 @@ export default function PengaturanKota() {
     {
       title: "Nama Kota",
       dataIndex: "label",
+      key: "label",
       filterDropdown: ({
         setSelectedKeys,
         selectedKeys,
@@ -91,8 +92,7 @@ export default function PengaturanKota() {
         }
       },
       sorter: (a, b) => a.label.localeCompare(b.label),
-      sortOrder: sorted.order,
-      sortDirections: ["descend", "ascend"],
+      sortOrder: sorted.columnKey === "label" ? sorted.order : null,
     },
     {
       title: "Aktif",
