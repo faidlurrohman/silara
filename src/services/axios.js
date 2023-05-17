@@ -18,9 +18,9 @@ axiosInstance.interceptors.response.use(
     return response;
   },
   async (error) => {
-    console.log("error", error);
     message.error(error?.response?.data?.message || error.message);
-    return Promise.reject(error);
+
+    return error?.response?.data;
   }
 );
 
