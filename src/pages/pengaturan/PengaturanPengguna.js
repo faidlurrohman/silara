@@ -21,7 +21,7 @@ import {
 } from "antd";
 import { CSVLink } from "react-csv";
 import { useEffect, useRef, useState } from "react";
-import { addCity, getCities, removeCity } from "../../services/city";
+import { getCities } from "../../services/city";
 import { getRoles } from "../../services/role";
 import { addUser, getUsers, removeUser } from "../../services/user";
 import { PAGINATION } from "../../helpers/constants";
@@ -349,7 +349,7 @@ export default function PengaturanPengguna() {
           labelAlign="left"
           onFinish={handleAddUpdate}
           autoComplete="off"
-          initialValues={{ id: "", label: "", active: 1 }}
+          initialValues={{ id: "", active: 1 }}
         >
           <Form.Item name="id" hidden>
             <Input />

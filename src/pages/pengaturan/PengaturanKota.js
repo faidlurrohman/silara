@@ -290,7 +290,7 @@ export default function PengaturanKota() {
           labelAlign="left"
           onFinish={handleAddUpdate}
           autoComplete="off"
-          initialValues={{ id: "", label: "", active: 1 }}
+          initialValues={{ id: "", active: 1 }}
         >
           <Form.Item name="id" hidden>
             <Input />
