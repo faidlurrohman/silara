@@ -133,7 +133,7 @@ export default function PengaturanKota() {
     },
   ];
 
-  const fetchData = () => {
+  const fetchDataCities = () => {
     setLoading(true);
     getCities().then((response) => {
       setLoading(false);
@@ -228,7 +228,7 @@ export default function PengaturanKota() {
   };
 
   useEffect(() => {
-    fetchData();
+    fetchDataCities();
   }, [JSON.stringify(tableParams)]);
 
   return (
