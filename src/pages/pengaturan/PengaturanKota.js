@@ -134,12 +134,10 @@ export default function PengaturanKota() {
   ];
 
   const fetchData = () => {
-    console.log("fetchData");
     setLoading(true);
     getCities().then((response) => {
       setLoading(false);
       setCities(response?.data?.data);
-      console.log("tableParams", tableParams);
       setTableParams({
         ...tableParams,
         pagination: {
