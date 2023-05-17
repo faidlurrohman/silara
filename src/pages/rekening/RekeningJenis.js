@@ -100,7 +100,7 @@ export default function RekeningJenis() {
 
   const columns = [
     {
-      title: "Akun Rekening",
+      title: "Kelompok Rekening",
       dataIndex: "account_group_label",
       key: "account_group_label",
       width: 200,
@@ -108,7 +108,7 @@ export default function RekeningJenis() {
         a.account_group_label.localeCompare(b.account_group_label),
       sortOrder:
         sorted.columnKey === "account_group_label" ? sorted.order : null,
-      ...getColumnSearchProps("account_group_label", "Akun Rekening"),
+      ...getColumnSearchProps("account_group_label", "Kelompok Rekening"),
     },
     {
       title: "Label",
