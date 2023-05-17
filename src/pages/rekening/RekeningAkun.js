@@ -146,7 +146,7 @@ export default function RekeningAkun() {
     },
   ];
 
-  const fetchDataUsers = () => {
+  const fetchDataAccount = () => {
     setLoading(true);
     getAccount("base").then((response) => {
       setLoading(false);
@@ -242,7 +242,7 @@ export default function RekeningAkun() {
   };
 
   useEffect(() => {
-    fetchDataUsers();
+    fetchDataAccount();
   }, [JSON.stringify(tableParams)]);
 
   return (
