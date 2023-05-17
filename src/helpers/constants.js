@@ -1,42 +1,3 @@
-const KOTA_TMP = [
-  {
-    id: Math.floor(Math.random() * 1000),
-    key: Math.floor(Math.random() * 1000),
-    name: "Gresik",
-    isActive: Math.floor(Math.random() * 2),
-  },
-  {
-    id: Math.floor(Math.random() * 1000),
-    key: Math.floor(Math.random() * 1000),
-    name: "Surabaya",
-    isActive: Math.floor(Math.random() * 2),
-  },
-  {
-    id: Math.floor(Math.random() * 1000),
-    key: Math.floor(Math.random() * 1000),
-    name: "Jakarta",
-    isActive: Math.floor(Math.random() * 2),
-  },
-  {
-    id: Math.floor(Math.random() * 1000),
-    key: Math.floor(Math.random() * 1000),
-    name: "Batam",
-    isActive: Math.floor(Math.random() * 2),
-  },
-  {
-    id: Math.floor(Math.random() * 1000),
-    key: Math.floor(Math.random() * 1000),
-    name: "Tanjung Pinang",
-    isActive: Math.floor(Math.random() * 2),
-  },
-  {
-    id: Math.floor(Math.random() * 1000),
-    key: Math.floor(Math.random() * 1000),
-    name: "Belakang Padang",
-    isActive: Math.floor(Math.random() * 2),
-  },
-];
-
 const PENANDA_TANGAN_TMP = [
   {
     id: Math.floor(Math.random() * 1000),
@@ -144,18 +105,6 @@ const PENANDA_TANGAN_TMP = [
   },
 ];
 
-const PENGGUNA_TMP = [
-  {
-    id: Math.floor(Math.random() * 1000),
-    key: Math.floor(Math.random() * 1000),
-    name: "Faid Hamburger",
-    username: "hamburger",
-    position: ".tbk",
-    password: Math.random().toString(36).substring(2),
-    isActive: Math.floor(Math.random() * 2),
-  },
-];
-
 const REKENING_AKUN_TMP = [
   {
     id: Math.floor(Math.random() * 1000),
@@ -237,10 +186,11 @@ const LAPORAN_TMP = [
   },
 ];
 
+const PAGINATION = { pagination: { current: 1, pageSize: 5 } };
+
 export {
-  KOTA_TMP,
+  PAGINATION,
   PENANDA_TANGAN_TMP,
-  PENGGUNA_TMP,
   REKENING_AKUN_TMP,
   REKENING_KELOMPOK_TMP,
   REKENING_JENIS_TMP,
