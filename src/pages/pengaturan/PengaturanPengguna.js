@@ -337,7 +337,7 @@ export default function PengaturanPengguna() {
       <Modal
         centered
         open={isShow}
-        title={`${isEdit ? `Ubah` : `Tambah`} Data Penanda Tangan`}
+        title={`${isEdit ? `Ubah` : `Tambah`} Data Pengguna`}
         onCancel={() => addUpdateRow(isEdit)}
         footer={null}
       >
