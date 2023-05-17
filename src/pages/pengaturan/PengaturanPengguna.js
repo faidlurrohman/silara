@@ -2,7 +2,9 @@ import {
   DeleteOutlined,
   EditOutlined,
   ExportOutlined,
+  LoadingOutlined,
   PlusOutlined,
+  ReloadOutlined,
   SearchOutlined,
 } from "@ant-design/icons";
 import {
@@ -15,81 +17,122 @@ import {
   Select,
   Space,
   Table,
+  message,
 } from "antd";
-import { useAppDispatch } from "../../hooks/useRedux";
 import { CSVLink } from "react-csv";
-import { useRef, useState } from "react";
-import { PENGGUNA_TMP } from "../../helpers/constants";
+import { useEffect, useRef, useState } from "react";
+import { addCity, getCities, removeCity } from "../../services/city";
+import { getRoles } from "../../services/role";
+import { addUser, getUsers, removeUser } from "../../services/user";
+import { PAGINATION } from "../../helpers/constants";
 
 export default function PengaturanPengguna() {
-  const [modal, modalHolder] = Modal.useModal();
-  const dispatch = useAppDispatch();
   const [form] = Form.useForm();
+
   const searchInput = useRef(null);
+
+  const [filtered, setFiltered] = useState({});
+  const [sorted, setSorted] = useState({});
+  const [tableParams, setTableParams] = useState(PAGINATION);
+
+  const [modal, modalHolder] = Modal.useModal();
   const [isShow, setShow] = useState(false);
   const [isEdit, setEdit] = useState(false);
+  const [confirmLoading, setConfirmLoading] = useState(false);
 
-  const getColumnSearchProps = (dataIndex) => ({
-    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm }) => (
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const [cities, setCities] = useState([]);
+  const [loadingCity, setLoadingCity] = useState(false);
+
+  const [roles, setRoles] = useState([]);
+  const [loadingRole, setLoadingRole] = useState(false);
+
+  const getColumnSearchProps = (dataIndex, header) => ({
+    filterDropdown: ({
+      setSelectedKeys,
+      selectedKeys,
+      confirm,
+      clearFilters,
+    }) => (
       <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
+        <Input
+          ref={searchInput}
+          placeholder={`Cari ${header}`}
+          value={selectedKeys[0]}
+          onChange={(e) =>
+            setSelectedKeys(e.target.value ? [e.target.value] : [])
+          }
+          onPressEnter={() => confirm()}
+          style={{
+            marginBottom: 8,
+            display: "block",
+          }}
+        />
         <Space>
-          <Input
-            allowClear
-            ref={searchInput}
-            placeholder={`Cari ${
-              dataIndex === `name`
-                ? `nama`
-                : dataIndex === "username"
-                ? `nama pengguna`
-                : dataIndex
-            }`}
-            value={selectedKeys[0]}
-            onChange={(e) =>
-              setSelectedKeys(e.target.value ? [e.target.value] : [])
-            }
-            onPressEnter={() => confirm()}
-          />
+          <Button
+            type="primary"
+            onClick={() => confirm()}
+            icon={<SearchOutlined />}
+            size="small"
+          >
+            Cari
+          </Button>
+          <Button onClick={() => clearFilters()} size="small">
+            Hapus
+          </Button>
         </Space>
       </div>
     ),
     filterIcon: (filtered) => (
-      <SearchOutlined
-        style={{
-          color: filtered ? "#1890ff" : undefined,
-        }}
-      />
+      <SearchOutlined style={{ color: filtered ? "#1890ff" : undefined }} />
     ),
+    filteredValue: filtered[dataIndex] || null,
     onFilter: (value, record) =>
       record[dataIndex].toString().toLowerCase().includes(value.toLowerCase()),
+    onFilterDropdownOpenChange: (visible) => {
+      if (visible) {
+        setTimeout(() => searchInput.current?.select(), 100);
+      }
+    },
   });
 
   const columns = [
     {
       title: "Nama Pengguna",
       dataIndex: "username",
-      defaultSortOrder: "ascend",
+      key: "username",
       sorter: (a, b) => a.username.localeCompare(b.username),
-      ...getColumnSearchProps("username"),
+      sortOrder: sorted.columnKey === "username" ? sorted.order : null,
+      ...getColumnSearchProps("username", "Nama Pengguna"),
     },
     {
       title: "Nama",
-      dataIndex: "name",
-      defaultSortOrder: "ascend",
-      sorter: (a, b) => a.name.localeCompare(b.name),
-      ...getColumnSearchProps("name"),
+      dataIndex: "fullname",
+      key: "fullname",
+      sorter: (a, b) => a.fullname.localeCompare(b.fullname),
+      sortOrder: sorted.columnKey === "fullname" ? sorted.order : null,
+      ...getColumnSearchProps("fullname", "Nama"),
     },
     {
       title: "Jabatan",
-      dataIndex: "position",
-      defaultSortOrder: "ascend",
-      sorter: (a, b) => a.position.localeCompare(b.position),
-      ...getColumnSearchProps("jabatan"),
+      dataIndex: "title",
+      key: "title",
+      sorter: (a, b) => a.title.localeCompare(b.title),
+      sortOrder: sorted.columnKey === "title" ? sorted.order : null,
+      ...getColumnSearchProps("title", "Jabatan"),
     },
     {
       title: "Aktif",
-      dataIndex: "isActive",
+      dataIndex: "active",
+      filters: [
+        { text: "Ya", value: true },
+        { text: "Tidak", value: false },
+      ],
+      onFilter: (value, record) => record?.active === value,
+      filteredValue: filtered.active || null,
       render: (value) => (value ? "Ya" : "Tidak"),
-      sorter: (a, b) => a.isActive - b.isActive,
     },
     {
       title: "Action",
@@ -101,7 +144,7 @@ export default function PengaturanPengguna() {
             size="small"
             icon={<EditOutlined />}
             style={{ color: "#1677FF" }}
-            onClick={() => addRow(true, value)}
+            onClick={() => addUpdateRow(true, value)}
           >
             Ubah
           </Button>
@@ -119,27 +162,65 @@ export default function PengaturanPengguna() {
     },
   ];
 
-  const deleteRow = (value) => {
-    modal.warning({
-      title: `Hapus Data`,
-      content: (
-        <p>
-          Data{" "}
-          <b>
-            <u>{value?.name}</u>
-          </b>{" "}
-          akan di hapus, apakah anda yakin untuk melanjutkan?
-        </p>
-      ),
-      width: 500,
-      okText: "Ya",
-      cancelText: "Tidak",
-      centered: true,
-      okCancel: true,
+  const fetchDataUsers = () => {
+    setLoading(true);
+    getUsers().then((response) => {
+      setLoading(false);
+      setUsers(response?.data?.data);
+      setTableParams({
+        ...tableParams,
+        pagination: {
+          ...tableParams.pagination,
+          total: tableParams?.extra
+            ? tableParams?.extra?.currentDataSource.length
+            : response?.data?.total_count,
+        },
+      });
     });
   };
 
-  const addRow = (isEdit = false, value = null) => {
+  const fetchDataCities = () => {
+    setLoadingCity(true);
+    getCities().then((response) => {
+      setLoadingCity(false);
+      setCities(response?.data?.data);
+    });
+  };
+
+  const fetchDataRoles = () => {
+    setLoadingRole(true);
+    getRoles().then((response) => {
+      setLoadingRole(false);
+      setRoles(response?.data?.data);
+    });
+  };
+
+  const onTableChange = (pagination, filters, sorter, extra) => {
+    setFiltered(filters);
+    setSorted(sorter);
+
+    pagination = { ...pagination, total: extra?.currentDataSource?.length };
+
+    setTableParams({
+      pagination,
+      filters,
+      extra,
+      ...sorter,
+    });
+
+    // `dataSource` is useless since `pageSize` changed
+    if (pagination.pageSize !== tableParams.pagination?.pageSize) {
+      setUsers([]);
+    }
+  };
+
+  const reloadTable = () => {
+    setFiltered({});
+    setSorted({});
+    setTableParams(PAGINATION);
+  };
+
+  const addUpdateRow = (isEdit = false, value = null) => {
     setShow(!isShow);
 
     if (!isEdit) {
@@ -149,92 +230,226 @@ export default function PengaturanPengguna() {
       setEdit(true);
       form.setFieldsValue({
         id: value?.id,
-        name: value?.name,
+        fullname: value?.fullname,
         username: value?.username,
         password: value?.password,
-        position: value?.position,
-        isActive: value?.isActive,
+        title: value?.title,
+        role_id: value?.role_id,
+        city_id: value?.city_id,
+        active: value?.active ? 1 : 0,
       });
     }
   };
+
+  const deleteRow = (values) => {
+    modal.warning({
+      title: `Hapus Data`,
+      content: (
+        <p>
+          Data{" "}
+          <b>
+            <u>{values?.username}</u>
+          </b>{" "}
+          akan di hapus, apakah anda yakin untuk melanjutkan?
+        </p>
+      ),
+      width: 500,
+      okText: "Ya",
+      cancelText: "Tidak",
+      centered: true,
+      okCancel: true,
+      onOk() {
+        removeUser(values?.id).then(() => {
+          message.success(`Data ${values?.username} berhasil di hapus`);
+          reloadTable();
+        });
+      },
+    });
+  };
+
+  const handleAddUpdate = (values) => {
+    setConfirmLoading(true);
+    addUser(values).then(() => {
+      message.success(`Data berhasil di ${isEdit ? `perbarui` : `tambahan`}`);
+      addUpdateRow(isEdit);
+      setConfirmLoading(false);
+      reloadTable();
+    });
+  };
+
+  useEffect(() => {
+    fetchDataUsers();
+  }, [JSON.stringify(tableParams)]);
+
+  useEffect(() => {
+    fetchDataCities();
+    fetchDataRoles();
+  }, []);
 
   return (
     <>
       <div className="flex flex-row space-x-2">
         <CSVLink
-          data={PENGGUNA_TMP.map(({ name, username, position, isActive }) => ({
-            name,
+          data={users.map(({ username, fullname, title, active }) => ({
             username,
-            position,
-            isActive: isActive ? `Ya` : `Tidak`,
+            fullname,
+            title,
+            active: active ? `Ya` : `Tidak`,
           }))}
           headers={[
             { label: "Nama Pengguna", key: "username" },
-            { label: "Nama", key: "name" },
-            { label: "Jabatan", key: "position" },
-            { label: "Aktif", key: "isActive" },
+            { label: "Nama", key: "fullname" },
+            { label: "Jabatan", key: "title" },
+            { label: "Aktif", key: "active" },
           ]}
           filename={"DATA_PENGGUNA.csv"}
         >
-          <Button type="primary" icon={<ExportOutlined />}>
+          <Button type="primary" icon={<ExportOutlined />} disabled={loading}>
             Export
           </Button>
         </CSVLink>
-        <Button type="primary" icon={<PlusOutlined />} onClick={() => addRow()}>
+        <Button
+          type="primary"
+          icon={loading ? <LoadingOutlined /> : <ReloadOutlined />}
+          disabled={loading}
+          onClick={() => reloadTable()}
+        >
+          Perbarui
+        </Button>
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
+          onClick={() => addUpdateRow()}
+        >
           Tambah Data
         </Button>
       </div>
       <div className="mt-4">
-        <Table dataSource={PENGGUNA_TMP} columns={columns} />
+        <Table
+          loading={loading}
+          dataSource={users}
+          columns={columns}
+          rowKey={(record) => record?.id}
+          onChange={onTableChange}
+          pagination={tableParams.pagination}
+        />
       </div>
       <Modal
         centered
         open={isShow}
         title={`${isEdit ? `Ubah` : `Tambah`} Data Penanda Tangan`}
-        onCancel={() => addRow(isEdit)}
+        onCancel={() => addUpdateRow(isEdit)}
         footer={null}
       >
         <Divider />
         <Form
           form={form}
           name="basic"
-          labelCol={{ span: 6 }}
+          labelCol={{ span: 8 }}
           labelAlign="left"
-          // onFinish={handleAdd}
+          onFinish={handleAddUpdate}
           autoComplete="off"
+          initialValues={{ id: "", label: "", active: 1 }}
         >
           <Form.Item name="id" hidden>
             <Input />
           </Form.Item>
-          <Form.Item label="Nama Pengguna" name="username">
-            <Input />
+          <Form.Item
+            label="Nama Pengguna"
+            name="username"
+            rules={[
+              {
+                required: true,
+                message: "Nama Pengguna tidak boleh kosong!",
+              },
+            ]}
+          >
+            <Input disabled={confirmLoading} />
           </Form.Item>
-          <Form.Item label="Kata Sandi" name="password">
-            <Input.Password />
+          <Form.Item
+            label="Kata Sandi"
+            name="password"
+            rules={[
+              {
+                required: true,
+                message: "Kata Sandi tidak boleh kosong!",
+              },
+            ]}
+          >
+            <Input.Password disabled={confirmLoading} />
           </Form.Item>
-          <Form.Item label="Nama" name="name">
-            <Input />
+          <Form.Item
+            label="Nama"
+            name="fullname"
+            rules={[
+              {
+                required: true,
+                message: "Nama tidak boleh kosong!",
+              },
+            ]}
+          >
+            <Input disabled={confirmLoading} />
           </Form.Item>
-          <Form.Item label="Jabatan" name="position">
-            <Input />
+          <Form.Item
+            label="Jabatan"
+            name="title"
+            rules={[
+              {
+                required: true,
+                message: "Jabatan tidak boleh kosong!",
+              },
+            ]}
+          >
+            <Input disabled={confirmLoading} />
           </Form.Item>
-          <Form.Item label="Akses Pengguna" name="user_access">
-            <Select />
+          <Form.Item
+            label="Akses Pengguna"
+            name="role_id"
+            rules={[
+              {
+                required: true,
+                message: "Akses Pengguna tidak boleh kosong!",
+              },
+            ]}
+          >
+            <Select
+              disabled={confirmLoading}
+              loading={loadingRole}
+              options={roles}
+            />
           </Form.Item>
-          <Form.Item label="Akses Kota" name="city_access">
-            <Select />
+          <Form.Item
+            label="Akses Kota"
+            name="city_id"
+            rules={[
+              {
+                required: true,
+                message: "Akses Kota tidak boleh kosong!",
+              },
+            ]}
+          >
+            <Select
+              disabled={confirmLoading}
+              loading={loadingCity}
+              options={cities}
+            />
           </Form.Item>
-          <Form.Item label="Aktif" name="isActive">
-            <Radio.Group>
+          <Form.Item label="Aktif" name="active">
+            <Radio.Group disabled={confirmLoading}>
               <Radio value={1}>Ya</Radio>
               <Radio value={0}>Tidak</Radio>
             </Radio.Group>
           </Form.Item>
           <Divider />
-          <Form.Item className="text-right">
+          <Form.Item className="text-right mb-0">
             <Space direction="horizontal">
-              <Button onClick={() => addRow(isEdit)}>Kembali</Button>
-              <Button htmlType="submit" type="primary">
+              <Button
+                disabled={confirmLoading}
+                onClick={() => addUpdateRow(isEdit)}
+              >
+                Kembali
+              </Button>
+              <Button loading={confirmLoading} htmlType="submit" type="primary">
                 Simpan
               </Button>
             </Space>
