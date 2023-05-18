@@ -1,13 +1,4 @@
 import {
-  DeleteOutlined,
-  EditOutlined,
-  ExportOutlined,
-  LoadingOutlined,
-  PlusOutlined,
-  ReloadOutlined,
-  SearchOutlined,
-} from "@ant-design/icons";
-import {
   Button,
   Divider,
   Form,
@@ -19,12 +10,15 @@ import {
   Table,
   message,
 } from "antd";
-import { CSVLink } from "react-csv";
 import { useEffect, useRef, useState } from "react";
 import { getCityList } from "../../services/city";
 import { getRoles } from "../../services/role";
 import { addUser, getUsers, removeUser } from "../../services/user";
 import { PAGINATION } from "../../helpers/constants";
+import { actionColumn, activeColumn, searchColumn } from "../../helpers/table";
+import ExportButton from "../../components/button/ExportButton";
+import ReloadButton from "../../components/button/ReloadButton";
+import AddButton from "../../components/button/AddButton";
 
 export default function PengaturanPengguna() {
   const [form] = Form.useForm();
@@ -48,119 +42,6 @@ export default function PengaturanPengguna() {
 
   const [roles, setRoles] = useState([]);
   const [loadingRole, setLoadingRole] = useState(false);
-
-  const getColumnSearchProps = (dataIndex, header) => ({
-    filterDropdown: ({
-      setSelectedKeys,
-      selectedKeys,
-      confirm,
-      clearFilters,
-    }) => (
-      <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
-        <Input
-          ref={searchInput}
-          placeholder={`Cari ${header}`}
-          value={selectedKeys[0]}
-          onChange={(e) =>
-            setSelectedKeys(e.target.value ? [e.target.value] : [])
-          }
-          onPressEnter={() => confirm()}
-          style={{
-            marginBottom: 8,
-            display: "block",
-          }}
-        />
-        <Space>
-          <Button
-            type="primary"
-            onClick={() => confirm()}
-            icon={<SearchOutlined />}
-            size="small"
-          >
-            Cari
-          </Button>
-          <Button onClick={() => clearFilters()} size="small">
-            Hapus
-          </Button>
-        </Space>
-      </div>
-    ),
-    filterIcon: (filtered) => (
-      <SearchOutlined style={{ color: filtered ? "#1890ff" : undefined }} />
-    ),
-    filteredValue: filtered[dataIndex] || null,
-    onFilter: (value, record) =>
-      record[dataIndex].toString().toLowerCase().includes(value.toLowerCase()),
-    onFilterDropdownOpenChange: (visible) => {
-      if (visible) {
-        setTimeout(() => searchInput.current?.select(), 100);
-      }
-    },
-  });
-
-  const columns = [
-    {
-      title: "Nama Pengguna",
-      dataIndex: "username",
-      key: "username",
-      sorter: (a, b) => a.username.localeCompare(b.username),
-      sortOrder: sorted.columnKey === "username" ? sorted.order : null,
-      ...getColumnSearchProps("username", "Nama Pengguna"),
-    },
-    {
-      title: "Nama",
-      dataIndex: "fullname",
-      key: "fullname",
-      sorter: (a, b) => a.fullname.localeCompare(b.fullname),
-      sortOrder: sorted.columnKey === "fullname" ? sorted.order : null,
-      ...getColumnSearchProps("fullname", "Nama"),
-    },
-    {
-      title: "Jabatan",
-      dataIndex: "title",
-      key: "title",
-      sorter: (a, b) => a.title.localeCompare(b.title),
-      sortOrder: sorted.columnKey === "title" ? sorted.order : null,
-      ...getColumnSearchProps("title", "Jabatan"),
-    },
-    {
-      title: "Aktif",
-      dataIndex: "active",
-      filters: [
-        { text: "Ya", value: true },
-        { text: "Tidak", value: false },
-      ],
-      onFilter: (value, record) => record?.active === value,
-      filteredValue: filtered.active || null,
-      render: (value) => (value ? "Ya" : "Tidak"),
-    },
-    {
-      title: "Action",
-      width: 200,
-      render: (value) => (
-        <Space size="middle">
-          <Button
-            type="dashed"
-            size="small"
-            icon={<EditOutlined />}
-            style={{ color: "#1677FF" }}
-            onClick={() => addUpdateRow(true, value)}
-          >
-            Ubah
-          </Button>
-          <Button
-            type="dashed"
-            size="small"
-            icon={<DeleteOutlined />}
-            danger
-            onClick={() => deleteRow(value)}
-          >
-            Hapus
-          </Button>
-        </Space>
-      ),
-    },
-  ];
 
   const fetchDataUsers = () => {
     setLoading(true);
@@ -277,6 +158,21 @@ export default function PengaturanPengguna() {
     });
   };
 
+  const columns = [
+    searchColumn(
+      searchInput,
+      "username",
+      "Nama Pengguna",
+      filtered,
+      true,
+      sorted
+    ),
+    searchColumn(searchInput, "fullname", "Nama", filtered, true, sorted),
+    searchColumn(searchInput, "title", "Jabatan", filtered, true, sorted),
+    activeColumn(filtered),
+    actionColumn(addUpdateRow, deleteRow),
+  ];
+
   useEffect(() => {
     fetchDataUsers();
   }, [JSON.stringify(tableParams)]);
@@ -289,40 +185,9 @@ export default function PengaturanPengguna() {
   return (
     <>
       <div className="flex flex-row space-x-2">
-        <CSVLink
-          data={users.map(({ username, fullname, title, active }) => ({
-            username,
-            fullname,
-            title,
-            active: active ? `Ya` : `Tidak`,
-          }))}
-          headers={[
-            { label: "Nama Pengguna", key: "username" },
-            { label: "Nama", key: "fullname" },
-            { label: "Jabatan", key: "title" },
-            { label: "Aktif", key: "active" },
-          ]}
-          filename={"DATA_PENGGUNA.csv"}
-        >
-          <Button type="primary" icon={<ExportOutlined />} disabled={loading}>
-            Export
-          </Button>
-        </CSVLink>
-        <Button
-          type="primary"
-          icon={loading ? <LoadingOutlined /> : <ReloadOutlined />}
-          disabled={loading}
-          onClick={() => reloadTable()}
-        >
-          Perbarui
-        </Button>
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          onClick={() => addUpdateRow()}
-        >
-          Tambah Data
-        </Button>
+        <ExportButton data={users} target={`user`} stateLoading={loading} />
+        <ReloadButton onClick={reloadTable} stateLoading={loading} />
+        <AddButton onClick={addUpdateRow} stateLoading={loading} />
       </div>
       <div className="mt-4">
         <Table

@@ -11,7 +11,8 @@ export const searchColumn = (
   labelHeader,
   stateFilter,
   useSort,
-  stateSort
+  stateSort,
+  sortType = "string"
 ) => ({
   title: labelHeader,
   dataIndex: key,
@@ -64,7 +65,8 @@ export const searchColumn = (
   },
   // IF USING SORT
   ...(useSort && {
-    sorter: (a, b) => a[key].localeCompare(b[key]),
+    sorter: (a, b) =>
+      sortType === "string" ? a[key].localeCompare(b[key]) : a[key] - b[key],
     sortOrder: stateSort.columnKey === key ? stateSort.order : null,
   }),
 });

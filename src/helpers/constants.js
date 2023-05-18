@@ -27,9 +27,26 @@ const PAGINATION = { pagination: { current: 1, pageSize: 5 } };
 const EXPORT_TARGET = {
   city: {
     filename: "DATA_KOTA",
-    fields: ["id", "label", "active"],
     headers: [
       { label: "Nama Kota", key: "label" },
+      { label: "Aktif", key: "active" },
+    ],
+  },
+  signer: {
+    filename: "DATA_PENANDA_TANGAN",
+    headers: [
+      { label: "NIP", key: "nip" },
+      { label: "Nama", key: "fullname" },
+      { label: "Jabatan", key: "title" },
+      { label: "Aktif", key: "active" },
+    ],
+  },
+  user: {
+    filename: "DATA_PENGGUNA",
+    headers: [
+      { label: "Nama Pengguna", key: "username" },
+      { label: "Nama", key: "fullname" },
+      { label: "Jabatan", key: "title" },
       { label: "Aktif", key: "active" },
     ],
   },

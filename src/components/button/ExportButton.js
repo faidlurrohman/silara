@@ -9,23 +9,14 @@ export default function ExportButton({
   target,
   stateLoading,
 }) {
-  const exportData = (data = [], target = "") =>
-    data.map((item) => {
-      Object.keys(item).map((key) => {
-        if (!EXPORT_TARGET[target].fields.includes(key)) {
-          delete item[key];
-        } else {
-          if (key === "active") {
-            item[key] = item[key] ? `Ya` : `Tidak`;
-          }
-        }
-      });
-      return item;
-    });
-
   return (
     <CSVLink
-      data={exportData(data, target) || []}
+      data={
+        data.map(({ active, ...rest }) => ({
+          ...rest,
+          active: active ? `Ya` : `Tidak`,
+        })) || []
+      }
       headers={EXPORT_TARGET[target].headers}
       filename={`${EXPORT_TARGET[target].filename}.csv`}
     >

@@ -129,15 +129,7 @@ export default function PengaturanKota() {
   };
 
   const columns = [
-    searchColumn(
-      searchInput,
-      "label",
-      "Nama Kota",
-      filtered,
-      true,
-      sorted,
-      "string"
-    ),
+    searchColumn(searchInput, "label", "Nama Kota", filtered, true, sorted),
     activeColumn(filtered),
     actionColumn(addUpdateRow, deleteRow),
   ];
