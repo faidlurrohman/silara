@@ -1,13 +1,4 @@
 import {
-  DeleteOutlined,
-  EditOutlined,
-  ExportOutlined,
-  LoadingOutlined,
-  PlusOutlined,
-  ReloadOutlined,
-  SearchOutlined,
-} from "@ant-design/icons";
-import {
   Button,
   Divider,
   Form,
@@ -18,10 +9,13 @@ import {
   Table,
   message,
 } from "antd";
-import { CSVLink } from "react-csv";
 import { useEffect, useRef, useState } from "react";
 import { addCity, getCities, removeCity } from "../../services/city";
 import { PAGINATION } from "../../helpers/constants";
+import { actionColumn, activeColumn, searchColumn } from "../../helpers/table";
+import ExportButton from "../../components/button/ExportButton";
+import ReloadButton from "../../components/button/ReloadButton";
+import AddButton from "../../components/button/AddButton";
 
 export default function PengaturanKota() {
   const [form] = Form.useForm();
@@ -39,99 +33,6 @@ export default function PengaturanKota() {
 
   const [cities, setCities] = useState([]);
   const [loading, setLoading] = useState(false);
-
-  const columns = [
-    {
-      title: "Nama Kota",
-      dataIndex: "label",
-      key: "label",
-      filterDropdown: ({
-        setSelectedKeys,
-        selectedKeys,
-        confirm,
-        clearFilters,
-      }) => (
-        <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
-          <Input
-            ref={searchInput}
-            placeholder={`Cari Nama Kota`}
-            value={selectedKeys[0]}
-            onChange={(e) =>
-              setSelectedKeys(e.target.value ? [e.target.value] : [])
-            }
-            onPressEnter={() => confirm()}
-            style={{
-              marginBottom: 8,
-              display: "block",
-            }}
-          />
-          <Space>
-            <Button
-              type="primary"
-              onClick={() => confirm()}
-              icon={<SearchOutlined />}
-              size="small"
-            >
-              Cari
-            </Button>
-            <Button onClick={() => clearFilters()} size="small">
-              Hapus
-            </Button>
-          </Space>
-        </div>
-      ),
-      filterIcon: (filtered) => (
-        <SearchOutlined style={{ color: filtered ? "#1890ff" : undefined }} />
-      ),
-      filteredValue: filtered.label || null,
-      onFilter: (value, record) =>
-        record?.label.toString().toLowerCase().includes(value.toLowerCase()),
-      onFilterDropdownOpenChange: (visible) => {
-        if (visible) {
-          setTimeout(() => searchInput.current?.select(), 100);
-        }
-      },
-      sorter: (a, b) => a.label.localeCompare(b.label),
-      sortOrder: sorted.columnKey === "label" ? sorted.order : null,
-    },
-    {
-      title: "Aktif",
-      dataIndex: "active",
-      filters: [
-        { text: "Ya", value: true },
-        { text: "Tidak", value: false },
-      ],
-      onFilter: (value, record) => record?.active === value,
-      filteredValue: filtered.active || null,
-      render: (value) => (value ? "Ya" : "Tidak"),
-    },
-    {
-      title: "Action",
-      width: 200,
-      render: (value) => (
-        <Space size="middle">
-          <Button
-            type="dashed"
-            size="small"
-            icon={<EditOutlined />}
-            style={{ color: "#1677FF" }}
-            onClick={() => addUpdateRow(true, value)}
-          >
-            Ubah
-          </Button>
-          <Button
-            type="dashed"
-            size="small"
-            icon={<DeleteOutlined />}
-            danger
-            onClick={() => deleteRow(value)}
-          >
-            Hapus
-          </Button>
-        </Space>
-      ),
-    },
-  ];
 
   const fetchDataCities = () => {
     setLoading(true);
@@ -227,6 +128,20 @@ export default function PengaturanKota() {
     });
   };
 
+  const columns = [
+    searchColumn(
+      searchInput,
+      "label",
+      "Nama Kota",
+      filtered,
+      true,
+      sorted,
+      "string"
+    ),
+    activeColumn(filtered),
+    actionColumn(addUpdateRow, deleteRow),
+  ];
+
   useEffect(() => {
     fetchDataCities();
   }, [JSON.stringify(tableParams)]);
@@ -234,36 +149,9 @@ export default function PengaturanKota() {
   return (
     <>
       <div className="flex flex-row space-x-2">
-        <CSVLink
-          data={cities.map(({ label, active }) => ({
-            label,
-            active: active ? `Ya` : `Tidak`,
-          }))}
-          headers={[
-            { label: "Nama Kota", key: "label" },
-            { label: "Aktif", key: "active" },
-          ]}
-          filename={"DATA_KOTA.csv"}
-        >
-          <Button type="primary" icon={<ExportOutlined />} disabled={loading}>
-            Export
-          </Button>
-        </CSVLink>
-        <Button
-          type="primary"
-          icon={loading ? <LoadingOutlined /> : <ReloadOutlined />}
-          disabled={loading}
-          onClick={() => reloadTable()}
-        >
-          Perbarui
-        </Button>
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          onClick={() => addUpdateRow()}
-        >
-          Tambah Data
-        </Button>
+        <ExportButton data={cities} target={`city`} stateLoading={loading} />
+        <ReloadButton onClick={reloadTable} stateLoading={loading} />
+        <AddButton onClick={addUpdateRow} stateLoading={loading} />
       </div>
       <div className="mt-4">
         <Table

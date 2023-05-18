@@ -24,4 +24,15 @@ const LAPORAN_TMP = [
 
 const PAGINATION = { pagination: { current: 1, pageSize: 5 } };
 
-export { PAGINATION, TRANSAKSI_TMP, LAPORAN_TMP };
+const EXPORT_TARGET = {
+  city: {
+    filename: "DATA_KOTA",
+    fields: ["id", "label", "active"],
+    headers: [
+      { label: "Nama Kota", key: "label" },
+      { label: "Aktif", key: "active" },
+    ],
+  },
+};
+
+export { PAGINATION, EXPORT_TARGET, TRANSAKSI_TMP, LAPORAN_TMP };
