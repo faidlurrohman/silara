@@ -1,9 +1,5 @@
 import { Button, Input, Space } from "antd";
-import {
-  DeleteOutlined,
-  EditOutlined,
-  SearchOutlined,
-} from "@ant-design/icons";
+import { EditOutlined, SearchOutlined } from "@ant-design/icons";
 
 export const searchColumn = (
   searchRef,
@@ -75,6 +71,7 @@ export const activeColumn = (stateFilter) => ({
   title: "Aktif",
   dataIndex: "active",
   key: "active",
+  width: 100,
   filters: [
     { text: "Ya", value: true },
     { text: "Tidak", value: false },
@@ -84,10 +81,10 @@ export const activeColumn = (stateFilter) => ({
   render: (value) => (value ? "Ya" : "Tidak"),
 });
 
-export const actionColumn = (onAddUpdate, onDelete) => ({
+export const actionColumn = (onAddUpdate) => ({
   title: "Action",
   key: "action",
-  width: 200,
+  width: 100,
   render: (value) => (
     <Space size="middle">
       <Button
@@ -98,15 +95,6 @@ export const actionColumn = (onAddUpdate, onDelete) => ({
         onClick={() => onAddUpdate(true, value)}
       >
         Ubah
-      </Button>
-      <Button
-        type="dashed"
-        size="small"
-        icon={<DeleteOutlined />}
-        danger
-        onClick={() => onDelete(value)}
-      >
-        Hapus
       </Button>
     </Space>
   ),
