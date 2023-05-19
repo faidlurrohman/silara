@@ -22,7 +22,7 @@ const LAPORAN_TMP = [
   },
 ];
 
-const PAGINATION = { pagination: { current: 1, pageSize: 5 } };
+const PAGINATION = { pagination: { current: 1, pageSize: 10 } };
 
 const EXPORT_TARGET = {
   city: {
