@@ -20,7 +20,7 @@ axiosInstance.interceptors.response.use(
   async (error) => {
     message.error(error?.response?.data?.message || error.message);
 
-    return error?.response?.data;
+    return error;
   }
 );
 
