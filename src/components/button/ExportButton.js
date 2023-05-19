@@ -5,7 +5,7 @@ import { EXPORT_TARGET } from "../../helpers/constants";
 
 export default function ExportButton({
   title = "Export",
-  data,
+  data = [],
   target,
   stateLoading,
 }) {
