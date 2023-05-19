@@ -14,7 +14,3 @@ export const addCity = (values) => {
     active: values?.active ? "true" : "false",
   });
 };
-
-export const removeCity = (id) => {
-  return axios.delete(`/api/city/remove/${id}`);
-};
