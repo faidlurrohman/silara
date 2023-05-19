@@ -1,6 +1,5 @@
 import {
   CLEAR_SESSION,
-  LOGIN_USER_FAILURE,
   LOGIN_USER_REQUEST,
   LOGIN_USER_SUCCESS,
   OVERRIDE_USER_ACTION,
@@ -38,15 +37,6 @@ export default function sessionReducer(state = initialState, action) {
           errors: null,
         },
         user,
-      };
-    case LOGIN_USER_FAILURE:
-      return {
-        ...state,
-        request_login: {
-          loading: false,
-          message,
-          errors,
-        },
       };
     case CLEAR_SESSION:
       return initialState;
