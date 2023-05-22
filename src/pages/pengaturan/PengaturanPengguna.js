@@ -103,6 +103,8 @@ export default function PengaturanPengguna() {
 
   const addUpdateRow = (isEdit = false, value = null) => {
     setShow(!isShow);
+    fetchDataCities();
+    fetchDataRoles();
 
     if (!isEdit) {
       form.resetFields();
@@ -176,11 +178,6 @@ export default function PengaturanPengguna() {
   useEffect(() => {
     fetchDataUsers();
   }, [JSON.stringify(tableParams)]);
-
-  useEffect(() => {
-    fetchDataCities();
-    fetchDataRoles();
-  }, []);
 
   return (
     <>
