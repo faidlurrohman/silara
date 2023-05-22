@@ -5,7 +5,7 @@ import storage from "redux-persist/lib/storage";
 import reducers from "./reducers";
 
 const config = {
-  key: `key-of-${process.env.REACT_KEY_APP_NAME}`,
+  key: `silarakab`,
   storage,
 };
 
