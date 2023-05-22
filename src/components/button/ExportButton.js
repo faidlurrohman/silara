@@ -12,10 +12,14 @@ export default function ExportButton({
   return (
     <CSVLink
       data={
-        data.map(({ active, ...rest }) => ({
-          ...rest,
-          active: active ? `Ya` : `Tidak`,
-        })) || []
+        !!data?.length
+          ? data.map((item) => {
+              return {
+                ...item,
+                active: item?.active ? `Ya` : `Tidak`,
+              };
+            })
+          : []
       }
       headers={EXPORT_TARGET[target].headers}
       filename={`${EXPORT_TARGET[target].filename}.csv`}
