@@ -11,6 +11,8 @@ class User extends REST_Controller {
     {
         parent::__construct();
         $this->_authenticate_CORS();
+        $this->_authenticate_BEARER();
+        $this->load->model('Auth_model');
         $this->load->model('User_model');
     }
 
@@ -21,7 +23,8 @@ class User extends REST_Controller {
 
     private function do_get_all()
     {   
-        $data = $this->User_model->get_all();
+        $user = $this->Auth_model->check_token();
+        $data = $this->User_model->get_all($user);
      
         if ($data['r_code'] != 0) {
             $this->response($data, REST_Controller::HTTP_INTERNAL_SERVER_ERROR);
@@ -37,27 +40,8 @@ class User extends REST_Controller {
 
     private function do_create()
     {
-        $data = $this->User_model->save($this->input_fields());
-
-        if ($data['r_code'] != 0) {
-            $this->response($data, REST_Controller::HTTP_INTERNAL_SERVER_ERROR);
-        } else {
-            $this->response($data, REST_Controller::HTTP_OK);
-        }
-    }
-
-    public function remove_delete($id)
-    {
-        return $this->do_delete($id);
-    }
-
-    private function do_delete($id)
-    {
-        if ($id <= 0) {
-            $this->response(['status' => '400'], REST_Controller::HTTP_BAD_REQUEST);
-        }
-
-        $data = $this->User_model->delete(array('id' => $id));
+        $user = $this->Auth_model->check_token();
+        $data = $this->User_model->save($user, $this->input_fields());
 
         if ($data['r_code'] != 0) {
             $this->response($data, REST_Controller::HTTP_INTERNAL_SERVER_ERROR);
@@ -93,6 +77,17 @@ class User extends REST_Controller {
         header('Access-Control-Allow-Headers: ACCEPT, ORIGIN, X-REQUESTED-WITH, CONTENT-TYPE, AUTHORIZATION, Client-ID, Secret-Key, Authorization, User-ID');
         if ("OPTIONS" === $_SERVER['REQUEST_METHOD']) {
             die();
+        }
+    }
+
+    protected function _authenticate_BEARER()
+    {   
+        $this->load->helper('common');
+
+        $token = get_token();
+
+        if (!isset($token) || $token == 'undefined') {
+            $this->response(['status' => '401'], REST_Controller::HTTP_UNAUTHORIZED);
         }
     }
 
