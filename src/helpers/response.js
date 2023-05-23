@@ -5,10 +5,10 @@ export const responseGet = (response) => {
   };
 
   if (!!response?.data?.data.length) {
-    _fix.total_count = response?.data?.data[0]?.__res_msg;
+    _fix.total_count = response?.data?.data[0]?.__res_count || 0;
 
     response?.data?.data.map((item) => {
-      _fix.data.push(JSON.parse(item?.__res_data));
+      if (_fix.total_count) _fix.data.push(JSON.parse(item?.__res_data));
     });
   }
 
