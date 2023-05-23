@@ -50,6 +50,41 @@ const EXPORT_TARGET = {
       { label: "Aktif", key: "active" },
     ],
   },
+  account_base: {
+    filename: "DATA_REKENING_AKUN",
+    headers: [
+      { label: "Label", key: "label" },
+      { label: "Keterangan", key: "remark" },
+      { label: "Aktif", key: "active" },
+    ],
+  },
+  account_group: {
+    filename: "DATA_REKENING_KELOMPOK",
+    headers: [
+      { label: "Akun Rekening", key: "account_base_label" },
+      { label: "Label", key: "label" },
+      { label: "Keterangan", key: "remark" },
+      { label: "Aktif", key: "active" },
+    ],
+  },
+  account_type: {
+    filename: "DATA_REKENING_JENIS",
+    headers: [
+      { label: "Kelompok Rekening", key: "account_group_label" },
+      { label: "Label", key: "label" },
+      { label: "Keterangan", key: "remark" },
+      { label: "Aktif", key: "active" },
+    ],
+  },
+  account_object: {
+    filename: "DATA_REKENING_OBJEK",
+    headers: [
+      { label: "Jenis Rekening", key: "account_type_label" },
+      { label: "Label", key: "label" },
+      { label: "Keterangan", key: "remark" },
+      { label: "Aktif", key: "active" },
+    ],
+  },
 };
 
 export { PAGINATION, EXPORT_TARGET, TRANSAKSI_TMP, LAPORAN_TMP };
