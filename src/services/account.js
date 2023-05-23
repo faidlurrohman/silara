@@ -14,7 +14,3 @@ export const addAccount = (which, values) => {
     active: values?.active ? "true" : "false",
   });
 };
-
-export const removeAccount = (which, id) => {
-  return axios.delete(`/api/account_${which}/remove/${id}`);
-};

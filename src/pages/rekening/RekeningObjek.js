@@ -1,13 +1,4 @@
 import {
-  DeleteOutlined,
-  EditOutlined,
-  ExportOutlined,
-  LoadingOutlined,
-  PlusOutlined,
-  ReloadOutlined,
-  SearchOutlined,
-} from "@ant-design/icons";
-import {
   Button,
   Divider,
   Form,
@@ -19,15 +10,14 @@ import {
   Table,
   message,
 } from "antd";
-import { CSVLink } from "react-csv";
 import { useEffect, useRef, useState } from "react";
-import {
-  addAccount,
-  getAccount,
-  getAccountList,
-  removeAccount,
-} from "../../services/account";
+import { addAccount, getAccount, getAccountList } from "../../services/account";
 import { PAGINATION } from "../../helpers/constants";
+import { responseGet } from "../../helpers/response";
+import { actionColumn, activeColumn, searchColumn } from "../../helpers/table";
+import ReloadButton from "../../components/button/ReloadButton";
+import AddButton from "../../components/button/AddButton";
+import ExportButton from "../../components/button/ExportButton";
 
 export default function RekeningJenis() {
   const [form] = Form.useForm();
@@ -38,7 +28,7 @@ export default function RekeningJenis() {
   const [sorted, setSorted] = useState({});
   const [tableParams, setTableParams] = useState(PAGINATION);
 
-  const [modal, modalHolder] = Modal.useModal();
+  const [_, modalHolder] = Modal.useModal();
   const [isShow, setShow] = useState(false);
   const [isEdit, setEdit] = useState(false);
   const [confirmLoading, setConfirmLoading] = useState(false);
@@ -49,135 +39,22 @@ export default function RekeningJenis() {
   const [accountType, setAccountType] = useState([]);
   const [loadingType, setLoadingType] = useState(false);
 
-  const getColumnSearchProps = (dataIndex, header) => ({
-    filterDropdown: ({
-      setSelectedKeys,
-      selectedKeys,
-      confirm,
-      clearFilters,
-    }) => (
-      <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
-        <Input
-          ref={searchInput}
-          placeholder={`Cari ${header}`}
-          value={selectedKeys[0]}
-          onChange={(e) =>
-            setSelectedKeys(e.target.value ? [e.target.value] : [])
-          }
-          onPressEnter={() => confirm()}
-          style={{
-            marginBottom: 8,
-            display: "block",
-          }}
-        />
-        <Space>
-          <Button
-            type="primary"
-            onClick={() => confirm()}
-            icon={<SearchOutlined />}
-            size="small"
-          >
-            Cari
-          </Button>
-          <Button onClick={() => clearFilters()} size="small">
-            Hapus
-          </Button>
-        </Space>
-      </div>
-    ),
-    filterIcon: (filtered) => (
-      <SearchOutlined style={{ color: filtered ? "#1890ff" : undefined }} />
-    ),
-    filteredValue: filtered[dataIndex] || null,
-    onFilter: (value, record) =>
-      record[dataIndex].toString().toLowerCase().includes(value.toLowerCase()),
-    onFilterDropdownOpenChange: (visible) => {
-      if (visible) {
-        setTimeout(() => searchInput.current?.select(), 100);
-      }
-    },
-  });
-
-  const columns = [
-    {
-      title: "Jenis Rekening",
-      dataIndex: "account_type_label",
-      key: "account_type_label",
-      width: 200,
-      sorter: (a, b) =>
-        a.account_type_label.localeCompare(b.account_type_label),
-      sortOrder:
-        sorted.columnKey === "account_type_label" ? sorted.order : null,
-      ...getColumnSearchProps("account_type_label", "Jenis Rekening"),
-    },
-    {
-      title: "Label",
-      dataIndex: "label",
-      key: "label",
-      width: 200,
-      sorter: (a, b) => a.label.localeCompare(b.label),
-      sortOrder: sorted.columnKey === "label" ? sorted.order : null,
-      ...getColumnSearchProps("label", "Label"),
-    },
-    {
-      title: "Keterangan",
-      dataIndex: "remark",
-      key: "remark",
-      sorter: (a, b) => a.remark.localeCompare(b.remark),
-      sortOrder: sorted.columnKey === "remark" ? sorted.order : null,
-      ...getColumnSearchProps("remark", "Keterangan"),
-    },
-    {
-      title: "Aktif",
-      dataIndex: "active",
-      filters: [
-        { text: "Ya", value: true },
-        { text: "Tidak", value: false },
-      ],
-      onFilter: (value, record) => record?.active === value,
-      filteredValue: filtered.active || null,
-      render: (value) => (value ? "Ya" : "Tidak"),
-    },
-    {
-      title: "Action",
-      width: 200,
-      render: (value) => (
-        <Space size="middle">
-          <Button
-            type="dashed"
-            size="small"
-            icon={<EditOutlined />}
-            style={{ color: "#1677FF" }}
-            onClick={() => addUpdateRow(true, value)}
-          >
-            Ubah
-          </Button>
-          <Button
-            type="dashed"
-            size="small"
-            icon={<DeleteOutlined />}
-            danger
-            onClick={() => deleteRow(value)}
-          >
-            Hapus
-          </Button>
-        </Space>
-      ),
-    },
-  ];
-
-  const fetchDataAccount = () => {
+  const fetchDataAccountObject = () => {
     setLoading(true);
     getAccount("object").then((response) => {
       setLoading(false);
-      setAccountObject(response?.data?.data);
+      setAccountObject(
+        tableParams?.extra
+          ? tableParams?.extra?.currentDataSource
+          : responseGet(response).data
+      );
       setTableParams({
         ...tableParams,
         pagination: {
           ...tableParams.pagination,
           total: tableParams?.extra
             ? tableParams?.extra?.currentDataSource.length
-            : response?.data?.total_count,
+            : responseGet(response).total_count,
         },
       });
     });
@@ -214,6 +91,7 @@ export default function RekeningJenis() {
     setFiltered({});
     setSorted({});
     setTableParams(PAGINATION);
+    fetchDataAccountObject();
   };
 
   const addUpdateRow = (isEdit = false, value = null) => {
@@ -234,32 +112,6 @@ export default function RekeningJenis() {
     }
   };
 
-  const deleteRow = (values) => {
-    modal.warning({
-      title: `Hapus Data`,
-      content: (
-        <p>
-          Data{" "}
-          <b>
-            <u>{values?.label}</u>
-          </b>{" "}
-          akan di hapus, apakah anda yakin untuk melanjutkan?
-        </p>
-      ),
-      width: 500,
-      okText: "Ya",
-      cancelText: "Tidak",
-      centered: true,
-      okCancel: true,
-      onOk() {
-        removeAccount("object", values?.id).then(() => {
-          message.success(`Data ${values?.label} berhasil di hapus`);
-          reloadTable();
-        });
-      },
-    });
-  };
-
   const handleAddUpdate = (values) => {
     setConfirmLoading(true);
     addAccount("object", values).then(() => {
@@ -270,53 +122,38 @@ export default function RekeningJenis() {
     });
   };
 
-  useEffect(() => {
-    fetchDataAccount();
-  }, [JSON.stringify(tableParams)]);
+  const columns = [
+    searchColumn(
+      searchInput,
+      "account_type_label",
+      "Jenis Rekening",
+      filtered,
+      true,
+      sorted
+    ),
+    searchColumn(searchInput, "label", "Label", filtered, true, sorted),
+    searchColumn(searchInput, "remark", "Keterangan", filtered, true, sorted),
+    activeColumn(filtered),
+    actionColumn(addUpdateRow),
+  ];
 
   useEffect(() => {
+    reloadTable();
     fetchDataAccountType();
   }, []);
 
   return (
     <>
       <div className="flex flex-row space-x-2">
-        <CSVLink
-          data={accountObject.map(
-            ({ account_type_label, label, remark, active }) => ({
-              account_type_label,
-              label,
-              remark,
-              active: active ? `Ya` : `Tidak`,
-            })
-          )}
-          headers={[
-            { label: "Jenis Rekening", key: "account_type_label" },
-            { label: "Label", key: "label" },
-            { label: "Keterangan", key: "remark" },
-            { label: "Aktif", key: "active" },
-          ]}
-          filename={"DATA_REKENING_JENIS.csv"}
-        >
-          <Button type="primary" icon={<ExportOutlined />} disabled={loading}>
-            Export
-          </Button>
-        </CSVLink>
-        <Button
-          type="primary"
-          icon={loading ? <LoadingOutlined /> : <ReloadOutlined />}
-          disabled={loading}
-          onClick={() => reloadTable()}
-        >
-          Perbarui
-        </Button>
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          onClick={() => addUpdateRow()}
-        >
-          Tambah Data
-        </Button>
+        <ReloadButton onClick={reloadTable} stateLoading={loading} />
+        <AddButton onClick={addUpdateRow} stateLoading={loading} />
+        {!!accountObject?.length && (
+          <ExportButton
+            data={accountObject}
+            target={`account_object`}
+            stateLoading={loading}
+          />
+        )}
       </div>
       <div className="mt-4">
         <Table
