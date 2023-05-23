@@ -15,23 +15,28 @@ class City_model extends CI_Model {
 
     function get_all($user)
     {
-        $sql = "SELECT * FROM {$this->read}(0, 0, '".$user[0]['username']."', '".$this->schema."', '', '[{}]'::jsonb);";
-        // echo $sql;exit;
+        $sql = "SELECT * FROM {$this->read}(0, 0, '".$user['username']."', '".$this->schema."', '', '[{}]'::jsonb);";
         $query = $this->db->query($sql);
         return model_response($query);
     }
 
-    function get_list()
+    function get_list($user)
     {
+        $_json = '{"active":"true"}';
         $sql = "
-            with a as (
-                select * from silarakab.city
-            ) select a.*,a.id as value,count(*) over() as ttl_count from a
-            where a.active
-            order by a.label asc
+            WITH r AS (
+                SELECT * FROM {$this->read}(0, 0, '".$user['username']."', '".$this->schema."', 'label', '[".$_json."]'::jsonb)
+            ) SELECT 
+                (r.__res_data->>'id')::INT AS id,
+                (r.__res_data->>'id')::INT AS value, 
+                r.__res_data->>'label' AS label, 
+                r.__code, 
+                r.__res_msg, 
+                COALESCE(r.__res_count,0)::INT AS __res_count
+            FROM r
         ";
         $query = $this->db->query($sql);
-        return model_response($query);
+        return model_response($query, 1);
     }
 
     function save($user, $params)
@@ -45,7 +50,7 @@ class City_model extends CI_Model {
             $mode = 'C';
         }
 
-        $sql = "SELECT * from {$this->cud}('".$mode."', '{$this->table}', '".$user[0]['username']."', '[".json_encode($params)."]'::jsonb)";
+        $sql = "SELECT * from {$this->cud}('".$mode."', '{$this->table}', '".$user['username']."', '[".json_encode($params)."]'::jsonb)";
         $query = $this->db->query($sql,$params);
         return model_response($query, 2);
     }

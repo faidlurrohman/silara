@@ -40,9 +40,10 @@ class City extends REST_Controller {
 
     private function do_get_list()
     {   
-        $data = $this->City_model->get_list();
+        $user = $this->Auth_model->check_token();
+        $data = $this->City_model->get_list($user);
      
-        if ($data['r_code'] != 0) {
+        if ($data['code'] != 0) {
             $this->response($data, REST_Controller::HTTP_INTERNAL_SERVER_ERROR);
         } else {
             $this->response($data, REST_Controller::HTTP_OK);
