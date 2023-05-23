@@ -1,13 +1,5 @@
 import {
-  DeleteOutlined,
-  EditOutlined,
-  ExportOutlined,
-  PlusOutlined,
-  SearchOutlined,
-} from "@ant-design/icons";
-import {
   Button,
-  Card,
   DatePicker,
   Divider,
   Form,
@@ -17,133 +9,107 @@ import {
   Select,
   Space,
   Table,
+  message,
 } from "antd";
-import { useAppDispatch } from "../../hooks/useRedux";
-import { CSVLink } from "react-csv";
-import { useRef, useState } from "react";
-import { TRANSAKSI_TMP } from "../../helpers/constants";
+import { useEffect, useRef, useState } from "react";
+import { getAccountList } from "../../services/account";
+import { DATE_FORMAT, PAGINATION } from "../../helpers/constants";
+import { actionColumn, searchColumn } from "../../helpers/table";
+import ReloadButton from "../../components/button/ReloadButton";
+import AddButton from "../../components/button/AddButton";
+import ExportButton from "../../components/button/ExportButton";
+import { responseGet } from "../../helpers/response";
+import { addTransaction, getTransaction } from "../../services/transaction";
+import { getCityList } from "../../services/city";
+import moment from "moment";
 
 export default function Transaksi() {
-  const [modal, modalHolder] = Modal.useModal();
-  const dispatch = useAppDispatch();
   const [form] = Form.useForm();
+
   const searchInput = useRef(null);
+
+  const [filtered, setFiltered] = useState({});
+  const [sorted, setSorted] = useState({});
+  const [tableParams, setTableParams] = useState(PAGINATION);
+
+  const [_, modalHolder] = Modal.useModal();
   const [isShow, setShow] = useState(false);
   const [isEdit, setEdit] = useState(false);
+  const [confirmLoading, setConfirmLoading] = useState(false);
 
-  const getColumnSearchProps = (dataIndex) => ({
-    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm }) => (
-      <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
-        <Space>
-          <Input
-            allowClear
-            ref={searchInput}
-            placeholder={`Cari ${dataIndex}`}
-            value={selectedKeys[0]}
-            onChange={(e) =>
-              setSelectedKeys(e.target.value ? [e.target.value] : [])
-            }
-            onPressEnter={() => confirm()}
-          />
-        </Space>
-      </div>
-    ),
-    filterIcon: (filtered) => (
-      <SearchOutlined
-        style={{
-          color: filtered ? "#1890ff" : undefined,
-        }}
-      />
-    ),
-    onFilter: (value, record) =>
-      record[dataIndex].toString().toLowerCase().includes(value.toLowerCase()),
-  });
+  const [transactions, setTransactions] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  const columns = [
-    {
-      title: "Tanggal",
-      dataIndex: "date",
-      defaultSortOrder: "ascend",
-      sorter: (a, b) => a.date.localeCompare(b.date),
-      ...getColumnSearchProps("date"),
-    },
-    {
-      title: "Kota",
-      dataIndex: "city",
-      defaultSortOrder: "ascend",
-      sorter: (a, b) => a.city.localeCompare(b.city),
-      ...getColumnSearchProps("city"),
-    },
-    {
-      title: "Objek Rekening",
-      dataIndex: "object_account",
-      defaultSortOrder: "ascend",
-      sorter: (a, b) => a.object_account.localeCompare(b.object_account),
-      ...getColumnSearchProps("object_account"),
-    },
-    {
-      title: "Anggaran",
-      dataIndex: "budget",
-      defaultSortOrder: "ascend",
-      sorter: (a, b) => a.budget - b.budget,
-      ...getColumnSearchProps("budget"),
-    },
-    {
-      title: "Realisasi",
-      dataIndex: "realization",
-      defaultSortOrder: "ascend",
-      sorter: (a, b) => a.realization - b.realization,
-      ...getColumnSearchProps("realization"),
-    },
-    {
-      title: "Action",
-      width: 200,
-      render: (value) => (
-        <Space size="middle">
-          <Button
-            type="dashed"
-            size="small"
-            icon={<EditOutlined />}
-            style={{ color: "#1677FF" }}
-            onClick={() => addRow(true, value)}
-          >
-            Ubah
-          </Button>
-          <Button
-            type="dashed"
-            size="small"
-            icon={<DeleteOutlined />}
-            danger
-            onClick={() => deleteRow(value)}
-          >
-            Hapus
-          </Button>
-        </Space>
-      ),
-    },
-  ];
+  const [cities, setCities] = useState([]);
+  const [loadingCity, setLoadingCity] = useState(false);
 
-  const deleteRow = (value) => {
-    modal.warning({
-      title: `Hapus Data`,
-      content: (
-        <p>
-          Data{" "}
-          <b>
-            <u>{value?.date}</u>
-          </b>{" "}
-          akan di hapus, apakah anda yakin untuk melanjutkan?
-        </p>
-      ),
-      width: 500,
-      okText: "Ya",
-      cancelText: "Tidak",
-      centered: true,
-      okCancel: true,
+  const [accountObject, setAccountObject] = useState([]);
+  const [loadingObject, setLoadingObject] = useState(false);
+
+  const fetchDataTransaction = () => {
+    setLoading(true);
+    getTransaction().then((response) => {
+      setLoading(false);
+      setTransactions(
+        tableParams?.extra
+          ? tableParams?.extra?.currentDataSource
+          : responseGet(response).data
+      );
+      setTableParams({
+        ...tableParams,
+        pagination: {
+          ...tableParams.pagination,
+          total: tableParams?.extra
+            ? tableParams?.extra?.currentDataSource.length
+            : responseGet(response).total_count,
+        },
+      });
     });
   };
 
-  const addRow = (isEdit = false, value = null) => {
+  const fetchDataCities = () => {
+    setLoadingCity(true);
+    getCityList().then((response) => {
+      setLoadingCity(false);
+      setCities(response?.data?.data);
+    });
+  };
+
+  const fetchDataAccountObject = () => {
+    setLoadingObject(true);
+    getAccountList("object").then((response) => {
+      setLoadingObject(false);
+      setAccountObject(response?.data?.data);
+    });
+  };
+
+  const onTableChange = (pagination, filters, sorter, extra) => {
+    setFiltered(filters);
+    setSorted(sorter);
+
+    pagination = { ...pagination, total: extra?.currentDataSource?.length };
+
+    setTableParams({
+      pagination,
+      filters,
+      extra,
+      ...sorter,
+    });
+
+    // `dataSource` is useless since `pageSize` changed
+    if (pagination.pageSize !== tableParams.pagination?.pageSize) {
+      setTransactions([]);
+    }
+  };
+
+  const reloadTable = () => {
+    setFiltered({});
+    setSorted({});
+    setTableParams(PAGINATION);
+    fetchDataTransaction();
+  };
+
+  const addUpdateRow = (isEdit = false, value = null) => {
     setShow(!isShow);
 
     if (!isEdit) {
@@ -151,45 +117,98 @@ export default function Transaksi() {
       setEdit(false);
     } else {
       setEdit(true);
-      form.setFieldsValue({});
+      form.setFieldsValue({
+        id: value?.id,
+        trans_date: moment(new Date(value?.trans_date)),
+        account_object_id: value?.account_object_id,
+        city_id: value?.city_id,
+        plan_amount: value?.plan_amount,
+        real_amount: value?.real_amount,
+      });
     }
   };
+
+  const handleAddUpdate = (values) => {
+    setConfirmLoading(true);
+    addTransaction({
+      ...values,
+      trans_date: moment(values.trans_date),
+    }).then(() => {
+      message.success(`Data berhasil di ${isEdit ? `perbarui` : `tambahkan`}`);
+      addUpdateRow(isEdit);
+      setConfirmLoading(false);
+      reloadTable();
+    });
+  };
+
+  const columns = [
+    searchColumn(searchInput, "trans_date", "Tanggal", filtered, true, sorted),
+    searchColumn(searchInput, "city_label", "Kota", filtered, true, sorted),
+    searchColumn(
+      searchInput,
+      "account_object_label",
+      "Objek Rekening",
+      filtered,
+      true,
+      sorted
+    ),
+    searchColumn(
+      searchInput,
+      "plan_amount",
+      "Anggaran",
+      filtered,
+      true,
+      sorted
+    ),
+    searchColumn(
+      searchInput,
+      "real_amount",
+      "Realisasi",
+      filtered,
+      true,
+      sorted
+    ),
+    actionColumn(addUpdateRow),
+  ];
+
+  useEffect(() => {
+    reloadTable();
+    fetchDataCities();
+    fetchDataAccountObject();
+  }, []);
 
   return (
     <>
       <div className="flex flex-row space-x-2">
-        <CSVLink
-          data={TRANSAKSI_TMP}
-          headers={[
-            { label: "Tanggal", key: "date" },
-            { label: "Kota", key: "city" },
-            { label: "Objek Rekening", key: "object_account" },
-            { label: "Anggaran", key: "budget" },
-            { label: "Realisasi", key: "realization" },
-          ]}
-          filename={"DATA_TRANSAKSI.csv"}
-        >
-          <Button type="primary" icon={<ExportOutlined />}>
-            Export
-          </Button>
-        </CSVLink>
-        <Button type="primary" icon={<PlusOutlined />} onClick={() => addRow()}>
-          Tambah Data
-        </Button>
+        <ReloadButton onClick={reloadTable} stateLoading={loading} />
+        <AddButton onClick={addUpdateRow} stateLoading={loading} />
+        {!!transactions?.length && (
+          <ExportButton
+            data={transactions}
+            target={`account_type`}
+            stateLoading={loading}
+          />
+        )}
       </div>
       <div className="mt-4">
-        <Table dataSource={TRANSAKSI_TMP} columns={columns} />
+        <Table
+          loading={loading}
+          dataSource={transactions}
+          columns={columns}
+          rowKey={(record) => record?.id}
+          onChange={onTableChange}
+          pagination={tableParams.pagination}
+        />
       </div>
       <Modal
         centered
         open={isShow}
-        title={`${isEdit ? `Ubah` : `Tambah`} Transaksi`}
-        onCancel={() => addRow(isEdit)}
+        title={`${isEdit ? `Ubah` : `Tambah`} Data Rekening Jenis`}
+        onCancel={() => addUpdateRow(isEdit)}
         footer={null}
-        width={650}
       >
         <Divider />
-        <Card className="mb-4">
+        {/* <Card className="mb-4">
           <h4 className="text-center p-0 mt-0">Riwayat Data Terakhir</h4>
           <div className="flex flex-1 flex-row space-x-6">
             <div className="flex flex-1">
@@ -220,38 +239,129 @@ export default function Transaksi() {
               </div>
             </div>
           </div>
-        </Card>
+        </Card> */}
         <Form
           form={form}
           name="basic"
           labelCol={{ span: 8 }}
           labelAlign="left"
-          // onFinish={handleAdd}
+          onFinish={handleAddUpdate}
           autoComplete="off"
+          initialValues={{
+            id: "",
+            trans_date: moment(new Date(), DATE_FORMAT),
+            plan_amount: 0,
+            real_amount: 0,
+          }}
         >
           <Form.Item name="id" hidden>
             <Input />
           </Form.Item>
-          <Form.Item label="Tanggal Transaksi" name="date">
-            <DatePicker className="w-full" placeholder="" />
+          <Form.Item
+            label="Tanggal Transaksi"
+            name="trans_date"
+            rules={[
+              {
+                required: true,
+                message: "Tanggal Transaksi tidak boleh kosong!",
+              },
+            ]}
+          >
+            <DatePicker
+              format={DATE_FORMAT}
+              className="w-full"
+              placeholder=""
+              disabled={confirmLoading}
+            />
           </Form.Item>
-          <Form.Item label="Kota" name="city">
-            <Select />
+          <Form.Item
+            label="Kota"
+            name="city_id"
+            rules={[
+              {
+                required: true,
+                message: "Kota tidak boleh kosong!",
+              },
+            ]}
+          >
+            <Select
+              disabled={confirmLoading}
+              loading={loadingCity}
+              options={cities}
+            />
           </Form.Item>
-          <Form.Item label="Objek Rekening" name="object_account_id">
-            <Select />
+          <Form.Item
+            label="Objek Rekening"
+            name="account_object_id"
+            rules={[
+              {
+                required: true,
+                message: "Objek Rekening tidak boleh kosong!",
+              },
+            ]}
+          >
+            <Select
+              disabled={confirmLoading}
+              loading={loadingObject}
+              options={accountObject}
+            />
           </Form.Item>
-          <Form.Item label="Anggaran (Rp)" name="budget">
-            <InputNumber className="w-full" />
+          <Form.Item
+            label="Anggaran (Rp)"
+            name="plan_amount"
+            rules={[
+              {
+                required: true,
+                message: "Anggaran tidak boleh kosong!",
+              },
+              () => ({
+                validator(_, value) {
+                  if (value < 0) {
+                    return Promise.reject("Anggaran minus");
+                  } else {
+                    return Promise.resolve();
+                  }
+                },
+              }),
+            ]}
+          >
+            <InputNumber className="w-full" disabled={confirmLoading} />
           </Form.Item>
-          <Form.Item label="Realisasi (Rp)" name="realization">
-            <InputNumber className="w-full" />
+          <Form.Item
+            label="Realisasi (Rp)"
+            name="real_amount"
+            rules={[
+              {
+                required: true,
+                message: "Realisasi tidak boleh kosong!",
+              },
+              ({ getFieldValue }) => ({
+                validator(rule, value) {
+                  if (value > getFieldValue("plan_amount")) {
+                    return Promise.reject(
+                      "Realisasi lebih dari Total Anggaran"
+                    );
+                  } else if (value < 0) {
+                    return Promise.reject("Realisasi minus");
+                  } else {
+                    return Promise.resolve();
+                  }
+                },
+              }),
+            ]}
+          >
+            <InputNumber className="w-full" disabled={confirmLoading} />
           </Form.Item>
           <Divider />
-          <Form.Item className="text-right">
+          <Form.Item className="text-right mb-0">
             <Space direction="horizontal">
-              <Button onClick={() => addRow(isEdit)}>Kembali</Button>
-              <Button htmlType="submit" type="primary">
+              <Button
+                disabled={confirmLoading}
+                onClick={() => addUpdateRow(isEdit)}
+              >
+                Kembali
+              </Button>
+              <Button loading={confirmLoading} htmlType="submit" type="primary">
                 Simpan
               </Button>
             </Space>

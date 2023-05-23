@@ -22,6 +22,8 @@ const LAPORAN_TMP = [
   },
 ];
 
+const DATE_FORMAT = "YYYY/MM/DD";
+
 const PAGINATION = { pagination: { current: 1, pageSize: 10 } };
 
 const EXPORT_TARGET = {
@@ -85,6 +87,16 @@ const EXPORT_TARGET = {
       { label: "Aktif", key: "active" },
     ],
   },
+  transaction: {
+    filename: "DATA_TRANSAKSI",
+    headers: [
+      { label: "Tanggal", key: "trans_date" },
+      { label: "Kota", key: "city_label" },
+      { label: "Objek Rekening", key: "object_account_label" },
+      { label: "Anggaran", key: "plan_amount" },
+      { label: "Realisasi", key: "real_amount" },
+    ],
+  },
 };
 
-export { PAGINATION, EXPORT_TARGET, TRANSAKSI_TMP, LAPORAN_TMP };
+export { PAGINATION, EXPORT_TARGET, DATE_FORMAT, TRANSAKSI_TMP, LAPORAN_TMP };
