@@ -11,6 +11,8 @@ class Account_group extends REST_Controller {
     {
         parent::__construct();
         $this->_authenticate_CORS();
+        $this->_authenticate_BEARER();
+        $this->load->model('Auth_model');
         $this->load->model('Account_group_model');
     }
 
@@ -21,9 +23,10 @@ class Account_group extends REST_Controller {
 
     private function do_get_all()
     {   
-        $data = $this->Account_group_model->get_all();
+        $user = $this->Auth_model->check_token();
+        $data = $this->Account_group_model->get_all($user);
      
-        if ($data['r_code'] != 0) {
+        if ($data['code'] != 0) {
             $this->response($data, REST_Controller::HTTP_INTERNAL_SERVER_ERROR);
         } else {
             $this->response($data, REST_Controller::HTTP_OK);
@@ -37,9 +40,10 @@ class Account_group extends REST_Controller {
 
     private function do_get_list()
     {   
-        $data = $this->Account_group_model->get_list();
+        $user = $this->Auth_model->check_token();
+        $data = $this->Account_group_model->get_list($user);
      
-        if ($data['r_code'] != 0) {
+        if ($data['code'] != 0) {
             $this->response($data, REST_Controller::HTTP_INTERNAL_SERVER_ERROR);
         } else {
             $this->response($data, REST_Controller::HTTP_OK);
@@ -53,29 +57,10 @@ class Account_group extends REST_Controller {
 
     private function do_create()
     {
-        $data = $this->Account_group_model->save($this->input_fields());
+        $user = $this->Auth_model->check_token();
+        $data = $this->Account_group_model->save($user, $this->input_fields());
 
-        if ($data['r_code'] != 0) {
-            $this->response($data, REST_Controller::HTTP_INTERNAL_SERVER_ERROR);
-        } else {
-            $this->response($data, REST_Controller::HTTP_OK);
-        }
-    }
-
-    public function remove_delete($id)
-    {
-        return $this->do_delete($id);
-    }
-
-    private function do_delete($id)
-    {
-        if ($id <= 0) {
-            $this->response(['status' => '400'], REST_Controller::HTTP_BAD_REQUEST);
-        }
-
-        $data = $this->Account_group_model->delete(array('id' => $id));
-
-        if ($data['r_code'] != 0) {
+        if ($data['code'] != 0) {
             $this->response($data, REST_Controller::HTTP_INTERNAL_SERVER_ERROR);
         } else {
             $this->response($data, REST_Controller::HTTP_OK);
@@ -106,6 +91,17 @@ class Account_group extends REST_Controller {
         header('Access-Control-Allow-Headers: ACCEPT, ORIGIN, X-REQUESTED-WITH, CONTENT-TYPE, AUTHORIZATION, Client-ID, Secret-Key, Authorization, User-ID');
         if ("OPTIONS" === $_SERVER['REQUEST_METHOD']) {
             die();
+        }
+    }
+
+    protected function _authenticate_BEARER()
+    {   
+        $this->load->helper('common');
+
+        $token = get_token();
+
+        if (!isset($token) || $token == 'undefined') {
+            $this->response(['status' => '401'], REST_Controller::HTTP_UNAUTHORIZED);
         }
     }
 

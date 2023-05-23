@@ -2,70 +2,68 @@
 
 class Account_group_model extends CI_Model {
 
+    private $schema = 'get_account_group';
+    private $table  = 'silarakab.account_group';
+    private $cud    = 'silarakab.main_cud';
+    private $read   = 'silarakab.main_read';
+
     function __construct()
     {
         parent::__construct();
         $this->load->helper('common');
     }
 
-    function get_all()
+    function get_all($user)
     {
+        $_format = '{"account_base_label":"%s"}';
         $sql = "
-            with a as (
-                select ag.*,ab.label as account_base_label from silarakab.account_group ag
-                join silarakab.account_base ab on ab.id=ag.account_base_id
-            ) select a.*,count(*) over() as ttl_count from a
-            order by a.id desc
+            WITH r AS (
+                SELECT * FROM {$this->read}(0, 0, '".$user['username']."', '".$this->schema."', '', '[{}]'::JSONB)
+            ) SELECT 
+                r.__code,
+                COALESCE(r.__res_data,'{}'::JSONB) || FORMAT('".$_format."', a.label)::JSONB AS __res_data,
+                r.__res_msg,
+                r.__res_count
+            FROM r
+            JOIN silarakab.account_base a ON a.id=(r.__res_data->>'account_base_id')::INT
         ";
         $query = $this->db->query($sql);
         return model_response($query);
     }
 
-    function get_list()
+    function get_list($user)
     {
+        $_json = '{"active":"true"}';
         $sql = "
-            with a as (
-                select ag.*,ab.label as account_base_label from silarakab.account_group ag
-                join silarakab.account_base ab on ab.id=ag.account_base_id
-            ) select a.*,a.id as value,count(*) over() as ttl_count from a
-            where a.active
-            order by a.label asc
+            WITH r AS (
+                SELECT * FROM {$this->read}(0, 0, '".$user['username']."', '".$this->schema."', 'label', '[".$_json."]'::jsonb)
+            ) SELECT 
+                (r.__res_data->>'id')::INT AS id,
+                (r.__res_data->>'id')::INT AS value, 
+                r.__res_data->>'label' AS label, 
+                r.__code, 
+                r.__res_msg, 
+                COALESCE(r.__res_count,0)::INT AS __res_count
+            FROM r
         ";
         $query = $this->db->query($sql);
-        return model_response($query);
+        return model_response($query, 1);
     }
 
-    function save($params)
+    function save($user, $params)
     {
         $id = $params['id'];
 
-        $sql_insert = "
-            insert into silarakab.account_group
-            (account_base_id,label,remark,active)
-            values ('".$params['account_base_id']."','".$params['label']."','".$params['remark']."','".$params['active']."')
-        ";
+        if ($id) {
+            $mode = 'U';
+        } else {
+            $params["id"] = '0';
+            $mode = 'C';
+        }
 
-        $sql_update = "
-            update silarakab.account_group
-            set account_base_id = '".$params['account_base_id']."',
-                label = '".$params['label']."',
-                remark = '".$params['remark']."',
-                active = '".$params['active']."'
-            where id = ".$id."
-        ";
-
-        $query = $this->db->query($id ? $sql_update : $sql_insert, $params);
-        return model_response($query, 3);
-    }
-
-    function delete($params)
-    {
-        $sql = "
-            delete from silarakab.account_group
-            where id=?
-        ";
-        $query = $this->db->query($sql, $params);
-        return model_response($query, 3);
+        $sql = "SELECT * from {$this->cud}('".$mode."', '{$this->table}', '".$user['username']."', '[".json_encode($params)."]'::jsonb)";
+        $query = $this->db->query($sql,$params);
+        return model_response($query, 2);
     }
 
 }
