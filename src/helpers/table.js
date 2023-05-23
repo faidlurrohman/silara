@@ -82,8 +82,9 @@ export const activeColumn = (stateFilter) => ({
 });
 
 export const actionColumn = (onAddUpdate) => ({
-  title: "Action",
+  title: "#",
   key: "action",
+  align: "center",
   width: 100,
   render: (value) => (
     <Space size="middle">
