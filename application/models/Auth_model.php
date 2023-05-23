@@ -15,14 +15,14 @@ class Auth_model extends CI_Model {
         $sql = "SELECT * FROM silarakab.check_auth('$username','$password')";
         $query = $this->db->query($sql);
         
-        return model_response($query,10);
+        return model_response($query, 10);
     }
 
     public function get_auth($username)
     {
         $sql = "SELECT * FROM silarakab.get_auth('".$username."')";
         $query = $this->db->query($sql);
-        return model_response($query,10);
+        return model_response($query, 10);
     }
 
     public function check_token()
@@ -30,7 +30,7 @@ class Auth_model extends CI_Model {
         $token = get_token();
         $sql = "SELECT * FROM silarakab.user WHERE token='".$token."'";
         $query = $this->db->query($sql);
-        return model_response($query,1);
+        return model_response($query, 4);
     }
 
 }
