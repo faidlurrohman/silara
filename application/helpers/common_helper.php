@@ -29,38 +29,42 @@ function model_response($query, $type = 0)
 
 function res_type($type, $query)
 {
+    $row = $query->row_array();
+    $arr = $query->result_array();
+
     switch ($type) {
         // get data     
         case 0:
-            $data['code'] = 0;
-            $data['data'] = $query->result_array();
+            $data['code'] = isset($row['__code']) ? $row['__code'] : 0; 
+            $data['data'] = isset($row['__code']) ? array() : ($row['__code'] > 0 ? array() : $arr);
+            $data['message'] = err_msg($query);
             break;
         // get list
         case 1:
-            $data = $query->result_array();
+            $data['data'] = isset($row['__code']) ? array() : ($row['__res_count'] == 0 ? array() : $arr);
+            $data['code'] = isset($row['__code']) ? $row['__code'] : 0;
+            $data['message'] = err_msg($query);
             break;
         // save / update / delete
         case 2:
-            $data['id'] = $query->row_array()['__new_id'];
-            $data['code'] = $query->row_array()['__code'] ? $query->row_array()['__code'] : 0;
+            $data['id'] = $row['__new_id'];
+            $data['code'] = $row['__code'] ? $row['__code'] : 0;
             $data['message'] = err_msg($query);
             break;
         // delete
         case 3:
-            $data['r_code'] = 0;
-            $data['data'] = $query->row_array();
+            $data['code'] = 0;
+            $data['data'] = $row;
             break;
-        // feature menu
+        // single row
         case 4:
-            $data['r_code'] = 0;
-            $data['data'] = $query;
-            // $this->db->query($sql)->row()->menu;
+            $data = $row;
             break;
         // auth
         case 10:
-            $data['data'] = $query->row_array();
-            $data['code'] = $data['data']['token'] ? 0 : ( $data['data']['__res_data'] == 1 ? 0 : 1 );
-            $data['message'] = $data['data']['token'] ? '' : ( $data['data']['__res_data'] == 1 ? '' : 'Nama pengguna atau kata sandi salah' );
+            $data['data'] = $row;
+            $data['code'] = $row['token'] ? 0 : ($row['__res_data'] == 1 ? 0 : 1 );
+            $data['message'] = $row['token'] ? '' : ($row['__res_data'] == 1 ? '' : 'Nama pengguna atau kata sandi salah' );
             break;
     }
 
