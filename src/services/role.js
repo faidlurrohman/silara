@@ -1,5 +1,5 @@
 import axios from "./axios";
 
-export const getRoles = () => {
-  return axios.get("/api/role/data");
+export const getRoleList = () => {
+  return axios.get("/api/role/list");
 };
