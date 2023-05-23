@@ -10,12 +10,13 @@ import {
   message,
 } from "antd";
 import { useEffect, useRef, useState } from "react";
-import { addCity, getCities, removeCity } from "../../services/city";
+import { addCity, getCities } from "../../services/city";
 import { PAGINATION } from "../../helpers/constants";
 import { actionColumn, activeColumn, searchColumn } from "../../helpers/table";
 import ExportButton from "../../components/button/ExportButton";
 import ReloadButton from "../../components/button/ReloadButton";
 import AddButton from "../../components/button/AddButton";
+import { responseGet } from "../../helpers/response";
 
 export default function PengaturanKota() {
   const [form] = Form.useForm();
@@ -26,7 +27,7 @@ export default function PengaturanKota() {
   const [sorted, setSorted] = useState({});
   const [tableParams, setTableParams] = useState(PAGINATION);
 
-  const [modal, modalHolder] = Modal.useModal();
+  const [_, modalHolder] = Modal.useModal();
   const [isShow, setShow] = useState(false);
   const [isEdit, setEdit] = useState(false);
   const [confirmLoading, setConfirmLoading] = useState(false);
@@ -38,14 +39,18 @@ export default function PengaturanKota() {
     setLoading(true);
     getCities().then((response) => {
       setLoading(false);
-      setCities(response?.data?.data);
+      setCities(
+        tableParams?.extra
+          ? tableParams?.extra?.currentDataSource
+          : responseGet(response).data
+      );
       setTableParams({
         ...tableParams,
         pagination: {
           ...tableParams.pagination,
           total: tableParams?.extra
             ? tableParams?.extra?.currentDataSource.length
-            : response?.data?.total_count,
+            : responseGet(response).total_count,
         },
       });
     });
@@ -74,6 +79,7 @@ export default function PengaturanKota() {
     setFiltered({});
     setSorted({});
     setTableParams(PAGINATION);
+    fetchDataCities();
   };
 
   const addUpdateRow = (isEdit = false, value = null) => {
@@ -92,61 +98,44 @@ export default function PengaturanKota() {
     }
   };
 
-  const deleteRow = (values) => {
-    modal.warning({
-      title: `Hapus Data`,
-      content: (
-        <p>
-          Data{" "}
-          <b>
-            <u>{values?.label}</u>
-          </b>{" "}
-          akan di hapus, apakah anda yakin untuk melanjutkan?
-        </p>
-      ),
-      width: 500,
-      okText: "Ya",
-      cancelText: "Tidak",
-      centered: true,
-      okCancel: true,
-      onOk() {
-        removeCity(values?.id).then(() => {
-          message.success(`Data ${values?.label} berhasil di hapus`);
-          reloadTable();
-        });
-      },
-    });
-  };
-
-  const handleAddUpdate = (values) => {
+  const handleAddUpdate = async (values) => {
     setConfirmLoading(true);
-    addCity(values).then(() => {
-      message.success(`Data berhasil di ${isEdit ? `perbarui` : `tambahkan`}`);
-      addUpdateRow(isEdit);
+
+    addCity(values).then((response) => {
       setConfirmLoading(false);
-      reloadTable();
+
+      if (response?.data?.code === 0) {
+        message.success(
+          `Data berhasil di ${isEdit ? `perbarui` : `tambahkan`}`
+        );
+        addUpdateRow(isEdit);
+        reloadTable();
+      }
     });
   };
 
   const columns = [
     searchColumn(searchInput, "label", "Nama Kota", filtered, true, sorted),
     activeColumn(filtered),
-    actionColumn(addUpdateRow, deleteRow),
+    actionColumn(addUpdateRow),
   ];
 
   useEffect(() => {
-    fetchDataCities();
-  }, [JSON.stringify(tableParams)]);
+    reloadTable();
+  }, []);
 
   return (
     <>
       <div className="flex flex-row space-x-2">
-        <ExportButton data={cities} target={`city`} stateLoading={loading} />
         <ReloadButton onClick={reloadTable} stateLoading={loading} />
         <AddButton onClick={addUpdateRow} stateLoading={loading} />
+        {!!cities?.length && (
+          <ExportButton data={cities} target={`city`} stateLoading={loading} />
+        )}
       </div>
       <div className="mt-4">
         <Table
+          bordered
           loading={loading}
           dataSource={cities}
           columns={columns}
