@@ -11,12 +11,13 @@ import {
   message,
 } from "antd";
 import { useEffect, useRef, useState } from "react";
-import { addSigner, getSigner, removeSigner } from "../../services/signer";
+import { addSigner, getSigner } from "../../services/signer";
 import { PAGINATION } from "../../helpers/constants";
 import { actionColumn, activeColumn, searchColumn } from "../../helpers/table";
 import ExportButton from "../../components/button/ExportButton";
 import ReloadButton from "../../components/button/ReloadButton";
 import AddButton from "../../components/button/AddButton";
+import { responseGet } from "../../helpers/response";
 
 export default function PengaturanPenandaTangan() {
   const [form] = Form.useForm();
@@ -27,7 +28,7 @@ export default function PengaturanPenandaTangan() {
   const [sorted, setSorted] = useState({});
   const [tableParams, setTableParams] = useState(PAGINATION);
 
-  const [modal, modalHolder] = Modal.useModal();
+  const [_, modalHolder] = Modal.useModal();
   const [isShow, setShow] = useState(false);
   const [isEdit, setEdit] = useState(false);
   const [confirmLoading, setConfirmLoading] = useState(false);
@@ -39,14 +40,18 @@ export default function PengaturanPenandaTangan() {
     setLoading(true);
     getSigner().then((response) => {
       setLoading(false);
-      setSigner(response?.data?.data);
+      setSigner(
+        tableParams?.extra
+          ? tableParams?.extra?.currentDataSource
+          : responseGet(response).data
+      );
       setTableParams({
         ...tableParams,
         pagination: {
           ...tableParams.pagination,
           total: tableParams?.extra
             ? tableParams?.extra?.currentDataSource.length
-            : response?.data?.total_count,
+            : responseGet(response).total_count,
         },
       });
     });
@@ -75,6 +80,7 @@ export default function PengaturanPenandaTangan() {
     setFiltered({});
     setSorted({});
     setTableParams(PAGINATION);
+    fetchDataSigner();
   };
 
   const addUpdateRow = (isEdit = false, value = null) => {
@@ -95,32 +101,6 @@ export default function PengaturanPenandaTangan() {
     }
   };
 
-  const deleteRow = (values) => {
-    modal.warning({
-      title: `Hapus Data`,
-      content: (
-        <p>
-          Data{" "}
-          <b>
-            <u>{values?.nip}</u>
-          </b>{" "}
-          akan di hapus, apakah anda yakin untuk melanjutkan?
-        </p>
-      ),
-      width: 500,
-      okText: "Ya",
-      cancelText: "Tidak",
-      centered: true,
-      okCancel: true,
-      onOk() {
-        removeSigner(values?.id).then(() => {
-          message.success(`Data ${values?.nip} berhasil di hapus`);
-          reloadTable();
-        });
-      },
-    });
-  };
-
   const handleAddUpdate = (values) => {
     setConfirmLoading(true);
     addSigner(values).then(() => {
@@ -136,22 +116,29 @@ export default function PengaturanPenandaTangan() {
     searchColumn(searchInput, "fullname", "Nama", filtered, true, sorted),
     searchColumn(searchInput, "title", "Jabatan", filtered, true, sorted),
     activeColumn(filtered),
-    actionColumn(addUpdateRow, deleteRow),
+    actionColumn(addUpdateRow),
   ];
 
   useEffect(() => {
-    fetchDataSigner();
-  }, [JSON.stringify(tableParams)]);
+    reloadTable();
+  }, []);
 
   return (
     <>
       <div className="flex flex-row space-x-2">
-        <ExportButton data={signer} target={`signer`} stateLoading={loading} />
         <ReloadButton onClick={reloadTable} stateLoading={loading} />
         <AddButton onClick={addUpdateRow} stateLoading={loading} />
+        {!!signer?.length && (
+          <ExportButton
+            data={signer}
+            target={`signer`}
+            stateLoading={loading}
+          />
+        )}
       </div>
       <div className="mt-4">
         <Table
+          bordered
           loading={loading}
           dataSource={signer}
           columns={columns}
