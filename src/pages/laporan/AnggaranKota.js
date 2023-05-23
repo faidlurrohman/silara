@@ -5,6 +5,7 @@ import { CSVLink } from "react-csv";
 import { useRef, useState } from "react";
 import moment from "moment";
 import { LAPORAN_TMP } from "../../helpers/constants";
+import ComingSoon from "../../components/ComingSoon";
 
 const { RangePicker } = DatePicker;
 
@@ -70,6 +71,8 @@ export default function AnggaranKota() {
       ...getColumnSearchProps("realization"),
     },
   ];
+
+  return <ComingSoon useNav={false} />;
 
   return (
     <>

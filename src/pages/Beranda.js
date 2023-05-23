@@ -147,6 +147,8 @@ const config3 = {
 export default function Beranda() {
   const navigate = useNavigate();
 
+  return <ComingSoon useNav={false} />;
+
   return (
     <>
       <div className="flex space-y-2 md:space-y-0 flex-col md:flex-row md:space-x-2">
