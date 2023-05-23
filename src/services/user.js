@@ -10,7 +10,3 @@ export const addUser = (values) => {
     active: values?.active ? "true" : "false",
   });
 };
-
-export const removeUser = (id) => {
-  return axios.delete(`/api/user/remove/${id}`);
-};

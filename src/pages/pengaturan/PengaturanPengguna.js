@@ -12,13 +12,14 @@ import {
 } from "antd";
 import { useEffect, useRef, useState } from "react";
 import { getCityList } from "../../services/city";
-import { getRoles } from "../../services/role";
-import { addUser, getUsers, removeUser } from "../../services/user";
+import { getRoleList } from "../../services/role";
+import { addUser, getUsers } from "../../services/user";
 import { PAGINATION } from "../../helpers/constants";
 import { actionColumn, activeColumn, searchColumn } from "../../helpers/table";
 import ExportButton from "../../components/button/ExportButton";
 import ReloadButton from "../../components/button/ReloadButton";
 import AddButton from "../../components/button/AddButton";
+import { responseGet } from "../../helpers/response";
 
 export default function PengaturanPengguna() {
   const [form] = Form.useForm();
@@ -29,7 +30,7 @@ export default function PengaturanPengguna() {
   const [sorted, setSorted] = useState({});
   const [tableParams, setTableParams] = useState(PAGINATION);
 
-  const [modal, modalHolder] = Modal.useModal();
+  const [_, modalHolder] = Modal.useModal();
   const [isShow, setShow] = useState(false);
   const [isEdit, setEdit] = useState(false);
   const [confirmLoading, setConfirmLoading] = useState(false);
@@ -47,14 +48,18 @@ export default function PengaturanPengguna() {
     setLoading(true);
     getUsers().then((response) => {
       setLoading(false);
-      setUsers(response?.data?.data);
+      setUsers(
+        tableParams?.extra
+          ? tableParams?.extra?.currentDataSource
+          : responseGet(response).data
+      );
       setTableParams({
         ...tableParams,
         pagination: {
           ...tableParams.pagination,
           total: tableParams?.extra
             ? tableParams?.extra?.currentDataSource.length
-            : response?.data?.total_count,
+            : responseGet(response).total_count,
         },
       });
     });
@@ -70,7 +75,7 @@ export default function PengaturanPengguna() {
 
   const fetchDataRoles = () => {
     setLoadingRole(true);
-    getRoles().then((response) => {
+    getRoleList().then((response) => {
       setLoadingRole(false);
       setRoles(response?.data?.data);
     });
@@ -99,18 +104,18 @@ export default function PengaturanPengguna() {
     setFiltered({});
     setSorted({});
     setTableParams(PAGINATION);
+    fetchDataUsers();
   };
 
   const addUpdateRow = (isEdit = false, value = null) => {
     setShow(!isShow);
-    fetchDataCities();
-    fetchDataRoles();
 
     if (!isEdit) {
       form.resetFields();
       setEdit(false);
     } else {
       setEdit(true);
+
       form.setFieldsValue({
         id: value?.id,
         fullname: value?.fullname,
@@ -122,32 +127,6 @@ export default function PengaturanPengguna() {
         active: value?.active ? 1 : 0,
       });
     }
-  };
-
-  const deleteRow = (values) => {
-    modal.warning({
-      title: `Hapus Data`,
-      content: (
-        <p>
-          Data{" "}
-          <b>
-            <u>{values?.username}</u>
-          </b>{" "}
-          akan di hapus, apakah anda yakin untuk melanjutkan?
-        </p>
-      ),
-      width: 500,
-      okText: "Ya",
-      cancelText: "Tidak",
-      centered: true,
-      okCancel: true,
-      onOk() {
-        removeUser(values?.id).then(() => {
-          message.success(`Data ${values?.username} berhasil di hapus`);
-          reloadTable();
-        });
-      },
-    });
   };
 
   const handleAddUpdate = (values) => {
@@ -172,22 +151,27 @@ export default function PengaturanPengguna() {
     searchColumn(searchInput, "fullname", "Nama", filtered, true, sorted),
     searchColumn(searchInput, "title", "Jabatan", filtered, true, sorted),
     activeColumn(filtered),
-    actionColumn(addUpdateRow, deleteRow),
+    actionColumn(addUpdateRow),
   ];
 
   useEffect(() => {
-    fetchDataUsers();
-  }, [JSON.stringify(tableParams)]);
+    reloadTable();
+    fetchDataCities();
+    fetchDataRoles();
+  }, []);
 
   return (
     <>
       <div className="flex flex-row space-x-2">
-        <ExportButton data={users} target={`user`} stateLoading={loading} />
         <ReloadButton onClick={reloadTable} stateLoading={loading} />
         <AddButton onClick={addUpdateRow} stateLoading={loading} />
+        {!!users?.length && (
+          <ExportButton data={users} target={`user`} stateLoading={loading} />
+        )}
       </div>
       <div className="mt-4">
         <Table
+          bordered
           loading={loading}
           dataSource={users}
           columns={columns}
