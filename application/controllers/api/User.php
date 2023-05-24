@@ -26,7 +26,7 @@ class User extends REST_Controller {
         $user = $this->Auth_model->check_token();
         $data = $this->User_model->get_all($user);
      
-        if ($data['r_code'] != 0) {
+        if ($data['code'] != 0) {
             $this->response($data, REST_Controller::HTTP_INTERNAL_SERVER_ERROR);
         } else {
             $this->response($data, REST_Controller::HTTP_OK);
@@ -43,7 +43,7 @@ class User extends REST_Controller {
         $user = $this->Auth_model->check_token();
         $data = $this->User_model->save($user, $this->input_fields());
 
-        if ($data['r_code'] != 0) {
+        if ($data['code'] != 0) {
             $this->response($data, REST_Controller::HTTP_INTERNAL_SERVER_ERROR);
         } else {
             $this->response($data, REST_Controller::HTTP_OK);
