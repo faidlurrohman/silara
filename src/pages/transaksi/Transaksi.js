@@ -22,6 +22,7 @@ import { responseGet } from "../../helpers/response";
 import { addTransaction, getTransaction } from "../../services/transaction";
 import { getCityList } from "../../services/city";
 import moment from "moment";
+import axios from "axios";
 
 export default function Transaksi() {
   const [form] = Form.useForm();
@@ -32,55 +33,38 @@ export default function Transaksi() {
   const [sorted, setSorted] = useState({});
   const [tableParams, setTableParams] = useState(PAGINATION);
 
-  const [_, modalHolder] = Modal.useModal();
   const [isShow, setShow] = useState(false);
   const [isEdit, setEdit] = useState(false);
   const [confirmLoading, setConfirmLoading] = useState(false);
 
   const [transactions, setTransactions] = useState([]);
+  const [cities, setCities] = useState([]);
+  const [accountObject, setAccountObject] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const [cities, setCities] = useState([]);
-  const [loadingCity, setLoadingCity] = useState(false);
-
-  const [accountObject, setAccountObject] = useState([]);
-  const [loadingObject, setLoadingObject] = useState(false);
-
-  const fetchDataTransaction = () => {
+  const reloadData = () => {
     setLoading(true);
-    getTransaction().then((response) => {
-      setLoading(false);
-      setTransactions(
-        tableParams?.extra
-          ? tableParams?.extra?.currentDataSource
-          : responseGet(response).data
-      );
-      setTableParams({
-        ...tableParams,
-        pagination: {
-          ...tableParams.pagination,
-          total: tableParams?.extra
-            ? tableParams?.extra?.currentDataSource.length
-            : responseGet(response).total_count,
-        },
-      });
-    });
-  };
-
-  const fetchDataCities = () => {
-    setLoadingCity(true);
-    getCityList().then((response) => {
-      setLoadingCity(false);
-      setCities(response?.data?.data);
-    });
-  };
-
-  const fetchDataAccountObject = () => {
-    setLoadingObject(true);
-    getAccountList("object").then((response) => {
-      setLoadingObject(false);
-      setAccountObject(response?.data?.data);
-    });
+    axios.all([getTransaction(), getCityList(), getAccountList("object")]).then(
+      axios.spread((_transactions, _cities, _objects) => {
+        setLoading(false);
+        setTransactions(
+          tableParams?.extra
+            ? tableParams?.extra?.currentDataSource
+            : responseGet(_transactions).data
+        );
+        setTableParams({
+          ...tableParams,
+          pagination: {
+            ...tableParams.pagination,
+            total: tableParams?.extra
+              ? tableParams?.extra?.currentDataSource.length
+              : responseGet(_transactions).total_count,
+          },
+        });
+        setCities(_cities?.data?.data);
+        setAccountObject(_objects?.data?.data);
+      })
+    );
   };
 
   const onTableChange = (pagination, filters, sorter, extra) => {
@@ -106,7 +90,7 @@ export default function Transaksi() {
     setFiltered({});
     setSorted({});
     setTableParams(PAGINATION);
-    fetchDataTransaction();
+    reloadData();
   };
 
   const addUpdateRow = (isEdit = false, value = null) => {
@@ -172,9 +156,7 @@ export default function Transaksi() {
   ];
 
   useEffect(() => {
-    reloadTable();
-    fetchDataCities();
-    fetchDataAccountObject();
+    reloadData();
   }, []);
 
   return (
@@ -286,7 +268,7 @@ export default function Transaksi() {
           >
             <Select
               disabled={confirmLoading}
-              loading={loadingCity}
+              loading={loading}
               options={cities}
             />
           </Form.Item>
@@ -302,7 +284,7 @@ export default function Transaksi() {
           >
             <Select
               disabled={confirmLoading}
-              loading={loadingObject}
+              loading={loading}
               options={accountObject}
             />
           </Form.Item>
@@ -368,7 +350,6 @@ export default function Transaksi() {
           </Form.Item>
         </Form>
       </Modal>
-      {modalHolder}
     </>
   );
 }

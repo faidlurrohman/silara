@@ -27,7 +27,6 @@ export default function PengaturanKota() {
   const [sorted, setSorted] = useState({});
   const [tableParams, setTableParams] = useState(PAGINATION);
 
-  const [_, modalHolder] = Modal.useModal();
   const [isShow, setShow] = useState(false);
   const [isEdit, setEdit] = useState(false);
   const [confirmLoading, setConfirmLoading] = useState(false);
@@ -198,7 +197,6 @@ export default function PengaturanKota() {
           </Form.Item>
         </Form>
       </Modal>
-      {modalHolder}
     </>
   );
 }

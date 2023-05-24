@@ -20,6 +20,7 @@ import ExportButton from "../../components/button/ExportButton";
 import ReloadButton from "../../components/button/ReloadButton";
 import AddButton from "../../components/button/AddButton";
 import { responseGet } from "../../helpers/response";
+import axios from "axios";
 
 export default function PengaturanPengguna() {
   const [form] = Form.useForm();
@@ -30,55 +31,38 @@ export default function PengaturanPengguna() {
   const [sorted, setSorted] = useState({});
   const [tableParams, setTableParams] = useState(PAGINATION);
 
-  const [_, modalHolder] = Modal.useModal();
   const [isShow, setShow] = useState(false);
   const [isEdit, setEdit] = useState(false);
   const [confirmLoading, setConfirmLoading] = useState(false);
 
   const [users, setUsers] = useState([]);
+  const [cities, setCities] = useState([]);
+  const [roles, setRoles] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const [cities, setCities] = useState([]);
-  const [loadingCity, setLoadingCity] = useState(false);
-
-  const [roles, setRoles] = useState([]);
-  const [loadingRole, setLoadingRole] = useState(false);
-
-  const fetchDataUsers = () => {
+  const reloadData = () => {
     setLoading(true);
-    getUsers().then((response) => {
-      setLoading(false);
-      setUsers(
-        tableParams?.extra
-          ? tableParams?.extra?.currentDataSource
-          : responseGet(response).data
-      );
-      setTableParams({
-        ...tableParams,
-        pagination: {
-          ...tableParams.pagination,
-          total: tableParams?.extra
-            ? tableParams?.extra?.currentDataSource.length
-            : responseGet(response).total_count,
-        },
-      });
-    });
-  };
-
-  const fetchDataCities = () => {
-    setLoadingCity(true);
-    getCityList().then((response) => {
-      setLoadingCity(false);
-      setCities(response?.data?.data);
-    });
-  };
-
-  const fetchDataRoles = () => {
-    setLoadingRole(true);
-    getRoleList().then((response) => {
-      setLoadingRole(false);
-      setRoles(response?.data?.data);
-    });
+    axios.all([getUsers(), getCityList(), getRoleList()]).then(
+      axios.spread((_users, _cities, _roles) => {
+        setLoading(false);
+        setUsers(
+          tableParams?.extra
+            ? tableParams?.extra?.currentDataSource
+            : responseGet(_users).data
+        );
+        setTableParams({
+          ...tableParams,
+          pagination: {
+            ...tableParams.pagination,
+            total: tableParams?.extra
+              ? tableParams?.extra?.currentDataSource.length
+              : responseGet(_users).total_count,
+          },
+        });
+        setCities(_cities?.data?.data);
+        setRoles(_roles?.data?.data);
+      })
+    );
   };
 
   const onTableChange = (pagination, filters, sorter, extra) => {
@@ -104,7 +88,7 @@ export default function PengaturanPengguna() {
     setFiltered({});
     setSorted({});
     setTableParams(PAGINATION);
-    fetchDataUsers();
+    reloadData();
   };
 
   const addUpdateRow = (isEdit = false, value = null) => {
@@ -155,9 +139,7 @@ export default function PengaturanPengguna() {
   ];
 
   useEffect(() => {
-    reloadTable();
-    fetchDataCities();
-    fetchDataRoles();
+    reloadData();
   }, []);
 
   return (
@@ -260,7 +242,7 @@ export default function PengaturanPengguna() {
           >
             <Select
               disabled={confirmLoading}
-              loading={loadingRole}
+              loading={loading}
               options={roles}
             />
           </Form.Item>
@@ -276,7 +258,7 @@ export default function PengaturanPengguna() {
           >
             <Select
               disabled={confirmLoading}
-              loading={loadingCity}
+              loading={loading}
               options={cities}
             />
           </Form.Item>
@@ -302,7 +284,6 @@ export default function PengaturanPengguna() {
           </Form.Item>
         </Form>
       </Modal>
-      {modalHolder}
     </>
   );
 }

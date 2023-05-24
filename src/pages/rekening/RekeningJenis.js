@@ -18,6 +18,7 @@ import ReloadButton from "../../components/button/ReloadButton";
 import AddButton from "../../components/button/AddButton";
 import ExportButton from "../../components/button/ExportButton";
 import { responseGet } from "../../helpers/response";
+import axios from "axios";
 
 export default function RekeningJenis() {
   const [form] = Form.useForm();
@@ -28,44 +29,36 @@ export default function RekeningJenis() {
   const [sorted, setSorted] = useState({});
   const [tableParams, setTableParams] = useState(PAGINATION);
 
-  const [_, modalHolder] = Modal.useModal();
   const [isShow, setShow] = useState(false);
   const [isEdit, setEdit] = useState(false);
   const [confirmLoading, setConfirmLoading] = useState(false);
 
   const [accountType, setAccountType] = useState([]);
+  const [accountGroup, setAccountGroup] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const [accountGroup, setAccountGroup] = useState([]);
-  const [loadingGroup, setLoadingGroup] = useState(false);
-
-  const fetchDataAccountType = () => {
+  const reloadData = () => {
     setLoading(true);
-    getAccount("type").then((response) => {
-      setLoading(false);
-      setAccountType(
-        tableParams?.extra
-          ? tableParams?.extra?.currentDataSource
-          : responseGet(response).data
-      );
-      setTableParams({
-        ...tableParams,
-        pagination: {
-          ...tableParams.pagination,
-          total: tableParams?.extra
-            ? tableParams?.extra?.currentDataSource.length
-            : responseGet(response).total_count,
-        },
-      });
-    });
-  };
-
-  const fetchDataAccountGroup = () => {
-    setLoadingGroup(true);
-    getAccountList("group").then((response) => {
-      setLoadingGroup(false);
-      setAccountGroup(response?.data?.data);
-    });
+    axios.all([getAccount("type"), getAccountList("group")]).then(
+      axios.spread((_types, _groups) => {
+        setLoading(false);
+        setAccountType(
+          tableParams?.extra
+            ? tableParams?.extra?.currentDataSource
+            : responseGet(_types).data
+        );
+        setTableParams({
+          ...tableParams,
+          pagination: {
+            ...tableParams.pagination,
+            total: tableParams?.extra
+              ? tableParams?.extra?.currentDataSource.length
+              : responseGet(_types).total_count,
+          },
+        });
+        setAccountGroup(_groups?.data?.data);
+      })
+    );
   };
 
   const onTableChange = (pagination, filters, sorter, extra) => {
@@ -91,7 +84,7 @@ export default function RekeningJenis() {
     setFiltered({});
     setSorted({});
     setTableParams(PAGINATION);
-    fetchDataAccountType();
+    reloadData();
   };
 
   const addUpdateRow = (isEdit = false, value = null) => {
@@ -138,8 +131,7 @@ export default function RekeningJenis() {
   ];
 
   useEffect(() => {
-    reloadTable();
-    fetchDataAccountGroup();
+    reloadData();
   }, []);
 
   return (
@@ -197,7 +189,7 @@ export default function RekeningJenis() {
           >
             <Select
               disabled={confirmLoading}
-              loading={loadingGroup}
+              loading={loading}
               options={accountGroup}
             />
           </Form.Item>
@@ -250,7 +242,6 @@ export default function RekeningJenis() {
           </Form.Item>
         </Form>
       </Modal>
-      {modalHolder}
     </>
   );
 }

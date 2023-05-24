@@ -18,6 +18,7 @@ import ReloadButton from "../../components/button/ReloadButton";
 import AddButton from "../../components/button/AddButton";
 import ExportButton from "../../components/button/ExportButton";
 import { responseGet } from "../../helpers/response";
+import axios from "axios";
 
 export default function RekeningKelompok() {
   const [form] = Form.useForm();
@@ -28,44 +29,36 @@ export default function RekeningKelompok() {
   const [sorted, setSorted] = useState({});
   const [tableParams, setTableParams] = useState(PAGINATION);
 
-  const [_, modalHolder] = Modal.useModal();
   const [isShow, setShow] = useState(false);
   const [isEdit, setEdit] = useState(false);
   const [confirmLoading, setConfirmLoading] = useState(false);
 
   const [accountGroup, setAccountGroup] = useState([]);
+  const [accountBase, setAccountBase] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const [accountBase, setAccountBase] = useState([]);
-  const [loadingBase, setLoadingBase] = useState(false);
-
-  const fetchDataAccountGroup = () => {
+  const reloadData = () => {
     setLoading(true);
-    getAccount("group").then((response) => {
-      setLoading(false);
-      setAccountGroup(
-        tableParams?.extra
-          ? tableParams?.extra?.currentDataSource
-          : responseGet(response).data
-      );
-      setTableParams({
-        ...tableParams,
-        pagination: {
-          ...tableParams.pagination,
-          total: tableParams?.extra
-            ? tableParams?.extra?.currentDataSource.length
-            : responseGet(response).total_count,
-        },
-      });
-    });
-  };
-
-  const fetchDataAccountBase = () => {
-    setLoadingBase(true);
-    getAccountList("base").then((response) => {
-      setLoadingBase(false);
-      setAccountBase(response?.data?.data);
-    });
+    axios.all([getAccount("group"), getAccountList("base")]).then(
+      axios.spread((_groups, _bases) => {
+        setLoading(false);
+        setAccountGroup(
+          tableParams?.extra
+            ? tableParams?.extra?.currentDataSource
+            : responseGet(_groups).data
+        );
+        setTableParams({
+          ...tableParams,
+          pagination: {
+            ...tableParams.pagination,
+            total: tableParams?.extra
+              ? tableParams?.extra?.currentDataSource.length
+              : responseGet(_groups).total_count,
+          },
+        });
+        setAccountBase(_bases?.data?.data);
+      })
+    );
   };
 
   const onTableChange = (pagination, filters, sorter, extra) => {
@@ -91,7 +84,7 @@ export default function RekeningKelompok() {
     setFiltered({});
     setSorted({});
     setTableParams(PAGINATION);
-    fetchDataAccountGroup();
+    reloadData();
   };
 
   const addUpdateRow = (isEdit = false, value = null) => {
@@ -138,8 +131,7 @@ export default function RekeningKelompok() {
   ];
 
   useEffect(() => {
-    reloadTable();
-    fetchDataAccountBase();
+    reloadData();
   }, []);
 
   return (
@@ -197,7 +189,7 @@ export default function RekeningKelompok() {
           >
             <Select
               disabled={confirmLoading}
-              loading={loadingBase}
+              loading={loading}
               options={accountBase}
             />
           </Form.Item>
@@ -250,7 +242,6 @@ export default function RekeningKelompok() {
           </Form.Item>
         </Form>
       </Modal>
-      {modalHolder}
     </>
   );
 }
