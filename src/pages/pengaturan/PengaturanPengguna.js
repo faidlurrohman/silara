@@ -14,7 +14,7 @@ import { useEffect, useRef, useState } from "react";
 import { getCityList } from "../../services/city";
 import { getRoleList } from "../../services/role";
 import { addUser, getUsers } from "../../services/user";
-import { PAGINATION } from "../../helpers/constants";
+import { PAGINATION, REGEX_USERNAME } from "../../helpers/constants";
 import { actionColumn, activeColumn, searchColumn } from "../../helpers/table";
 import ExportButton from "../../components/button/ExportButton";
 import ReloadButton from "../../components/button/ReloadButton";
@@ -104,7 +104,6 @@ export default function PengaturanPengguna() {
         id: value?.id,
         fullname: value?.fullname,
         username: value?.username,
-        password: value?.password,
         title: value?.title,
         role_id: value?.role_id,
         city_id: value?.city_id,
@@ -190,22 +189,45 @@ export default function PengaturanPengguna() {
                 required: true,
                 message: "Nama Pengguna tidak boleh kosong!",
               },
+              () => ({
+                validator(_, value) {
+                  const _validation = REGEX_USERNAME.exec(value);
+
+                  if (value && value.length <= 6)
+                    return Promise.reject("Nama Pengguna Min 6 Huruf");
+
+                  if (!!_validation) return Promise.resolve();
+
+                  return Promise.reject("Nama Pengguna format tidak benar");
+                },
+              }),
             ]}
           >
             <Input disabled={confirmLoading} />
           </Form.Item>
-          <Form.Item
-            label="Kata Sandi"
-            name="password"
-            rules={[
-              {
-                required: true,
-                message: "Kata Sandi tidak boleh kosong!",
-              },
-            ]}
-          >
-            <Input.Password disabled={confirmLoading} />
-          </Form.Item>
+          {!isEdit && (
+            <Form.Item
+              label="Kata Sandi"
+              name="password"
+              hidden={isEdit}
+              rules={[
+                {
+                  required: true,
+                  message: "Kata Sandi tidak boleh kosong!",
+                },
+                () => ({
+                  validator(_, value) {
+                    if (value && value.length <= 8)
+                      return Promise.reject("Kata Sandi Min 6 Huruf");
+
+                    return Promise.resolve();
+                  },
+                }),
+              ]}
+            >
+              <Input.Password disabled={confirmLoading} />
+            </Form.Item>
+          )}
           <Form.Item
             label="Nama"
             name="fullname"
