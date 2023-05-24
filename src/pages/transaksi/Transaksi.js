@@ -318,7 +318,7 @@ export default function Transaksi() {
                 message: "Realisasi tidak boleh kosong!",
               },
               ({ getFieldValue }) => ({
-                validator(rule, value) {
+                validator(_, value) {
                   if (value > getFieldValue("plan_amount")) {
                     return Promise.reject(
                       "Realisasi lebih dari Total Anggaran"
