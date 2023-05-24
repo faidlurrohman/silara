@@ -22,6 +22,15 @@ const LAPORAN_TMP = [
   },
 ];
 
+/* 
+  Usernames can only have: 
+  - Letters (a-zA-Z) 
+  - Numbers (0-9)
+  - Dots (.)
+  - Underscores (_)
+*/
+const REGEX_USERNAME = /^[a-zA-Z0-9_\.]+$/;
+
 const DATE_FORMAT = "YYYY/MM/DD";
 
 const PAGINATION = { pagination: { current: 1, pageSize: 10 } };
@@ -99,4 +108,11 @@ const EXPORT_TARGET = {
   },
 };
 
-export { PAGINATION, EXPORT_TARGET, DATE_FORMAT, TRANSAKSI_TMP, LAPORAN_TMP };
+export {
+  REGEX_USERNAME,
+  PAGINATION,
+  EXPORT_TARGET,
+  DATE_FORMAT,
+  TRANSAKSI_TMP,
+  LAPORAN_TMP,
+};
