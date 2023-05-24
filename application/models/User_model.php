@@ -3,7 +3,7 @@
 class User_model extends CI_Model {
 
     private $schema = 'get_user';
-    private $table  = 'silarakab.user';
+    private $table  = 'silarakab."user"';
     private $cud    = 'silarakab.main_cud';
     private $read   = 'silarakab.main_read';
 
