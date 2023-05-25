@@ -2,24 +2,25 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import "./index.css";
 
-import "moment/locale/id";
-import locale from "antd/lib/locale/id_ID";
-import moment from "moment";
-
 import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 import { persistor, store } from "./store";
 import { ConfigProvider } from "antd";
 
+import dayjs from "dayjs";
+import "dayjs/locale/id";
+import customParseFormat from "dayjs/plugin/customParseFormat";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
+import locale from "antd/lib/locale/id_ID";
+
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 
-moment.updateLocale("id", {
-  // weekdaysMin : ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"],
-  week: {
-    dow: 1, // Monday is the first day of the week.
-  },
-});
+dayjs.extend(utc);
+dayjs.extend(timezone);
+dayjs.extend(customParseFormat);
+dayjs.locale("id");
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
