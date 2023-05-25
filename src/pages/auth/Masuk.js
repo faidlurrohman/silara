@@ -8,18 +8,33 @@ export default function Masuk() {
   const loading = useAppSelector(
     (state) => state.session.request_login?.loading
   );
-  const errors = useAppSelector((state) => state.session.request_login?.errors);
   const [form] = Form.useForm();
 
   const handleSubmit = (params) => {
     dispatch(loginAction(params));
+
+    if (params?.remember) {
+      localStorage.setItem("sk-u", params?.username || "");
+      localStorage.setItem("sk-p", params?.password || "");
+      localStorage.setItem("sk-c", params?.remember || false);
+    } else {
+      localStorage.setItem("sk-u", "");
+      localStorage.setItem("sk-p", "");
+      localStorage.setItem("sk-c", false);
+    }
   };
 
   useEffect(() => {
-    if (errors) {
-      console.log("errors", errors);
+    const remember = localStorage.getItem("sk-c");
+
+    if (remember && remember === "true") {
+      form.setFieldsValue({
+        username: localStorage.getItem("sk-u"),
+        password: localStorage.getItem("sk-p"),
+        remember: true,
+      });
     }
-  }, [errors, form]);
+  }, []);
 
   return (
     <section className="flex w-full h-screen place-items-center items-center flex-col">
