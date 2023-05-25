@@ -1,12 +1,13 @@
-import { Button, Input, Space } from "antd";
+import { Button, Input, InputNumber, Space } from "antd";
 import { EditOutlined, SearchOutlined } from "@ant-design/icons";
+import { viewDate } from "./date";
 
 export const searchColumn = (
   searchRef,
   key,
   labelHeader,
   stateFilter,
-  useSort,
+  useSort = false,
   stateSort,
   sortType = "string"
 ) => ({
@@ -20,19 +21,34 @@ export const searchColumn = (
     clearFilters,
   }) => (
     <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
-      <Input
-        ref={searchRef}
-        placeholder={`Cari ${labelHeader}`}
-        value={selectedKeys[0]}
-        onChange={(e) =>
-          setSelectedKeys(e.target.value ? [e.target.value] : [])
-        }
-        onPressEnter={() => confirm()}
-        style={{
-          marginBottom: 8,
-          display: "block",
-        }}
-      />
+      {sortType === "int" ? (
+        <InputNumber
+          ref={searchRef}
+          placeholder={`Cari ${labelHeader}`}
+          className="w-full"
+          value={selectedKeys[0]}
+          onChange={(e) => setSelectedKeys(e ? [e] : [])}
+          onPressEnter={() => confirm()}
+          style={{
+            marginBottom: 8,
+            display: "block",
+          }}
+        />
+      ) : (
+        <Input
+          ref={searchRef}
+          placeholder={`Cari ${labelHeader}`}
+          value={selectedKeys[0]}
+          onChange={(e) =>
+            setSelectedKeys(e.target.value ? [e.target.value] : [])
+          }
+          onPressEnter={() => confirm()}
+          style={{
+            marginBottom: 8,
+            display: "block",
+          }}
+        />
+      )}
       <Space>
         <Button
           type="primary"
@@ -52,17 +68,19 @@ export const searchColumn = (
     <SearchOutlined style={{ color: filtered ? "#1890ff" : undefined }} />
   ),
   filteredValue: stateFilter[key] || null,
-  onFilter: (value, record) =>
-    record[key].toString().toLowerCase().includes(value.toLowerCase()),
   onFilterDropdownOpenChange: (visible) => {
     if (visible) {
       setTimeout(() => searchRef.current?.select(), 100);
     }
   },
+  render: (value) => {
+    if (key.includes("date")) return viewDate(value);
+
+    return value;
+  },
   // IF USING SORT
   ...(useSort && {
-    sorter: (a, b) =>
-      sortType === "string" ? a[key].localeCompare(b[key]) : a[key] - b[key],
+    sorter: true,
     sortOrder: stateSort.columnKey === key ? stateSort.order : null,
   }),
 });
@@ -76,7 +94,6 @@ export const activeColumn = (stateFilter) => ({
     { text: "Ya", value: true },
     { text: "Tidak", value: false },
   ],
-  onFilter: (value, record) => record?.active === value,
   filteredValue: stateFilter.active || null,
   render: (value) => (value ? "Ya" : "Tidak"),
 });
