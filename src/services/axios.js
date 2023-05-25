@@ -30,12 +30,9 @@ axiosInstance.interceptors.response.use(
     return response;
   },
   async (error) => {
-    if (
-      error?.response?.status === 401 &&
-      Cookies.get(process.env.REACT_APP_ACCESS_TOKEN) === undefined
-    ) {
+    if (Cookies.get(process.env.REACT_APP_ACCESS_TOKEN) === undefined) {
       store.dispatch(logoutAction());
-      message.error("Sesi anda berakhir, silahkan login ulang kembali");
+      message.error("Sesi anda berakhir");
     } else {
       if (error?.code === "ERR_BAD_RESPONSE" && error?.response?.data !== "") {
         message.error(error?.response?.data?.message || error.message);
