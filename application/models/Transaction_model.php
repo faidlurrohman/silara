@@ -13,21 +13,10 @@ class Transaction_model extends CI_Model {
         $this->load->helper('common');
     }
     
-    function get_all($user)
+    function get_all($user, $limit, $offset, $order, $filter)
     {
-        $_format = '{"city_label":"%1$s","account_object_label":"%2$s"}';
-        $sql = "
-            WITH r AS (
-                SELECT * FROM {$this->read}(0, 0, '".$user['username']."', '".$this->schema."', '', '[{}]'::JSONB)
-            ) SELECT 
-                r.__code,
-                COALESCE(r.__res_data,'{}'::JSONB) || FORMAT('".$_format."', c.label, a.label)::JSONB AS __res_data,
-                r.__res_msg,
-                r.__res_count
-            FROM r
-            JOIN silarakab.city c ON c.id=(r.__res_data->>'city_id')::INT
-            JOIN silarakab.account_object a ON a.id=(r.__res_data->>'account_object_id')::INT
-        ";
+        $setOrder = set_order($order);
+        $sql = "SELECT * FROM {$this->read}($limit, $offset, '".$user['username']."', '".$this->schema."', '".$setOrder."', '[".json_encode($filter)."]'::JSONB)";
         $query = $this->db->query($sql);
         return model_response($query);
     }
@@ -43,7 +32,7 @@ class Transaction_model extends CI_Model {
             $mode = 'C';
         }
 
-        $sql = "SELECT * from {$this->cud}('".$mode."', '{$this->table}', '".$user['username']."', '[".json_encode($params)."]'::jsonb)";
+        $sql = "SELECT * from {$this->cud}('".$mode."', '{$this->table}', '".$user['username']."', '[".json_encode($params)."]'::JSONB)";
         $query = $this->db->query($sql,$params);
         return model_response($query, 2);
     }
