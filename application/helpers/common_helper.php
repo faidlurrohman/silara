@@ -103,3 +103,7 @@ function err_msg($query, $message = ''){
 
     return $message;
 }
+
+function set_order($value){
+    return str_replace('%20',' ',$value);
+}
