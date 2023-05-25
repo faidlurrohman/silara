@@ -101,7 +101,7 @@ export default function PengaturanPenandaTangan() {
   };
 
   const columns = [
-    searchColumn(searchInput, "nip", "Nip", filtered, true, sorted, "int"),
+    searchColumn(searchInput, "nip", "Nip", filtered, true, sorted),
     searchColumn(searchInput, "fullname", "Nama", filtered, true, sorted),
     searchColumn(searchInput, "title", "Jabatan", filtered, true, sorted),
     activeColumn(filtered),
