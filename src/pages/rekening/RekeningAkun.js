@@ -34,38 +34,29 @@ export default function RekeningAkun() {
   const [accountBase, setAccountBase] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const fetchDataAccountBase = () => {
+  const reloadData = () => {
     setLoading(true);
-    getAccount("base").then((response) => {
+    getAccount("base", tableParams).then((response) => {
       setLoading(false);
 
-      setAccountBase(
-        tableParams?.extra
-          ? tableParams?.extra?.currentDataSource
-          : responseGet(response).data
-      );
+      setAccountBase(responseGet(response).data);
       setTableParams({
         ...tableParams,
         pagination: {
           ...tableParams.pagination,
-          total: tableParams?.extra
-            ? tableParams?.extra?.currentDataSource.length
-            : responseGet(response).total_count,
+          total: responseGet(response).total_count,
         },
       });
     });
   };
 
-  const onTableChange = (pagination, filters, sorter, extra) => {
+  const onTableChange = (pagination, filters, sorter) => {
     setFiltered(filters);
     setSorted(sorter);
-
-    pagination = { ...pagination, total: extra?.currentDataSource?.length };
 
     setTableParams({
       pagination,
       filters,
-      extra,
       ...sorter,
     });
 
@@ -79,7 +70,6 @@ export default function RekeningAkun() {
     setFiltered({});
     setSorted({});
     setTableParams(PAGINATION);
-    fetchDataAccountBase();
   };
 
   const addUpdateRow = (isEdit = false, value = null) => {
@@ -117,8 +107,8 @@ export default function RekeningAkun() {
   ];
 
   useEffect(() => {
-    reloadTable();
-  }, []);
+    reloadData();
+  }, [JSON.stringify(tableParams)]);
 
   return (
     <>

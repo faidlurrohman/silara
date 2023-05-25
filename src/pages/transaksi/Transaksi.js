@@ -13,7 +13,7 @@ import {
 } from "antd";
 import { useEffect, useRef, useState } from "react";
 import { getAccountList } from "../../services/account";
-import { DATE_FORMAT, PAGINATION } from "../../helpers/constants";
+import { DATE_FORMAT_VIEW, PAGINATION } from "../../helpers/constants";
 import { actionColumn, searchColumn } from "../../helpers/table";
 import ReloadButton from "../../components/button/ReloadButton";
 import AddButton from "../../components/button/AddButton";
@@ -21,7 +21,7 @@ import ExportButton from "../../components/button/ExportButton";
 import { responseGet } from "../../helpers/response";
 import { addTransaction, getTransaction } from "../../services/transaction";
 import { getCityList } from "../../services/city";
-import moment from "moment";
+import { convertDate, dbDate } from "../../helpers/date";
 import axios from "axios";
 
 export default function Transaksi() {
@@ -44,39 +44,35 @@ export default function Transaksi() {
 
   const reloadData = () => {
     setLoading(true);
-    axios.all([getTransaction(), getCityList(), getAccountList("object")]).then(
-      axios.spread((_transactions, _cities, _objects) => {
-        setLoading(false);
-        setTransactions(
-          tableParams?.extra
-            ? tableParams?.extra?.currentDataSource
-            : responseGet(_transactions).data
-        );
-        setTableParams({
-          ...tableParams,
-          pagination: {
-            ...tableParams.pagination,
-            total: tableParams?.extra
-              ? tableParams?.extra?.currentDataSource.length
-              : responseGet(_transactions).total_count,
-          },
-        });
-        setCities(_cities?.data?.data);
-        setAccountObject(_objects?.data?.data);
-      })
-    );
+    axios
+      .all([
+        getTransaction(tableParams),
+        getCityList(),
+        getAccountList("object"),
+      ])
+      .then(
+        axios.spread((_transactions, _cities, _objects) => {
+          setLoading(false);
+          setTransactions(responseGet(_transactions).data);
+          setTableParams({
+            ...tableParams,
+            pagination: {
+              ...tableParams.pagination,
+              total: responseGet(_transactions).total_count,
+            },
+          });
+          setCities(_cities?.data?.data);
+          setAccountObject(_objects?.data?.data);
+        })
+      );
   };
 
-  const onTableChange = (pagination, filters, sorter, extra) => {
+  const onTableChange = (pagination, filters, sorter) => {
     setFiltered(filters);
     setSorted(sorter);
-
-    pagination = { ...pagination, total: extra?.currentDataSource?.length };
-
     setTableParams({
       pagination,
       filters,
-      extra,
       ...sorter,
     });
 
@@ -90,7 +86,6 @@ export default function Transaksi() {
     setFiltered({});
     setSorted({});
     setTableParams(PAGINATION);
-    reloadData();
   };
 
   const addUpdateRow = (isEdit = false, value = null) => {
@@ -103,7 +98,7 @@ export default function Transaksi() {
       setEdit(true);
       form.setFieldsValue({
         id: value?.id,
-        trans_date: moment(new Date(value?.trans_date)),
+        trans_date: convertDate(value?.trans_date),
         account_object_id: value?.account_object_id,
         city_id: value?.city_id,
         plan_amount: value?.plan_amount,
@@ -114,15 +109,16 @@ export default function Transaksi() {
 
   const handleAddUpdate = (values) => {
     setConfirmLoading(true);
-    addTransaction({
-      ...values,
-      trans_date: moment(values.trans_date),
-    }).then(() => {
-      message.success(`Data berhasil di ${isEdit ? `perbarui` : `tambahkan`}`);
-      addUpdateRow(isEdit);
-      setConfirmLoading(false);
-      reloadTable();
-    });
+    addTransaction({ ...values, trans_date: dbDate(values?.trans_date) }).then(
+      () => {
+        message.success(
+          `Data berhasil di ${isEdit ? `perbarui` : `tambahkan`}`
+        );
+        addUpdateRow(isEdit);
+        setConfirmLoading(false);
+        reloadTable();
+      }
+    );
   };
 
   const columns = [
@@ -142,7 +138,8 @@ export default function Transaksi() {
       "Anggaran",
       filtered,
       true,
-      sorted
+      sorted,
+      "int"
     ),
     searchColumn(
       searchInput,
@@ -150,14 +147,15 @@ export default function Transaksi() {
       "Realisasi",
       filtered,
       true,
-      sorted
+      sorted,
+      "int"
     ),
     actionColumn(addUpdateRow),
   ];
 
   useEffect(() => {
     reloadData();
-  }, []);
+  }, [JSON.stringify(tableParams)]);
 
   return (
     <>
@@ -167,7 +165,7 @@ export default function Transaksi() {
         {!!transactions?.length && (
           <ExportButton
             data={transactions}
-            target={`account_type`}
+            target={`transaction`}
             stateLoading={loading}
           />
         )}
@@ -231,7 +229,7 @@ export default function Transaksi() {
           autoComplete="off"
           initialValues={{
             id: "",
-            trans_date: moment(new Date(), DATE_FORMAT),
+            trans_date: convertDate(),
             plan_amount: 0,
             real_amount: 0,
           }}
@@ -250,7 +248,7 @@ export default function Transaksi() {
             ]}
           >
             <DatePicker
-              format={DATE_FORMAT}
+              format={DATE_FORMAT_VIEW}
               className="w-full"
               placeholder=""
               disabled={confirmLoading}

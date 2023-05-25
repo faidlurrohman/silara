@@ -42,21 +42,15 @@ export default function PengaturanPengguna() {
 
   const reloadData = () => {
     setLoading(true);
-    axios.all([getUsers(), getCityList(), getRoleList()]).then(
+    axios.all([getUsers(tableParams), getCityList(), getRoleList()]).then(
       axios.spread((_users, _cities, _roles) => {
         setLoading(false);
-        setUsers(
-          tableParams?.extra
-            ? tableParams?.extra?.currentDataSource
-            : responseGet(_users).data
-        );
+        setUsers(responseGet(_users).data);
         setTableParams({
           ...tableParams,
           pagination: {
             ...tableParams.pagination,
-            total: tableParams?.extra
-              ? tableParams?.extra?.currentDataSource.length
-              : responseGet(_users).total_count,
+            total: responseGet(_users).total_count,
           },
         });
         setCities(_cities?.data?.data);
@@ -65,16 +59,13 @@ export default function PengaturanPengguna() {
     );
   };
 
-  const onTableChange = (pagination, filters, sorter, extra) => {
+  const onTableChange = (pagination, filters, sorter) => {
     setFiltered(filters);
     setSorted(sorter);
-
-    pagination = { ...pagination, total: extra?.currentDataSource?.length };
 
     setTableParams({
       pagination,
       filters,
-      extra,
       ...sorter,
     });
 
@@ -88,7 +79,6 @@ export default function PengaturanPengguna() {
     setFiltered({});
     setSorted({});
     setTableParams(PAGINATION);
-    reloadData();
   };
 
   const addUpdateRow = (isEdit = false, value = null) => {
@@ -139,7 +129,7 @@ export default function PengaturanPengguna() {
 
   useEffect(() => {
     reloadData();
-  }, []);
+  }, [JSON.stringify(tableParams)]);
 
   return (
     <>

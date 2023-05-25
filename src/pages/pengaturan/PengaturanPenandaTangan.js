@@ -35,37 +35,28 @@ export default function PengaturanPenandaTangan() {
   const [signer, setSigner] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const fetchDataSigner = () => {
+  const reloadData = () => {
     setLoading(true);
-    getSigner().then((response) => {
+    getSigner(tableParams).then((response) => {
       setLoading(false);
-      setSigner(
-        tableParams?.extra
-          ? tableParams?.extra?.currentDataSource
-          : responseGet(response).data
-      );
+      setSigner(responseGet(response).data);
       setTableParams({
         ...tableParams,
         pagination: {
           ...tableParams.pagination,
-          total: tableParams?.extra
-            ? tableParams?.extra?.currentDataSource.length
-            : responseGet(response).total_count,
+          total: responseGet(response).total_count,
         },
       });
     });
   };
 
-  const onTableChange = (pagination, filters, sorter, extra) => {
+  const onTableChange = (pagination, filters, sorter) => {
     setFiltered(filters);
     setSorted(sorter);
-
-    pagination = { ...pagination, total: extra?.currentDataSource?.length };
 
     setTableParams({
       pagination,
       filters,
-      extra,
       ...sorter,
     });
 
@@ -79,7 +70,6 @@ export default function PengaturanPenandaTangan() {
     setFiltered({});
     setSorted({});
     setTableParams(PAGINATION);
-    fetchDataSigner();
   };
 
   const addUpdateRow = (isEdit = false, value = null) => {
@@ -119,8 +109,8 @@ export default function PengaturanPenandaTangan() {
   ];
 
   useEffect(() => {
-    reloadTable();
-  }, []);
+    reloadData();
+  }, [JSON.stringify(tableParams)]);
 
   return (
     <>

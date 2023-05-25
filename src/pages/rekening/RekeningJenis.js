@@ -39,21 +39,15 @@ export default function RekeningJenis() {
 
   const reloadData = () => {
     setLoading(true);
-    axios.all([getAccount("type"), getAccountList("group")]).then(
+    axios.all([getAccount("type", tableParams), getAccountList("group")]).then(
       axios.spread((_types, _groups) => {
         setLoading(false);
-        setAccountType(
-          tableParams?.extra
-            ? tableParams?.extra?.currentDataSource
-            : responseGet(_types).data
-        );
+        setAccountType(responseGet(_types).data);
         setTableParams({
           ...tableParams,
           pagination: {
             ...tableParams.pagination,
-            total: tableParams?.extra
-              ? tableParams?.extra?.currentDataSource.length
-              : responseGet(_types).total_count,
+            total: responseGet(_types).total_count,
           },
         });
         setAccountGroup(_groups?.data?.data);
@@ -61,16 +55,13 @@ export default function RekeningJenis() {
     );
   };
 
-  const onTableChange = (pagination, filters, sorter, extra) => {
+  const onTableChange = (pagination, filters, sorter) => {
     setFiltered(filters);
     setSorted(sorter);
-
-    pagination = { ...pagination, total: extra?.currentDataSource?.length };
 
     setTableParams({
       pagination,
       filters,
-      extra,
       ...sorter,
     });
 
@@ -84,7 +75,6 @@ export default function RekeningJenis() {
     setFiltered({});
     setSorted({});
     setTableParams(PAGINATION);
-    reloadData();
   };
 
   const addUpdateRow = (isEdit = false, value = null) => {
@@ -132,7 +122,7 @@ export default function RekeningJenis() {
 
   useEffect(() => {
     reloadData();
-  }, []);
+  }, [JSON.stringify(tableParams)]);
 
   return (
     <>

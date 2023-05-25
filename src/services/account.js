@@ -1,7 +1,8 @@
 import axios from "./axios";
+import { getUrl } from "../helpers/url";
 
-export const getAccount = (which) => {
-  return axios.get(`/api/account_${which}/data`);
+export const getAccount = (which, params) => {
+  return axios.get(getUrl(`/api/account_${which}/data`, params));
 };
 
 export const getAccountList = (which) => {

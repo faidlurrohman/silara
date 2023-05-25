@@ -1,7 +1,8 @@
 import axios from "./axios";
+import { getUrl } from "../helpers/url";
 
-export const getSigner = () => {
-  return axios.get("/api/signer/data");
+export const getSigner = (params) => {
+  return axios.get(getUrl("/api/signer/data", params));
 };
 
 export const addSigner = (values) => {

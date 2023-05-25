@@ -1,7 +1,8 @@
 import axios from "./axios";
+import { getUrl } from "../helpers/url";
 
-export const getCities = () => {
-  return axios.get(`/api/city/data`);
+export const getCities = (params) => {
+  return axios.get(getUrl(`/api/city/data`, params));
 };
 
 export const getCityList = () => {

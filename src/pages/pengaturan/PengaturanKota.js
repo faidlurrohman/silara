@@ -34,37 +34,28 @@ export default function PengaturanKota() {
   const [cities, setCities] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const fetchDataCities = () => {
+  const reloadData = () => {
     setLoading(true);
-    getCities().then((response) => {
+    getCities(tableParams).then((response) => {
       setLoading(false);
-      setCities(
-        tableParams?.extra
-          ? tableParams?.extra?.currentDataSource
-          : responseGet(response).data
-      );
+      setCities(responseGet(response).data);
       setTableParams({
         ...tableParams,
         pagination: {
           ...tableParams.pagination,
-          total: tableParams?.extra
-            ? tableParams?.extra?.currentDataSource.length
-            : responseGet(response).total_count,
+          total: responseGet(response).total_count,
         },
       });
     });
   };
 
-  const onTableChange = (pagination, filters, sorter, extra) => {
+  const onTableChange = (pagination, filters, sorter) => {
     setFiltered(filters);
     setSorted(sorter);
-
-    pagination = { ...pagination, total: extra?.currentDataSource?.length };
 
     setTableParams({
       pagination,
       filters,
-      extra,
       ...sorter,
     });
 
@@ -78,7 +69,6 @@ export default function PengaturanKota() {
     setFiltered({});
     setSorted({});
     setTableParams(PAGINATION);
-    fetchDataCities();
   };
 
   const addUpdateRow = (isEdit = false, value = null) => {
@@ -120,8 +110,8 @@ export default function PengaturanKota() {
   ];
 
   useEffect(() => {
-    reloadTable();
-  }, []);
+    reloadData();
+  }, [JSON.stringify(tableParams)]);
 
   return (
     <>

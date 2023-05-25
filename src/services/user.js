@@ -1,7 +1,8 @@
 import axios from "./axios";
+import { getUrl } from "../helpers/url";
 
-export const getUsers = () => {
-  return axios.get("/api/user/data");
+export const getUsers = (params) => {
+  return axios.get(getUrl("/api/user/data", params));
 };
 
 export const addUser = (values) => {

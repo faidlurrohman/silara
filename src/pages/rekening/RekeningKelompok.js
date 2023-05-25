@@ -39,21 +39,15 @@ export default function RekeningKelompok() {
 
   const reloadData = () => {
     setLoading(true);
-    axios.all([getAccount("group"), getAccountList("base")]).then(
+    axios.all([getAccount("group", tableParams), getAccountList("base")]).then(
       axios.spread((_groups, _bases) => {
         setLoading(false);
-        setAccountGroup(
-          tableParams?.extra
-            ? tableParams?.extra?.currentDataSource
-            : responseGet(_groups).data
-        );
+        setAccountGroup(responseGet(_groups).data);
         setTableParams({
           ...tableParams,
           pagination: {
             ...tableParams.pagination,
-            total: tableParams?.extra
-              ? tableParams?.extra?.currentDataSource.length
-              : responseGet(_groups).total_count,
+            total: responseGet(_groups).total_count,
           },
         });
         setAccountBase(_bases?.data?.data);
@@ -61,16 +55,13 @@ export default function RekeningKelompok() {
     );
   };
 
-  const onTableChange = (pagination, filters, sorter, extra) => {
+  const onTableChange = (pagination, filters, sorter) => {
     setFiltered(filters);
     setSorted(sorter);
-
-    pagination = { ...pagination, total: extra?.currentDataSource?.length };
 
     setTableParams({
       pagination,
       filters,
-      extra,
       ...sorter,
     });
 
@@ -84,7 +75,6 @@ export default function RekeningKelompok() {
     setFiltered({});
     setSorted({});
     setTableParams(PAGINATION);
-    reloadData();
   };
 
   const addUpdateRow = (isEdit = false, value = null) => {
@@ -132,7 +122,7 @@ export default function RekeningKelompok() {
 
   useEffect(() => {
     reloadData();
-  }, []);
+  }, [JSON.stringify(tableParams)]);
 
   return (
     <>

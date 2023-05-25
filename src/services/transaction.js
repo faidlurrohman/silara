@@ -1,7 +1,8 @@
 import axios from "./axios";
+import { getUrl } from "../helpers/url";
 
-export const getTransaction = () => {
-  return axios.get("/api/transaction/data");
+export const getTransaction = (params) => {
+  return axios.get(getUrl("/api/transaction/data", params));
 };
 
 export const addTransaction = (values) => {
