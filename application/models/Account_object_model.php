@@ -13,20 +13,10 @@ class Account_object_model extends CI_Model {
         $this->load->helper('common');
     }
 
-    function get_all($user)
+    function get_all($user, $limit, $offset, $order, $filter)
     {
-        $_format = '{"account_type_label":"%s"}';
-        $sql = "
-            WITH r AS (
-                SELECT * FROM {$this->read}(0, 0, '".$user['username']."', '".$this->schema."', '', '[{}]'::JSONB)
-            ) SELECT 
-                r.__code,
-                COALESCE(r.__res_data,'{}'::JSONB) || FORMAT('".$_format."', a.label)::JSONB AS __res_data,
-                r.__res_msg,
-                r.__res_count
-            FROM r
-            JOIN silarakab.account_type a ON a.id=(r.__res_data->>'account_type_id')::INT
-        ";
+        $setOrder = set_order($order);
+        $sql = "SELECT * FROM {$this->read}($limit, $offset, '".$user['username']."', '".$this->schema."', '".$setOrder."', '[".json_encode($filter)."]'::JSONB)";
         $query = $this->db->query($sql);
         return model_response($query);
     }

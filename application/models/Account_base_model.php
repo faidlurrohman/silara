@@ -13,9 +13,10 @@ class Account_base_model extends CI_Model {
         $this->load->helper('common');
     }
 
-    function get_all($user)
+    function get_all($user, $limit, $offset, $order, $filter)
     {
-        $sql = "SELECT * FROM {$this->read}(0, 0, '".$user['username']."', '".$this->schema."', '', '[{}]'::jsonb);";
+        $setOrder = set_order($order);
+        $sql = "SELECT * FROM {$this->read}($limit, $offset, '".$user['username']."', '".$this->schema."', '".$setOrder."', '[".json_encode($filter)."]'::JSONB)";
         $query = $this->db->query($sql);
         return model_response($query);
     }

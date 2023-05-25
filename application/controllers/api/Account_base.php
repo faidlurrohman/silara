@@ -24,7 +24,11 @@ class Account_base extends REST_Controller {
     private function do_get_all()
     {   
         $user = $this->Auth_model->check_token();
-        $data = $this->Account_base_model->get_all($user);
+        $limit = !empty($this->get('limit')) ? $this->get('limit') : 0; 
+        $offset = !empty($this->get('offset')) ? $this->get('offset') : 0; 
+        $order = !empty($this->get('order')) ? $this->get('order') : 'id desc'; 
+        $filter = !empty($this->get('filter')) ? $this->get('filter') : new stdClass();
+        $data = $this->Account_base_model->get_all($user, $limit, $offset, $order, $filter);
      
         if ($data['code'] != 0) {
             $this->response($data, REST_Controller::HTTP_INTERNAL_SERVER_ERROR);
