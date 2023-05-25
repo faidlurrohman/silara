@@ -4,7 +4,7 @@ import { ExportOutlined } from "@ant-design/icons";
 import { EXPORT_TARGET } from "../../helpers/constants";
 
 export default function ExportButton({
-  title = "Export",
+  title = "Ekspor",
   data = [],
   target,
   stateLoading,
