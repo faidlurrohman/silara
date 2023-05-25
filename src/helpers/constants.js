@@ -31,7 +31,11 @@ const LAPORAN_TMP = [
 */
 const REGEX_USERNAME = /^[a-zA-Z0-9_\.]+$/;
 
-const DATE_FORMAT = "YYYY/MM/DD";
+const DATE_UTC = "Asia/Jakarta";
+
+const DATE_FORMAT_DB = "YYYY-MM-DD";
+
+const DATE_FORMAT_VIEW = "DD MMMM YYYY";
 
 const PAGINATION = { pagination: { current: 1, pageSize: 10 } };
 
@@ -101,7 +105,7 @@ const EXPORT_TARGET = {
     headers: [
       { label: "Tanggal", key: "trans_date" },
       { label: "Kota", key: "city_label" },
-      { label: "Objek Rekening", key: "object_account_label" },
+      { label: "Objek Rekening", key: "account_object_label" },
       { label: "Anggaran", key: "plan_amount" },
       { label: "Realisasi", key: "real_amount" },
     ],
@@ -112,7 +116,9 @@ export {
   REGEX_USERNAME,
   PAGINATION,
   EXPORT_TARGET,
-  DATE_FORMAT,
+  DATE_UTC,
+  DATE_FORMAT_VIEW,
+  DATE_FORMAT_DB,
   TRANSAKSI_TMP,
   LAPORAN_TMP,
 };
