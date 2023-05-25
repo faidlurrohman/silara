@@ -24,7 +24,12 @@ export default function ExportButton({
       headers={EXPORT_TARGET[target].headers}
       filename={`${EXPORT_TARGET[target].filename}.csv`}
     >
-      <Button type="primary" icon={<ExportOutlined />} disabled={stateLoading}>
+      <Button
+        className="w-full"
+        type="primary"
+        icon={<ExportOutlined />}
+        disabled={stateLoading}
+      >
         {title}
       </Button>
     </CSVLink>
