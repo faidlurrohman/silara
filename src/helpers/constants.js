@@ -37,6 +37,87 @@ const DATE_FORMAT_DB = "YYYY-MM-DD";
 
 const DATE_FORMAT_VIEW = "DD MMMM YYYY";
 
+const MENU_ITEM = [
+  {
+    key: "1",
+    label: "Beranda",
+    nav: "/",
+  },
+  {
+    key: "2",
+    label: "Master Rekening",
+    children: [
+      {
+        key: "2_1",
+        label: "Akun",
+        nav: "rekening/akun",
+      },
+      {
+        key: "2_2",
+        label: "Kelompok",
+        nav: "rekening/kelompok",
+      },
+      {
+        key: "2_3",
+        label: "Jenis",
+        nav: "rekening/jenis",
+      },
+      {
+        key: "2_4",
+        label: "Objek",
+        nav: "rekening/objek",
+      },
+    ],
+  },
+  {
+    key: "3",
+    label: "Transaksi",
+    nav: "transaksi",
+  },
+  {
+    key: "4",
+    label: "Laporan",
+    children: [
+      {
+        key: "4_1",
+        label: "Anggaran Kota",
+        nav: "laporan/realisasi-anggaran-kota",
+      },
+      {
+        key: "4_2",
+        label: "Anggaran Gabungan Kota",
+        nav: "laporan/realisasi-anggaran-gabungan-kota",
+      },
+      {
+        key: "4_3",
+        label: "Pendapatan & Belanja",
+        nav: "laporan/rekapitulasi-pendapatan-dan-belanja",
+      },
+    ],
+  },
+  {
+    key: "5",
+    label: "Pengaturan",
+    children: [
+      {
+        key: "5_1",
+        label: "Kota",
+        nav: "pengaturan/kota",
+      },
+      {
+        key: "5_2",
+        label: "Penanda Tangan",
+        nav: "pengaturan/penanda-tangan",
+      },
+      {
+        key: "5_3",
+        label: "Pengguna",
+        nav: "pengaturan/pengguna",
+      },
+    ],
+  },
+];
+
 const PAGINATION = { pagination: { current: 1, pageSize: 10 } };
 
 const EXPORT_TARGET = {
@@ -113,6 +194,7 @@ const EXPORT_TARGET = {
 };
 
 export {
+  MENU_ITEM,
   REGEX_USERNAME,
   PAGINATION,
   EXPORT_TARGET,
