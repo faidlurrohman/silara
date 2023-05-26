@@ -1,6 +1,8 @@
-import { Button, Input, InputNumber, Space } from "antd";
+import { Button, DatePicker, Input, InputNumber, Space } from "antd";
 import { EditOutlined, SearchOutlined } from "@ant-design/icons";
-import { viewDate } from "./date";
+import { convertDate, viewDate } from "./date";
+import { DATE_FORMAT_VIEW } from "./constants";
+import { dbDate } from "./date";
 
 export const searchColumn = (
   searchRef,
@@ -29,6 +31,19 @@ export const searchColumn = (
           value={selectedKeys[0]}
           onChange={(e) => setSelectedKeys(e ? [e] : [])}
           onPressEnter={() => confirm()}
+          style={{
+            marginBottom: 8,
+            display: "block",
+          }}
+        />
+      ) : key.includes("date") ? (
+        <DatePicker
+          ref={searchRef}
+          placeholder={`Cari ${labelHeader}`}
+          format={DATE_FORMAT_VIEW}
+          value={selectedKeys[0] && convertDate(selectedKeys[0])}
+          className="w-full"
+          onChange={(e) => setSelectedKeys(e ? [dbDate(e)] : [])}
           style={{
             marginBottom: 8,
             display: "block",
@@ -69,7 +84,7 @@ export const searchColumn = (
   ),
   filteredValue: stateFilter[key] || null,
   onFilterDropdownOpenChange: (visible) => {
-    if (visible) {
+    if (visible && !key.includes("date")) {
       setTimeout(() => searchRef.current?.select(), 100);
     }
   },
