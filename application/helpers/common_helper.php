@@ -20,11 +20,8 @@ function model_response($query, $type = 0)
     if ($e['code'] == '00000') {
         return res_type($type, $query);
     } else {
-        $data['code'] = $e['code'];
-        $data['err_msg'] = $e['message'];
+        return err_db($e);
     }
-    
-    return $data;
 }
 
 function res_type($type, $query)
@@ -102,6 +99,24 @@ function err_msg($query, $message = ''){
     }
 
     return $message;
+}
+
+function err_db($error){
+    $code = $error['code'];
+
+    switch ($code) {
+        // POSTGRES ERROR CODE https://www.postgresql.org/docs/current/errcodes-appendix.html
+        // data duplicate
+        case str_contains($code, '23505/7'):
+            $code = 102;
+            $message = 'Data sudah ada';
+            break;
+
+        default : 
+            $message = '';
+    }
+
+    return ['code' =>  $code, 'message' => $message];
 }
 
 function set_order($value){
