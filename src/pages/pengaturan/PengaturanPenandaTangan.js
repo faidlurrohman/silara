@@ -1,4 +1,5 @@
 import {
+  App,
   Button,
   Divider,
   Form,
@@ -8,7 +9,6 @@ import {
   Radio,
   Space,
   Table,
-  message,
 } from "antd";
 import { useEffect, useRef, useState } from "react";
 import { addSigner, getSigner } from "../../services/signer";
@@ -20,6 +20,7 @@ import AddButton from "../../components/button/AddButton";
 import { responseGet } from "../../helpers/response";
 
 export default function PengaturanPenandaTangan() {
+  const { message } = App.useApp();
   const [form] = Form.useForm();
 
   const searchInput = useRef(null);

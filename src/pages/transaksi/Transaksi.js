@@ -1,4 +1,5 @@
 import {
+  App,
   Button,
   DatePicker,
   Divider,
@@ -9,7 +10,6 @@ import {
   Select,
   Space,
   Table,
-  message,
 } from "antd";
 import { useEffect, useRef, useState } from "react";
 import { getAccountList } from "../../services/account";
@@ -25,6 +25,7 @@ import { convertDate, dbDate } from "../../helpers/date";
 import axios from "axios";
 
 export default function Transaksi() {
+  const { message } = App.useApp();
   const [form] = Form.useForm();
 
   const searchInput = useRef(null);

@@ -8,17 +8,4 @@
     @apply text-sm font-noto;
     font-weight: 400;
   }
-
-  input {
-    @apply focus:outline-none;
-  }
-
-  button,
-  a {
-    @apply active:outline-none focus:outline-none;
-  }
-
-  * {
-    @apply active:outline-none focus:outline-none;
-  }
 }

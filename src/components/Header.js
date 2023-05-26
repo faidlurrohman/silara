@@ -1,4 +1,4 @@
-import { Avatar, Button, Dropdown, Modal } from "antd";
+import { App, Avatar, Button, Dropdown } from "antd";
 import {
   MenuFoldOutlined,
   MenuOutlined,
@@ -10,20 +10,21 @@ import { useAppDispatch } from "../hooks/useRedux";
 import { logoutAction } from "../store/actions/session";
 const { Header: HeaderAntd } = Layout;
 
-const showConfirm = (dispatch) => {
-  Modal.confirm({
-    title: "Apakah anda yakin untuk keluar?",
-    okText: "Ya",
-    cancelText: "Tidak",
-    centered: true,
-    onOk() {
-      dispatch(logoutAction());
-    },
-  });
-};
-
 export default function Header({ onSider, sider, onDrawer }) {
+  const { modal } = App.useApp();
   const dispatch = useAppDispatch();
+
+  const showConfirm = () => {
+    modal.confirm({
+      title: "Apakah anda yakin untuk keluar?",
+      okText: "Ya",
+      cancelText: "Tidak",
+      centered: true,
+      onOk() {
+        dispatch(logoutAction());
+      },
+    });
+  };
 
   return (
     <HeaderAntd
@@ -60,7 +61,7 @@ export default function Header({ onSider, sider, onDrawer }) {
                 {
                   key: "2",
                   label: "Keluar",
-                  onClick: () => showConfirm(dispatch),
+                  onClick: () => showConfirm(),
                 },
               ],
             }}

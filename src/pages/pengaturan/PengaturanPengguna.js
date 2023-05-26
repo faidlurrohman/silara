@@ -1,4 +1,5 @@
 import {
+  App,
   Button,
   Divider,
   Form,
@@ -8,7 +9,6 @@ import {
   Select,
   Space,
   Table,
-  message,
 } from "antd";
 import { useEffect, useRef, useState } from "react";
 import { getCityList } from "../../services/city";
@@ -23,6 +23,7 @@ import { responseGet } from "../../helpers/response";
 import axios from "axios";
 
 export default function PengaturanPengguna() {
+  const { message } = App.useApp();
   const [form] = Form.useForm();
 
   const searchInput = useRef(null);

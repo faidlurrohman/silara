@@ -5,7 +5,7 @@ import "./index.css";
 import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 import { persistor, store } from "./store";
-import { ConfigProvider } from "antd";
+import { App, ConfigProvider } from "antd";
 
 import dayjs from "dayjs";
 import "dayjs/locale/id";
@@ -14,7 +14,7 @@ import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
 import locale from "antd/lib/locale/id_ID";
 
-import App from "./App";
+import MyApp from "./App";
 import reportWebVitals from "./reportWebVitals";
 
 dayjs.extend(utc);
@@ -27,8 +27,17 @@ root.render(
   <React.StrictMode>
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
-        <ConfigProvider locale={locale}>
-          <App />
+        <ConfigProvider
+          theme={{
+            token: {
+              fontFamily: "Noto Sans HK",
+            },
+          }}
+          locale={locale}
+        >
+          <App>
+            <MyApp />
+          </App>
         </ConfigProvider>
       </PersistGate>
     </Provider>

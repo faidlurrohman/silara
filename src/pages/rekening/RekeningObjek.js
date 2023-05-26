@@ -1,4 +1,5 @@
 import {
+  App,
   Button,
   Divider,
   Form,
@@ -8,7 +9,6 @@ import {
   Select,
   Space,
   Table,
-  message,
 } from "antd";
 import { useEffect, useRef, useState } from "react";
 import { addAccount, getAccount, getAccountList } from "../../services/account";
@@ -21,6 +21,7 @@ import ExportButton from "../../components/button/ExportButton";
 import axios from "axios";
 
 export default function RekeningJenis() {
+  const { message } = App.useApp();
   const [form] = Form.useForm();
 
   const searchInput = useRef(null);

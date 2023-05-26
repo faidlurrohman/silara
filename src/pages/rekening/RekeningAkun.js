@@ -1,4 +1,5 @@
 import {
+  App,
   Button,
   Divider,
   Form,
@@ -7,7 +8,6 @@ import {
   Radio,
   Space,
   Table,
-  message,
 } from "antd";
 import { useEffect, useRef, useState } from "react";
 import { addAccount, getAccount } from "../../services/account";
@@ -19,6 +19,7 @@ import AddButton from "../../components/button/AddButton";
 import ExportButton from "../../components/button/ExportButton";
 
 export default function RekeningAkun() {
+  const { message } = App.useApp();
   const [form] = Form.useForm();
 
   const searchInput = useRef(null);

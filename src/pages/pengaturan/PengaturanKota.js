@@ -1,4 +1,5 @@
 import {
+  App,
   Button,
   Divider,
   Form,
@@ -7,7 +8,7 @@ import {
   Radio,
   Space,
   Table,
-  message,
+  // message,
 } from "antd";
 import { useEffect, useRef, useState } from "react";
 import { addCity, getCities } from "../../services/city";
@@ -19,6 +20,7 @@ import AddButton from "../../components/button/AddButton";
 import { responseGet } from "../../helpers/response";
 
 export default function PengaturanKota() {
+  const { message } = App.useApp();
   const [form] = Form.useForm();
 
   const searchInput = useRef(null);
