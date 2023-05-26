@@ -1,8 +1,8 @@
-import { Avatar, Button, Dropdown, Modal, Tooltip } from "antd";
+import { Avatar, Button, Dropdown, Modal } from "antd";
 import {
   MenuFoldOutlined,
+  MenuOutlined,
   MenuUnfoldOutlined,
-  QuestionCircleFilled,
   UserOutlined,
 } from "@ant-design/icons";
 import { Layout } from "antd";
@@ -22,24 +22,30 @@ const showConfirm = (dispatch) => {
   });
 };
 
-export default function Header({ onCollapse, collapsed }) {
+export default function Header({ onSider, sider, onDrawer }) {
   const dispatch = useAppDispatch();
 
   return (
     <HeaderAntd
       className="bg-white px-2.5 sticky top-0 w-full shadow-sm"
-      style={{ zIndex: 1 }}
+      style={{ zIndex: 11 }}
     >
       <div className="flex justify-between">
-        <div className="relative">
-          <Tooltip title={`${collapsed ? `Show` : `Hide`} Menu`}>
-            <Button
-              type="text"
-              shape="circle"
-              icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-              onClick={onCollapse}
-            />
-          </Tooltip>
+        <div className="relative hidden items-center md:grid">
+          <Button
+            type="text"
+            shape="circle"
+            icon={sider ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+            onClick={onSider}
+          />
+        </div>
+        <div className="relative grid items-center md:hidden">
+          <Button
+            type="text"
+            shape="circle"
+            icon={<MenuOutlined />}
+            onClick={onDrawer}
+          />
         </div>
         <div className="float-left">
           <Dropdown

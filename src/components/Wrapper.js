@@ -1,14 +1,16 @@
-import { Layout, Menu } from "antd";
+import { Drawer, Layout, Menu } from "antd";
 import { useState } from "react";
 import HeaderComponent from "./Header";
 import { useNavigate } from "react-router-dom";
 import Copyright from "./Copyright";
+import { MENU_ITEM } from "../helpers/constants";
 
 const { Content, Footer, Sider } = Layout;
 const rootSubmenuKeys = ["1", "2", "3", "4", "5"];
 
 export default function Wrapper({ children }) {
-  const [collapsed, setCollapsed] = useState(false);
+  const [sider, setSider] = useState(false);
+  const [drawer, setDrawer] = useState(false);
   const [openKeys, setOpenKeys] = useState(["1"]);
   const navigate = useNavigate();
 
@@ -20,6 +22,34 @@ export default function Wrapper({ children }) {
       setOpenKeys(latestOpenKey ? [latestOpenKey] : []);
     }
   };
+
+  const showDrawer = () => {
+    setDrawer(true);
+  };
+
+  const onClose = () => {
+    setDrawer(false);
+  };
+
+  const navigating = (route) => {
+    if (drawer) {
+      setDrawer(false);
+    }
+
+    navigate(route);
+  };
+
+  const items = MENU_ITEM.map((item) =>
+    item?.children
+      ? {
+          ...item,
+          children: item?.children.map((child) => ({
+            ...child,
+            onClick: () => navigating(child?.nav),
+          })),
+        }
+      : { ...item, onClick: () => navigating(item?.nav) }
+  );
 
   return (
     <Layout>
@@ -34,7 +64,8 @@ export default function Wrapper({ children }) {
         width={280}
         trigger={null}
         collapsible
-        collapsed={collapsed}
+        collapsed={sider}
+        className="hidden md:grid"
       >
         <div className="h-8 m-4 bg-gray-400" />
         <Menu
@@ -44,94 +75,32 @@ export default function Wrapper({ children }) {
           defaultSelectedKeys={["1"]}
           openKeys={openKeys}
           onOpenChange={onOpenChange}
-          items={[
-            {
-              key: "1",
-              label: "Beranda",
-              onClick: () => navigate("/"),
-            },
-            {
-              key: "2",
-              label: "Master Rekening",
-              children: [
-                {
-                  key: "2_1",
-                  label: "Akun",
-                  onClick: () => navigate("rekening/akun"),
-                },
-                {
-                  key: "2_2",
-                  label: "Kelompok",
-                  onClick: () => navigate("rekening/kelompok"),
-                },
-                {
-                  key: "2_3",
-                  label: "Jenis",
-                  onClick: () => navigate("rekening/jenis"),
-                },
-                {
-                  key: "2_4",
-                  label: "Objek",
-                  onClick: () => navigate("rekening/objek"),
-                },
-              ],
-            },
-            {
-              key: "3",
-              label: "Transaksi",
-              onClick: () => navigate("transaksi"),
-            },
-            {
-              key: "4",
-              label: "Laporan",
-              children: [
-                {
-                  key: "4_1",
-                  label: "Anggaran Kota",
-                  onClick: () => navigate("laporan/realisasi-anggaran-kota"),
-                },
-                {
-                  key: "4_2",
-                  label: "Anggaran Gabungan Kota",
-                  onClick: () =>
-                    navigate("laporan/realisasi-anggaran-gabungan-kota"),
-                },
-                {
-                  key: "4_3",
-                  label: "Pendapatan & Belanja",
-                  onClick: () =>
-                    navigate("laporan/rekapitulasi-pendapatan-dan-belanja"),
-                },
-              ],
-            },
-            {
-              key: "5",
-              label: "Pengaturan",
-              children: [
-                {
-                  key: "5_1",
-                  label: "Kota",
-                  onClick: () => navigate("pengaturan/kota"),
-                },
-                {
-                  key: "5_2",
-                  label: "Penanda Tangan",
-                  onClick: () => navigate("pengaturan/penanda-tangan"),
-                },
-                {
-                  key: "5_3",
-                  label: "Pengguna",
-                  onClick: () => navigate("pengaturan/pengguna"),
-                },
-              ],
-            },
-          ]}
+          items={items}
         />
       </Sider>
+      <Drawer
+        title="Silara Kab Kota"
+        placement={`left`}
+        onClose={onClose}
+        open={drawer}
+        width={300}
+        bodyStyle={{ padding: 0 }}
+      >
+        <Menu
+          mode="inline"
+          className="text-sm"
+          defaultSelectedKeys={["1"]}
+          openKeys={openKeys}
+          onOpenChange={onOpenChange}
+          style={{ padding: 4 }}
+          items={items}
+        />
+      </Drawer>
       <Layout className="site-layout">
         <HeaderComponent
-          onCollapse={() => setCollapsed(!collapsed)}
-          collapsed={collapsed}
+          onSider={() => setSider(!sider)}
+          sider={sider}
+          onDrawer={() => showDrawer()}
         />
         <Content className="p-2.5 m-2.5 bg-white min-h-fit">{children}</Content>
         <Footer className="text-center m-0 p-4">
