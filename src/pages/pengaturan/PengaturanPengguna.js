@@ -95,6 +95,7 @@ export default function PengaturanPengguna() {
         id: value?.id,
         fullname: value?.fullname,
         username: value?.username,
+        password: "",
         title: value?.title,
         role_id: value?.role_id,
         city_id: value?.city_id,
@@ -201,29 +202,26 @@ export default function PengaturanPengguna() {
           >
             <Input disabled={confirmLoading} />
           </Form.Item>
-          {!isEdit && (
-            <Form.Item
-              label="Kata Sandi"
-              name="password"
-              hidden={isEdit}
-              rules={[
-                {
-                  required: true,
-                  message: "Kata Sandi tidak boleh kosong!",
-                },
-                () => ({
-                  validator(_, value) {
-                    if (value && value.length <= 8)
-                      return Promise.reject("Kata Sandi Min 6 Huruf");
+          <Form.Item
+            label="Kata Sandi"
+            name="password"
+            rules={[
+              {
+                required: !isEdit,
+                message: "Kata Sandi tidak boleh kosong!",
+              },
+              () => ({
+                validator(_, value) {
+                  if (value && value.length <= 8)
+                    return Promise.reject("Kata Sandi Min 8 Huruf");
 
-                    return Promise.resolve();
-                  },
-                }),
-              ]}
-            >
-              <Input.Password disabled={confirmLoading} />
-            </Form.Item>
-          )}
+                  return Promise.resolve();
+                },
+              }),
+            ]}
+          >
+            <Input.Password disabled={confirmLoading} />
+          </Form.Item>
           <Form.Item
             label="Nama"
             name="fullname"
