@@ -54,12 +54,12 @@ export default function Header({ onSider, sider, onDrawer }) {
             placement="bottomLeft"
             menu={{
               items: [
+                // {
+                //   key: "1",
+                //   label: "Ubah Kata Sandi",
+                // },
                 {
                   key: "1",
-                  label: "Ubah Kata Sandi",
-                },
-                {
-                  key: "2",
                   label: "Keluar",
                   onClick: () => showConfirm(),
                 },
