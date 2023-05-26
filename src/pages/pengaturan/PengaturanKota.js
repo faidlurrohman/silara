@@ -115,7 +115,7 @@ export default function PengaturanKota() {
 
   return (
     <>
-      <div className="flex flex-row space-x-2">
+      <div className="flex flex-col space-y-2 sm:space-y-0 sm:space-x-2 sm:flex-row md:space-y-0 md:space-x-2 md:flex-row">
         <ReloadButton onClick={reloadTable} stateLoading={loading} />
         <AddButton onClick={addUpdateRow} stateLoading={loading} />
         {!!cities?.length && (
@@ -124,6 +124,10 @@ export default function PengaturanKota() {
       </div>
       <div className="mt-4">
         <Table
+          scroll={{
+            scrollToFirstRowOnChange: true,
+            x: "max-content",
+          }}
           bordered
           loading={loading}
           dataSource={cities}
@@ -134,6 +138,7 @@ export default function PengaturanKota() {
         />
       </div>
       <Modal
+        style={{ margin: 10 }}
         centered
         open={isShow}
         title={`${isEdit ? `Ubah` : `Tambah`} Data Kota`}
