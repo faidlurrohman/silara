@@ -19,7 +19,15 @@ export const getUrl = (url = "", params = {}) => {
   if (params?.filters) {
     Object.keys(params?.filters).map((key) => {
       if (params?.filters[key]) {
-        filters.push(`&filter[${key}]=${params?.filters[key][0]}`);
+        // for date range
+        if (key.includes("date") && params?.filters[key][0].length > 1) {
+          params?.filters[key][0].map((f, i) => {
+            filters.push(`&filter[${key}_${i === 0 ? `start` : `end`}]=${f}`);
+          });
+        } else {
+          //any else here
+          filters.push(`&filter[${key}]=${params?.filters[key][0]}`);
+        }
       }
     });
   }

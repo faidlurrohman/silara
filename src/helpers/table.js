@@ -3,6 +3,7 @@ import { EditOutlined, SearchOutlined } from "@ant-design/icons";
 import { convertDate, viewDate } from "./date";
 import { DATE_FORMAT_VIEW } from "./constants";
 import { dbDate } from "./date";
+const { RangePicker } = DatePicker;
 
 export const searchColumn = (
   searchRef,
@@ -37,18 +38,33 @@ export const searchColumn = (
           }}
         />
       ) : key.includes("date") ? (
-        <DatePicker
-          ref={searchRef}
-          placeholder={`Cari ${labelHeader}`}
-          format={DATE_FORMAT_VIEW}
-          value={selectedKeys[0] && convertDate(selectedKeys[0])}
-          className="w-full"
-          onChange={(e) => setSelectedKeys(e ? [dbDate(e)] : [])}
-          style={{
-            marginBottom: 8,
-            display: "block",
-          }}
-        />
+        // <DatePicker
+        //   ref={searchRef}
+        //   placeholder={`Cari ${labelHeader}`}
+        //   format={DATE_FORMAT_VIEW}
+        //   value={selectedKeys[0] && convertDate(selectedKeys[0])}
+        //   className="w-full"
+        //   onChange={(e) => setSelectedKeys(e ? [dbDate(e)] : [])}
+        //   style={{
+        //     marginBottom: 8,
+        //     display: "block",
+        //   }}
+        // />
+        <div className="block">
+          <RangePicker
+            allowClear
+            className="w-64 md:72"
+            value={
+              selectedKeys[0] && selectedKeys[0].map((i) => convertDate(i))
+            }
+            placeholder={["Tanggal Awal", "Tanggal Akhir"]}
+            style={{ marginBottom: 8 }}
+            format={DATE_FORMAT_VIEW}
+            onChange={(e) =>
+              setSelectedKeys(e ? [e.map((i) => dbDate(i))] : [])
+            }
+          />
+        </div>
       ) : (
         <Input
           ref={searchRef}
