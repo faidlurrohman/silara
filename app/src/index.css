@@ -1,0 +1,16 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    margin: 0;
+    @apply text-sm font-noto;
+    font-weight: 400;
+  }
+  @media (max-width: 576px) {
+    .ant-picker-panels {
+      flex-direction: column !important;
+    }
+  }
+}
