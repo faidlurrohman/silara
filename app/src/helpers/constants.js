@@ -1,6 +1,3 @@
-import dayjs from "dayjs";
-import { exportDate } from "./date";
-
 const TRANSAKSI_TMP = [
 	{
 		id: Math.floor(Math.random() * 1000),
@@ -120,14 +117,14 @@ const MENU_ITEM = [
 ];
 const EXPORT_TARGET = {
 	city: {
-		filename: `SILARA_KOTA_${exportDate(dayjs())}`,
+		filename: `SILARA_KOTA`,
 		headers: [
 			{ label: "Nama Kota", key: "label" },
 			{ label: "Aktif", key: "active" },
 		],
 	},
 	signer: {
-		filename: `SILARA_PENANDA_TANGAN_${exportDate(dayjs())}`,
+		filename: `SILARA_PENANDA_TANGAN`,
 		headers: [
 			{ label: "NIP", key: "nip" },
 			{ label: "Nama", key: "fullname" },
@@ -136,7 +133,7 @@ const EXPORT_TARGET = {
 		],
 	},
 	user: {
-		filename: `SILARA_PENGGUNA_${exportDate(dayjs())}`,
+		filename: `SILARA_PENGGUNA`,
 		headers: [
 			{ label: "Nama Pengguna", key: "username" },
 			{ label: "Nama", key: "fullname" },
@@ -145,7 +142,7 @@ const EXPORT_TARGET = {
 		],
 	},
 	account_base: {
-		filename: `SILARA_REKENING_AKUN_${exportDate(dayjs())}`,
+		filename: `SILARA_REKENING_AKUN`,
 		headers: [
 			{ label: "Label", key: "label" },
 			{ label: "Keterangan", key: "remark" },
@@ -153,7 +150,7 @@ const EXPORT_TARGET = {
 		],
 	},
 	account_group: {
-		filename: `SILARA_REKENING_KELOMPOK_${exportDate(dayjs())}`,
+		filename: `SILARA_REKENING_KELOMPOK`,
 		headers: [
 			{ label: "Akun Rekening", key: "account_base_label" },
 			{ label: "Label", key: "label" },
@@ -162,7 +159,7 @@ const EXPORT_TARGET = {
 		],
 	},
 	account_type: {
-		filename: `SILARA_REKENING_JENIS_${exportDate(dayjs())}`,
+		filename: `SILARA_REKENING_JENIS`,
 		headers: [
 			{ label: "Kelompok Rekening", key: "account_group_label" },
 			{ label: "Label", key: "label" },
@@ -171,7 +168,7 @@ const EXPORT_TARGET = {
 		],
 	},
 	account_object: {
-		filename: `SILARA_REKENING_OBJEK_${exportDate(dayjs())}`,
+		filename: `SILARA_REKENING_OBJEK`,
 		headers: [
 			{ label: "Jenis Rekening", key: "account_type_label" },
 			{ label: "Label", key: "label" },
@@ -180,7 +177,7 @@ const EXPORT_TARGET = {
 		],
 	},
 	transaction: {
-		filename: `SILARA_TRANSAKSI_${exportDate(dayjs())}`,
+		filename: `SILARA_TRANSAKSI`,
 		headers: [
 			{ label: "Tanggal", key: "trans_date" },
 			{ label: "Kota", key: "city_label" },
