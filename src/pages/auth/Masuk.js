@@ -38,7 +38,7 @@ export default function Masuk() {
 
   return (
     <section className="flex w-full h-screen place-items-center items-center flex-col">
-      <div className="relative mx-6 my-auto md:m-auto md:w-6/12 lg:w-3/12 rounded-md p-8 h-auto">
+      <div className="relative mx-6 my-auto md:m-auto md:w-6/12 lg:w-3/12 rounded-md p-8 h-auto bg-secondary">
         <div className="mb-10 flex flex-col items-center">
           <img alt="Logo" className="w-20 mb-2 md:w-40" src="/img_tmp.jpg" />
           <h1 className="font-bold text-xl md:text-3xl mt-2">

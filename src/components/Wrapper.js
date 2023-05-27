@@ -61,6 +61,7 @@ export default function Wrapper({ children }) {
           top: 0,
           left: 0,
         }}
+        theme="light"
         width={280}
         trigger={null}
         collapsible
@@ -69,7 +70,7 @@ export default function Wrapper({ children }) {
       >
         <div className="h-8 m-4 bg-gray-400" />
         <Menu
-          theme="dark"
+          theme="light"
           mode="inline"
           className="text-sm"
           defaultSelectedKeys={["1"]}

@@ -5,6 +5,10 @@ module.exports = {
       fontFamily: {
         noto: ["Noto Sans HK", "sans-serif"],
       },
+      colors: {
+        primary: "#1677ff",
+        secondary: "#FF9E16",
+      },
     },
   },
   corePlugins: {

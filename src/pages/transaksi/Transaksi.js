@@ -19,13 +19,17 @@ import ReloadButton from "../../components/button/ReloadButton";
 import AddButton from "../../components/button/AddButton";
 import ExportButton from "../../components/button/ExportButton";
 import { responseGet } from "../../helpers/response";
-import { addTransaction, getTransaction } from "../../services/transaction";
+import {
+  addTransaction,
+  getTransaction,
+  removeTransaction,
+} from "../../services/transaction";
 import { getCityList } from "../../services/city";
 import { convertDate, dbDate } from "../../helpers/date";
 import axios from "axios";
 
 export default function Transaksi() {
-  const { message } = App.useApp();
+  const { message, modal } = App.useApp();
   const [form] = Form.useForm();
 
   const searchInput = useRef(null);
@@ -108,6 +112,21 @@ export default function Transaksi() {
     }
   };
 
+  const onDelete = (value) => {
+    modal.confirm({
+      title: "Hapus data transaksi ?",
+      okText: "Ya",
+      cancelText: "Tidak",
+      centered: true,
+      onOk() {
+        removeTransaction(value?.id).then(() => {
+          message.success(`Data berhasil dihapus`);
+          reloadTable();
+        });
+      },
+    });
+  };
+
   const handleAddUpdate = (values) => {
     setConfirmLoading(true);
     addTransaction({ ...values, trans_date: dbDate(values?.trans_date) }).then(
@@ -151,7 +170,7 @@ export default function Transaksi() {
       sorted,
       "int"
     ),
-    actionColumn(addUpdateRow),
+    actionColumn(null, onDelete),
   ];
 
   useEffect(() => {

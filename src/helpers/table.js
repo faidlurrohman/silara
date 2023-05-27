@@ -1,5 +1,9 @@
 import { Button, DatePicker, Input, InputNumber, Space } from "antd";
-import { EditOutlined, SearchOutlined } from "@ant-design/icons";
+import {
+  DeleteOutlined,
+  EditOutlined,
+  SearchOutlined,
+} from "@ant-design/icons";
 import { convertDate, viewDate } from "./date";
 import { DATE_FORMAT_VIEW } from "./constants";
 import { dbDate } from "./date";
@@ -129,22 +133,35 @@ export const activeColumn = (stateFilter) => ({
   render: (value) => (value ? "Ya" : "Tidak"),
 });
 
-export const actionColumn = (onAddUpdate) => ({
+export const actionColumn = (onAddUpdate = null, onDelete = null) => ({
   title: "#",
   key: "action",
   align: "center",
   width: 100,
   render: (value) => (
     <Space size="middle">
-      <Button
-        type="dashed"
-        size="small"
-        icon={<EditOutlined />}
-        style={{ color: "#1677FF" }}
-        onClick={() => onAddUpdate(true, value)}
-      >
-        Ubah
-      </Button>
+      {onAddUpdate && (
+        <Button
+          type="dashed"
+          size="small"
+          icon={<EditOutlined />}
+          style={{ color: "#1677FF" }}
+          onClick={() => onAddUpdate(true, value)}
+        >
+          Ubah
+        </Button>
+      )}
+      {onDelete && (
+        <Button
+          type="dashed"
+          size="small"
+          icon={<DeleteOutlined />}
+          danger
+          onClick={() => onDelete(value)}
+        >
+          Hapus
+        </Button>
+      )}
     </Space>
   ),
 });

@@ -11,3 +11,7 @@ export const addTransaction = (values) => {
     active: values?.active ? "true" : "false",
   });
 };
+
+export const removeTransaction = (id) => {
+  return axios.delete(`/api/transaction/remove/${id}`);
+};
