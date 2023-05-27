@@ -35,6 +35,7 @@ class Account_group_model extends CI_Model {
                 r.__res_msg, 
                 COALESCE(r.__res_count,0)::INT AS __res_count
             FROM r
+            JOIN silarakab.account_base ab ON ab.id=(r.__res_data->>'account_base_id')::INT AND ab.active
         ";
         $query = $this->db->query($sql);
         return model_response($query, 1);
