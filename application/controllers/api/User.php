@@ -54,6 +54,23 @@ class User extends REST_Controller {
         }
     }
 
+    public function remove_delete($id)
+    {
+        return $this->do_delete($id);
+    }
+
+    private function do_delete($id)
+    {
+        $user = $this->Auth_model->check_token();
+        $data = $this->User_model->delete($user, array('id' => $id));
+
+        if ($data['code'] != 0) {
+            $this->response($data, REST_Controller::HTTP_INTERNAL_SERVER_ERROR);
+        } else {
+            $this->response($data, REST_Controller::HTTP_OK);
+        }
+    }
+
     private function input_fields($is_edit = 0)
     {
         return array(

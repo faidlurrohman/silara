@@ -37,4 +37,11 @@ class Signer_model extends CI_Model {
         return model_response($query, 2);
     }
 
+    function delete($user, $params)
+    {
+        $sql = "SELECT * from {$this->cud}('D', '{$this->table}', '".$user['username']."', '[".json_encode($params)."]'::jsonb)";
+        $query = $this->db->query($sql,$params);
+        return model_response($query, 2);
+    }
+
 }
