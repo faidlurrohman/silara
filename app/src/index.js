@@ -22,26 +22,25 @@ dayjs.extend(timezone);
 dayjs.extend(customParseFormat);
 dayjs.locale("id");
 
-const root = ReactDOM.createRoot(document.getElementById("root"));
-root.render(
-  <React.StrictMode>
-    <Provider store={store}>
-      <PersistGate loading={null} persistor={persistor}>
-        <ConfigProvider
-          theme={{
-            token: {
-              fontFamily: "Noto Sans HK",
-            },
-          }}
-          locale={locale}
-        >
-          <App>
-            <MyApp />
-          </App>
-        </ConfigProvider>
-      </PersistGate>
-    </Provider>
-  </React.StrictMode>
+ReactDOM.createRoot(document.getElementById("root")).render(
+	<React.StrictMode>
+		<Provider store={store}>
+			<PersistGate loading={null} persistor={persistor}>
+				<ConfigProvider
+					theme={{
+						token: {
+							fontFamily: "Noto Sans HK",
+						},
+					}}
+					locale={locale}
+				>
+					<App>
+						<MyApp />
+					</App>
+				</ConfigProvider>
+			</PersistGate>
+		</Provider>
+	</React.StrictMode>
 );
 
 // If you want to start measuring performance in your app, pass a function
