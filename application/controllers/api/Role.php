@@ -24,12 +24,17 @@ class Role extends REST_Controller {
     private function do_get_list()
     {   
         $user = $this->Auth_model->check_token();
-        $data = $this->Role_model->get_list($user);
-     
-        if ($data['code'] != 0) {
-            $this->response($data, REST_Controller::HTTP_INTERNAL_SERVER_ERROR);
+
+        if ($user) {
+            $data = $this->Role_model->get_list($user);
+        
+            if ($data['code'] != 0) {
+                $this->response($data, REST_Controller::HTTP_INTERNAL_SERVER_ERROR);
+            } else {
+                $this->response($data, REST_Controller::HTTP_OK);
+            }
         } else {
-            $this->response($data, REST_Controller::HTTP_OK);
+            $this->response(['status'=> "Unauthorized"], REST_Controller::HTTP_UNAUTHORIZED);
         }
     }
 

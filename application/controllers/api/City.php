@@ -24,16 +24,21 @@ class City extends REST_Controller {
     private function do_get_all()
     {   
         $user = $this->Auth_model->check_token();
-        $limit = !empty($this->get('limit')) ? $this->get('limit') : 0; 
-        $offset = !empty($this->get('offset')) ? $this->get('offset') : 0; 
-        $order = !empty($this->get('order')) ? $this->get('order') : 'id desc'; 
-        $filter = !empty($this->get('filter')) ? $this->get('filter') : new stdClass();
-        $data = $this->City_model->get_all($user, $limit, $offset, $order, $filter);
-     
-        if ($data['code'] != 0) {
-            $this->response($data, REST_Controller::HTTP_INTERNAL_SERVER_ERROR);
+    
+        if ($user) {
+            $limit = !empty($this->get('limit')) ? $this->get('limit') : 0; 
+            $offset = !empty($this->get('offset')) ? $this->get('offset') : 0; 
+            $order = !empty($this->get('order')) ? $this->get('order') : 'id desc'; 
+            $filter = !empty($this->get('filter')) ? $this->get('filter') : new stdClass();
+            $data = $this->City_model->get_all($user, $limit, $offset, $order, $filter);
+
+            if ($data['code'] != 0) {
+                $this->response($data, REST_Controller::HTTP_INTERNAL_SERVER_ERROR);
+            } else {
+                $this->response($data, REST_Controller::HTTP_OK);
+            }
         } else {
-            $this->response($data, REST_Controller::HTTP_OK);
+            $this->response(['status'=> "Unauthorized"], REST_Controller::HTTP_UNAUTHORIZED);
         }
     }
 
@@ -45,12 +50,17 @@ class City extends REST_Controller {
     private function do_get_list()
     {   
         $user = $this->Auth_model->check_token();
-        $data = $this->City_model->get_list($user);
-     
-        if ($data['code'] != 0) {
-            $this->response($data, REST_Controller::HTTP_INTERNAL_SERVER_ERROR);
+    
+        if ($user) {
+            $data = $this->City_model->get_list($user);
+
+            if ($data['code'] != 0) {
+                $this->response($data, REST_Controller::HTTP_INTERNAL_SERVER_ERROR);
+            } else {
+                $this->response($data, REST_Controller::HTTP_OK);
+            }
         } else {
-            $this->response($data, REST_Controller::HTTP_OK);
+            $this->response(['status'=> "Unauthorized"], REST_Controller::HTTP_UNAUTHORIZED);
         }
     }
 
@@ -62,12 +72,17 @@ class City extends REST_Controller {
     private function do_create()
     {
         $user = $this->Auth_model->check_token();
-        $data = $this->City_model->save($user, $this->input_fields());
 
-        if ($data['code'] != 0) {
-            $this->response($data, REST_Controller::HTTP_INTERNAL_SERVER_ERROR);
+        if ($user) {
+            $data = $this->City_model->save($user, $this->input_fields());
+
+            if ($data['code'] != 0) {
+                $this->response($data, REST_Controller::HTTP_INTERNAL_SERVER_ERROR);
+            } else {
+                $this->response($data, REST_Controller::HTTP_OK);
+            }
         } else {
-            $this->response($data, REST_Controller::HTTP_OK);
+            $this->response(['status'=> "Unauthorized"], REST_Controller::HTTP_UNAUTHORIZED);
         }
     }
 
@@ -79,12 +94,17 @@ class City extends REST_Controller {
     private function do_delete($id)
     {
         $user = $this->Auth_model->check_token();
-        $data = $this->City_model->delete($user, array('id' => $id));
+        
+        if ($user) {
+            $data = $this->City_model->delete($user, array('id' => $id));
 
-        if ($data['code'] != 0) {
-            $this->response($data, REST_Controller::HTTP_INTERNAL_SERVER_ERROR);
+            if ($data['code'] != 0) {
+                $this->response($data, REST_Controller::HTTP_INTERNAL_SERVER_ERROR);
+            } else {
+                $this->response($data, REST_Controller::HTTP_OK);
+            }
         } else {
-            $this->response($data, REST_Controller::HTTP_OK);
+            $this->response(['status'=> "Unauthorized"], REST_Controller::HTTP_UNAUTHORIZED);
         }
     }
 

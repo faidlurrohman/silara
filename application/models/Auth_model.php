@@ -28,7 +28,7 @@ class Auth_model extends CI_Model {
     public function check_token()
     {        
         $token = get_token();
-        $sql = "SELECT * FROM silarakab.user WHERE token='".$token."'";
+        $sql = "SELECT * FROM silarakab.user WHERE token='".$token."' AND active";
         $query = $this->db->query($sql);
         return model_response($query, 4);
     }
