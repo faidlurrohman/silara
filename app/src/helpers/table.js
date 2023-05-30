@@ -144,7 +144,7 @@ export const actionColumn = (onAddUpdate = null, onActiveChange = null) => ({
 					Ubah
 				</Button>
 			)}
-			{value?.use_alocation_button && (
+			{value?.use_allocation_button && (
 				<Button
 					size="small"
 					disabled={!value?.active}
@@ -153,7 +153,7 @@ export const actionColumn = (onAddUpdate = null, onActiveChange = null) => ({
 						color: value?.active ? COLORS.secondary : COLORS.disable,
 						borderColor: value?.active ? COLORS.secondary : COLORS.disable,
 					}}
-					onClick={() => onAddUpdate(true, value)}
+					onClick={() => onAllocationChange(value)}
 				>
 					Alokasi
 				</Button>
