@@ -29,7 +29,7 @@ class Account_type_model extends CI_Model {
             ) SELECT 
                 (r.__res_data->>'id')::INT AS id,
                 (r.__res_data->>'id')::INT AS value, 
-                CONCAT(CONCAT_WS('.', ab.label, ag.label, r.__res_data->>'label'), ' ', r.__res_data->>'remark') AS label, 
+                CONCAT('(',CONCAT_WS('.', ab.label, ag.label, r.__res_data->>'label'), ') ', r.__res_data->>'remark') AS label, 
                 r.__code, 
                 r.__res_msg, 
                 COALESCE(r.__res_count,0)::INT AS __res_count
