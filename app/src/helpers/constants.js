@@ -22,6 +22,13 @@ const LAPORAN_TMP = [
 	},
 ];
 
+const COLORS = {
+	primary: "#1677FF",
+	secondary: "#F59E0B",
+	success: "#EF4444",
+	danger: "#22C55E",
+	disable: "#64748B",
+};
 /* 
   Usernames can only have: 
   - Letters (a-zA-Z) 
@@ -35,6 +42,10 @@ const DATE_FORMAT_DB = "YYYY-MM-DD";
 const DATE_FORMAT_EXPORT = "YYYYMMDD";
 const DATE_FORMAT_VIEW = "DD MMMM YYYY";
 const PAGINATION = { pagination: { current: 1, pageSize: 10 } };
+const MESSAGE = {
+	add: "Data berhasil ditambah",
+	edit: "Data berhasil diperbarui",
+};
 const MENU_ITEM = [
 	{
 		key: "1",
@@ -189,9 +200,11 @@ const EXPORT_TARGET = {
 };
 
 export {
+	COLORS,
 	MENU_ITEM,
 	REGEX_USERNAME,
 	PAGINATION,
+	MESSAGE,
 	EXPORT_TARGET,
 	DATE_UTC,
 	DATE_FORMAT_VIEW,
