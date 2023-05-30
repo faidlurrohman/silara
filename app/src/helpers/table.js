@@ -123,7 +123,11 @@ export const activeColumn = (stateFilter) => ({
 	render: (value) => (value ? "Ya" : "Tidak"),
 });
 
-export const actionColumn = (onAddUpdate = null, onActiveChange = null) => ({
+export const actionColumn = (
+	onAddUpdate = null,
+	onActiveChange = null,
+	onAllocationChange = null
+) => ({
 	title: "#",
 	key: "action",
 	align: "center",
