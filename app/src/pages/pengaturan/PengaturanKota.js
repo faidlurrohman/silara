@@ -1,26 +1,15 @@
-import {
-	App,
-	Button,
-	Divider,
-	Form,
-	Input,
-	Modal,
-	Radio,
-	Space,
-	Table,
-	// message,
-} from "antd";
+import { App, Button, Divider, Form, Input, Modal, Space, Table } from "antd";
 import { useEffect, useRef, useState } from "react";
-import { addCity, getCities } from "../../services/city";
+import { addCity, getCities, setActiveCity } from "../../services/city";
 import { PAGINATION } from "../../helpers/constants";
 import { actionColumn, activeColumn, searchColumn } from "../../helpers/table";
 import ExportButton from "../../components/button/ExportButton";
 import ReloadButton from "../../components/button/ReloadButton";
 import AddButton from "../../components/button/AddButton";
-import { responseGet } from "../../helpers/response";
+import { messageAction, responseGet } from "../../helpers/response";
 
 export default function PengaturanKota() {
-	const { message } = App.useApp();
+	const { message, modal } = App.useApp();
 	const [form] = Form.useForm();
 
 	const searchInput = useRef(null);
@@ -84,9 +73,25 @@ export default function PengaturanKota() {
 			form.setFieldsValue({
 				id: value?.id,
 				label: value?.label,
-				active: value?.active ? 1 : 0,
 			});
 		}
+	};
+
+	const onActiveChange = (value) => {
+		modal.confirm({
+			content: `${value?.active ? `Nonaktifkan` : `Aktifkan`} data : ${
+				value?.label
+			} ?`,
+			okText: "Ya",
+			cancelText: "Tidak",
+			centered: true,
+			onOk() {
+				setActiveCity(value?.id).then(() => {
+					message.success(messageAction(true));
+					reloadTable();
+				});
+			},
+		});
 	};
 
 	const handleAddUpdate = async (values) => {
@@ -96,7 +101,7 @@ export default function PengaturanKota() {
 			setConfirmLoading(false);
 
 			if (response?.data?.code === 0) {
-				message.success(`Data berhasil di${isEdit ? `perbarui` : `tambahkan`}`);
+				message.success(messageAction(isEdit));
 				addUpdateRow(isEdit);
 				reloadTable();
 			}
@@ -106,7 +111,7 @@ export default function PengaturanKota() {
 	const columns = [
 		searchColumn(searchInput, "label", "Nama Kota", filtered, true, sorted),
 		activeColumn(filtered),
-		actionColumn(addUpdateRow),
+		actionColumn(addUpdateRow, onActiveChange),
 	];
 
 	useEffect(() => {
@@ -153,7 +158,7 @@ export default function PengaturanKota() {
 					labelAlign="left"
 					onFinish={handleAddUpdate}
 					autoComplete="off"
-					initialValues={{ id: "", active: 1 }}
+					initialValues={{ id: "" }}
 				>
 					<Form.Item name="id" hidden>
 						<Input />
@@ -169,12 +174,6 @@ export default function PengaturanKota() {
 						]}
 					>
 						<Input disabled={confirmLoading} />
-					</Form.Item>
-					<Form.Item label="Aktif" name="active">
-						<Radio.Group disabled={confirmLoading}>
-							<Radio value={1}>Ya</Radio>
-							<Radio value={0}>Tidak</Radio>
-						</Radio.Group>
 					</Form.Item>
 					<Divider />
 					<Form.Item className="text-right mb-0">

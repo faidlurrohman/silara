@@ -5,7 +5,6 @@ import {
 	Form,
 	Input,
 	Modal,
-	Radio,
 	Select,
 	Space,
 	Table,
@@ -13,17 +12,17 @@ import {
 import { useEffect, useRef, useState } from "react";
 import { getCityList } from "../../services/city";
 import { getRoleList } from "../../services/role";
-import { addUser, getUsers } from "../../services/user";
+import { addUser, getUsers, setActiveUser } from "../../services/user";
 import { PAGINATION, REGEX_USERNAME } from "../../helpers/constants";
 import { actionColumn, activeColumn, searchColumn } from "../../helpers/table";
 import ExportButton from "../../components/button/ExportButton";
 import ReloadButton from "../../components/button/ReloadButton";
 import AddButton from "../../components/button/AddButton";
-import { responseGet } from "../../helpers/response";
+import { messageAction, responseGet } from "../../helpers/response";
 import axios from "axios";
 
 export default function PengaturanPengguna() {
-	const { message } = App.useApp();
+	const { message, modal } = App.useApp();
 	const [form] = Form.useForm();
 
 	const searchInput = useRef(null);
@@ -99,9 +98,25 @@ export default function PengaturanPengguna() {
 				title: value?.title,
 				role_id: value?.role_id,
 				city_id: value?.city_id,
-				active: value?.active ? 1 : 0,
 			});
 		}
+	};
+
+	const onActiveChange = (value) => {
+		modal.confirm({
+			content: `${value?.active ? `Nonaktifkan` : `Aktifkan`} data : ${
+				value?.username
+			} ?`,
+			okText: "Ya",
+			cancelText: "Tidak",
+			centered: true,
+			onOk() {
+				setActiveUser(value?.id).then(() => {
+					message.success(messageAction(true));
+					reloadTable();
+				});
+			},
+		});
 	};
 
 	const handleAddUpdate = (values) => {
@@ -110,7 +125,7 @@ export default function PengaturanPengguna() {
 			setConfirmLoading(false);
 
 			if (response?.data?.code === 0) {
-				message.success(`Data berhasil di${isEdit ? `perbarui` : `tambahkan`}`);
+				message.success(messageAction(isEdit));
 				addUpdateRow(isEdit);
 				reloadTable();
 			}
@@ -129,7 +144,7 @@ export default function PengaturanPengguna() {
 		searchColumn(searchInput, "fullname", "Nama", filtered, true, sorted),
 		searchColumn(searchInput, "title", "Jabatan", filtered, true, sorted),
 		activeColumn(filtered),
-		actionColumn(addUpdateRow),
+		actionColumn(addUpdateRow, onActiveChange),
 	];
 
 	useEffect(() => {
@@ -176,7 +191,7 @@ export default function PengaturanPengguna() {
 					labelAlign="left"
 					onFinish={handleAddUpdate}
 					autoComplete="off"
-					initialValues={{ id: "", active: 1 }}
+					initialValues={{ id: "" }}
 				>
 					<Form.Item name="id" hidden>
 						<Input />
@@ -280,12 +295,6 @@ export default function PengaturanPengguna() {
 							loading={loading}
 							options={cities}
 						/>
-					</Form.Item>
-					<Form.Item label="Aktif" name="active">
-						<Radio.Group disabled={confirmLoading}>
-							<Radio value={1}>Ya</Radio>
-							<Radio value={0}>Tidak</Radio>
-						</Radio.Group>
 					</Form.Item>
 					<Divider />
 					<Form.Item className="text-right mb-0">
