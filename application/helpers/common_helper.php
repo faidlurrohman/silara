@@ -113,7 +113,7 @@ function err_db($error){
             break;
 
         default : 
-            $message = '';
+            $message = 'Error Postgres Code : '. $code;
     }
 
     return ['code' =>  $code, 'message' => $message];
