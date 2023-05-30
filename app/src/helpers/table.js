@@ -157,7 +157,7 @@ export const actionColumn = (
 						color: value?.active ? COLORS.secondary : COLORS.disable,
 						borderColor: value?.active ? COLORS.secondary : COLORS.disable,
 					}}
-					onClick={() => onAllocationChange(value)}
+					onClick={() => onAllocationChange(true, value)}
 				>
 					Alokasi
 				</Button>
