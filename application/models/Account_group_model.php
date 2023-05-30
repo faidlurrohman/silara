@@ -23,19 +23,20 @@ class Account_group_model extends CI_Model {
 
     function get_list($user)
     {
-        $_json = '{"active":"true"}';
         $sql = "
             WITH r AS (
-                SELECT * FROM {$this->read}(0, 0, '".$user['username']."', '".$this->schema."', 'label', '[".$_json."]'::jsonb)
+                SELECT * FROM {$this->read}(0, 0, '".$user['username']."', '".$this->schema."', 'label', '[{}]'::jsonb)
             ) SELECT 
                 (r.__res_data->>'id')::INT AS id,
-                (r.__res_data->>'id')::INT AS value, 
-                r.__res_data->>'label' AS label, 
+                (r.__res_data->>'id')::INT AS value,
+	            CONCAT(CONCAT_WS('.', ab.label, r.__res_data->>'label'), ' ', r.__res_data->>'remark') AS label, 
                 r.__code, 
                 r.__res_msg, 
                 COALESCE(r.__res_count,0)::INT AS __res_count
             FROM r
             JOIN silarakab.account_base ab ON ab.id=(r.__res_data->>'account_base_id')::INT AND ab.active
+            WHERE (r.__res_data->>'active')::BOOLEAN
+            ORDER BY ab.label,(r.__res_data->>'label')
         ";
         $query = $this->db->query($sql);
         return model_response($query, 1);
