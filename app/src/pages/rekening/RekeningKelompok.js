@@ -168,7 +168,7 @@ export default function RekeningKelompok() {
 				<Table
 					scroll={{
 						scrollToFirstRowOnChange: true,
-						x: "max-content",
+						x: "100%",
 					}}
 					bordered
 					loading={loading}
