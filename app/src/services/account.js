@@ -16,3 +16,7 @@ export const addAccount = (which, values) => {
 export const setActiveAccount = (which, id) => {
 	return axios.delete(`/api/account_${which}/remove/${id}`);
 };
+
+export const setAllocationAccount = (which, values) => {
+	return axios.post(`/api/account_${which}/allocation`, values);
+};

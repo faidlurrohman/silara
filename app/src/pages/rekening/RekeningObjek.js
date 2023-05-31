@@ -15,10 +15,12 @@ import {
 	getAccount,
 	getAccountList,
 	setActiveAccount,
+	setAllocationAccount,
 } from "../../services/account";
 import { PAGINATION } from "../../helpers/constants";
 import { messageAction, responseGet } from "../../helpers/response";
 import { actionColumn, activeColumn, searchColumn } from "../../helpers/table";
+import { getCityList } from "../../services/city";
 import ReloadButton from "../../components/button/ReloadButton";
 import AddButton from "../../components/button/AddButton";
 import ExportButton from "../../components/button/ExportButton";
@@ -38,26 +40,37 @@ export default function RekeningJenis() {
 	const [isEdit, setEdit] = useState(false);
 	const [confirmLoading, setConfirmLoading] = useState(false);
 
+	const [isShowAllocation, setShowAllocation] = useState(false);
+	const [selectedObject, setSelectedObject] = useState({});
+
 	const [accountObject, setAccountObject] = useState([]);
 	const [accountType, setAccountType] = useState([]);
+	const [cities, setCities] = useState([]);
 	const [loading, setLoading] = useState(false);
 
 	const reloadData = () => {
 		setLoading(true);
-		axios.all([getAccount("object", tableParams), getAccountList("type")]).then(
-			axios.spread((_objects, _types) => {
-				setLoading(false);
-				setAccountObject(responseGet(_objects).data);
-				setTableParams({
-					...tableParams,
-					pagination: {
-						...tableParams.pagination,
-						total: responseGet(_objects).total_count,
-					},
-				});
-				setAccountType(_types?.data?.data);
-			})
-		);
+		axios
+			.all([
+				getAccount("object", tableParams),
+				getAccountList("type"),
+				getCityList(),
+			])
+			.then(
+				axios.spread((_objects, _types, _cities) => {
+					setLoading(false);
+					setAccountObject(responseGet(_objects).data);
+					setTableParams({
+						...tableParams,
+						pagination: {
+							...tableParams.pagination,
+							total: responseGet(_objects).total_count,
+						},
+					});
+					setAccountType(_types?.data?.data);
+					setCities(_cities?.data?.data);
+				})
+			);
 	};
 
 	const onTableChange = (pagination, filters, sorter) => {
@@ -116,6 +129,33 @@ export default function RekeningJenis() {
 		});
 	};
 
+	const onAllocationChange = (isShowAllocation = false, value = {}) => {
+		setShowAllocation(isShowAllocation);
+
+		if (isShowAllocation) {
+			setSelectedObject(value);
+			form.setFieldsValue({
+				id: value?.id,
+				allocation_cities: value?.allocation_cities || [],
+			});
+		} else {
+			form.resetFields();
+			setSelectedObject({});
+		}
+	};
+
+	const handleAddAllocation = (values) => {
+		setConfirmLoading(true);
+		setAllocationAccount("object", values).then((response) => {
+			setConfirmLoading(false);
+			if (response?.data?.code === 0) {
+				message.success(messageAction(true));
+				onAllocationChange();
+				reloadTable();
+			}
+		});
+	};
+
 	const handleAddUpdate = (values) => {
 		setConfirmLoading(true);
 		addAccount("object", values).then((response) => {
@@ -141,7 +181,7 @@ export default function RekeningJenis() {
 		searchColumn(searchInput, "label", "Label", filtered, true, sorted),
 		searchColumn(searchInput, "remark", "Keterangan", filtered, true, sorted),
 		activeColumn(filtered),
-		actionColumn(addUpdateRow, onActiveChange),
+		actionColumn(addUpdateRow, onActiveChange, onAllocationChange),
 	];
 
 	useEffect(() => {
@@ -187,7 +227,7 @@ export default function RekeningJenis() {
 				<Divider />
 				<Form
 					form={form}
-					name="basic"
+					name="action"
 					labelCol={{ span: 8 }}
 					labelAlign="left"
 					onFinish={handleAddUpdate}
@@ -253,6 +293,59 @@ export default function RekeningJenis() {
 							<Button
 								disabled={confirmLoading}
 								onClick={() => addUpdateRow(isEdit)}
+							>
+								Kembali
+							</Button>
+							<Button loading={confirmLoading} htmlType="submit" type="primary">
+								Simpan
+							</Button>
+						</Space>
+					</Form.Item>
+				</Form>
+			</Modal>
+			<Modal
+				style={{ margin: 10 }}
+				centered
+				open={isShowAllocation}
+				title={`Alokasi - ${selectedObject?.account_object_label || ``}`}
+				onCancel={() => onAllocationChange()}
+				footer={null}
+			>
+				<Divider />
+				<Form
+					form={form}
+					name="allocation"
+					labelCol={{ span: 4 }}
+					labelAlign="left"
+					onFinish={handleAddAllocation}
+					autoComplete="off"
+					initialValues={{ id: "", allocation_cities: [] }}
+				>
+					<Form.Item name="id" hidden>
+						<Input />
+					</Form.Item>
+					<Form.Item label="Kota" name="allocation_cities">
+						<Select
+							allowClear
+							mode="multiple"
+							showSearch
+							optionFilterProp="children"
+							filterOption={(input, option) =>
+								(option?.label ?? "")
+									.toLowerCase()
+									.includes(input.toLowerCase())
+							}
+							disabled={confirmLoading}
+							loading={loading}
+							options={cities}
+						/>
+					</Form.Item>
+					<Divider />
+					<Form.Item className="text-right mb-0">
+						<Space direction="horizontal">
+							<Button
+								disabled={confirmLoading}
+								onClick={() => onAllocationChange()}
 							>
 								Kembali
 							</Button>

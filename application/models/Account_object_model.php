@@ -67,4 +67,12 @@ class Account_object_model extends CI_Model {
         return model_response($query, 2);
     }
 
+    function save_allocation($user, $params)
+    {
+        $sql = "SELECT * from {$this->cud}('C', '{$this->table}', '".$user['username']."', '[".json_encode($params)."]'::jsonb)";
+        // echo $sql;exit;
+        $query = $this->db->query($sql,$params);
+        return model_response($query, 2);
+    }
+
 }

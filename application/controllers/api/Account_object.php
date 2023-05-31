@@ -86,6 +86,28 @@ class Account_object extends REST_Controller {
         }
     }
 
+    public function allocation_post()
+    {
+        $this->do_allocation();
+    }
+
+    private function do_allocation()
+    {
+        $user = $this->Auth_model->check_token();
+
+        if($user){
+            $data = $this->Account_object_model->save_allocation($user, $this->input_allocation_fields());
+
+            if ($data['code'] != 0) {
+                $this->response($data, REST_Controller::HTTP_INTERNAL_SERVER_ERROR);
+            } else {
+                $this->response($data, REST_Controller::HTTP_OK);
+            }
+        } else {
+            $this->response(['status'=> "Unauthorized"], REST_Controller::HTTP_UNAUTHORIZED);
+        }
+    }
+
     public function remove_delete($id)
     {
         return $this->do_delete($id);
@@ -116,6 +138,14 @@ class Account_object extends REST_Controller {
             'label' => $this->post_or_put('label', $is_edit),
             'remark' => $this->post_or_put('remark', $is_edit),
             'active' => $this->post_or_put('active', $is_edit),
+        );
+    }
+
+    private function input_allocation_fields($is_edit = 0)
+    {
+        return array(
+            'id' => $this->post_or_put('id', $is_edit),
+            'allocation_cities' => $this->post_or_put('allocation_cities', $is_edit)
         );
     }
 

@@ -96,6 +96,10 @@ function err_msg($query, $message = ''){
         case 106:
             $message = 'Data yang di kirim tidak sesuai';
             break;
+        // data alokasi kota tidak bisa dirubah
+        case 110:
+            $message = 'Data alokasi kota sudah ada data transaksi dan tidak bisa di non alokasikan';
+            break;
     }
 
     return $message;
