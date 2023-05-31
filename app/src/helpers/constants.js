@@ -50,11 +50,13 @@ const MENU_ITEM = [
 	{
 		key: "1",
 		label: "Beranda",
+		roles: [1, 2, 3, 4],
 		nav: "/",
 	},
 	{
 		key: "2",
 		label: "Master Rekening",
+		roles: [1, 3, 4],
 		children: [
 			{
 				key: "2_1",
@@ -82,10 +84,12 @@ const MENU_ITEM = [
 		key: "3",
 		label: "Transaksi",
 		nav: "transaksi",
+		roles: [1, 2, 3, 4],
 	},
 	{
 		key: "4",
 		label: "Laporan",
+		roles: [1, 2, 3, 4],
 		children: [
 			{
 				key: "4_1",
@@ -107,6 +111,7 @@ const MENU_ITEM = [
 	{
 		key: "5",
 		label: "Pengaturan",
+		roles: [1, 3, 4],
 		children: [
 			{
 				key: "5_1",
@@ -198,8 +203,21 @@ const EXPORT_TARGET = {
 		],
 	},
 };
+const MENU_ACCESS = {
+	1: ["all"],
+	2: [
+		"/",
+		"/transaksi",
+		"/laporan/realisasi-anggaran-kota",
+		"/laporan/realisasi-anggaran-gabungan-kota",
+		"/laporan/rekapitulasi-pendapatan-dan-belanja",
+	],
+	3: ["all"],
+	4: ["all"],
+};
 
 export {
+	MENU_ACCESS,
 	COLORS,
 	MENU_ITEM,
 	REGEX_USERNAME,
