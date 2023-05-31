@@ -137,7 +137,6 @@ class Account_object extends REST_Controller {
             'account_type_id' => $this->post_or_put('account_type_id', $is_edit),
             'label' => $this->post_or_put('label', $is_edit),
             'remark' => $this->post_or_put('remark', $is_edit),
-            'active' => $this->post_or_put('active', $is_edit),
         );
     }
 

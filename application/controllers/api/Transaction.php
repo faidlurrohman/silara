@@ -95,7 +95,6 @@ class Transaction extends REST_Controller {
             'plan_amount' => $this->post_or_put('plan_amount', $is_edit),
             'real_amount' => $this->post_or_put('real_amount', $is_edit),
             'trans_date' => $this->post_or_put('trans_date', $is_edit),
-            'active' => $this->post_or_put('active', $is_edit),
         );
     }
 

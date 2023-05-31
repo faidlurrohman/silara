@@ -93,7 +93,6 @@ class Signer extends REST_Controller {
             'nip' => $this->post_or_put('nip', $is_edit),
             'fullname' => $this->post_or_put('fullname', $is_edit),
             'title' => $this->post_or_put('title', $is_edit),
-            'active' => $this->post_or_put('active', $is_edit),
         );
     }
 

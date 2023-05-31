@@ -114,7 +114,6 @@ class Account_base extends REST_Controller {
             'id' => $this->post_or_put('id', $is_edit),
             'label' => $this->post_or_put('label', $is_edit),
             'remark' => $this->post_or_put('remark', $is_edit),
-            'active' => $this->post_or_put('active', $is_edit),
         );
     }
 

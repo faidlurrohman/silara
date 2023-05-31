@@ -115,7 +115,6 @@ class Account_group extends REST_Controller {
             'account_base_id' => $this->post_or_put('account_base_id', $is_edit),
             'label' => $this->post_or_put('label', $is_edit),
             'remark' => $this->post_or_put('remark', $is_edit),
-            'active' => $this->post_or_put('active', $is_edit),
         );
     }
 

@@ -96,7 +96,6 @@ class User extends REST_Controller {
             'city_id' => $this->post_or_put('city_id', $is_edit),
             'fullname' => $this->post_or_put('fullname', $is_edit),
             'title' => $this->post_or_put('title', $is_edit),
-            'active' => $this->post_or_put('active', $is_edit),
         );
     }
 
