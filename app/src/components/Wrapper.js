@@ -1,5 +1,5 @@
 import { Drawer, Layout, Menu } from "antd";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import HeaderComponent from "./Header";
 import { useNavigate } from "react-router-dom";
 import Copyright from "./Copyright";

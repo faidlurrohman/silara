@@ -14,7 +14,6 @@ class Auth_model extends CI_Model {
     {
         $sql = "SELECT * FROM silarakab.check_auth('$username','$password')";
         $query = $this->db->query($sql);
-        
         return model_response($query, 10);
     }
 

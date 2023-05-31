@@ -44,4 +44,12 @@ class User_model extends CI_Model {
         return model_response($query, 2);
     }
 
+    function update_password($user, $params)
+    {
+        $params["id"] = '0';
+        $sql = "SELECT * from {$this->cud}('U', '{$this->table}', '".$user['username']."', '[".json_encode($params)."]'::jsonb)";
+        $query = $this->db->query($sql,$params);
+        return model_response($query, 2);
+    }
+
 }

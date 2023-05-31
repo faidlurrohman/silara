@@ -12,3 +12,7 @@ export const addUser = (values) => {
 export const setActiveUser = (id) => {
 	return axios.delete(`/api/user/remove/${id}`);
 };
+
+export const updatePasswordUser = (values) => {
+	return axios.post("/api/user/update_password", values);
+};

@@ -39,12 +39,18 @@ axiosInstance.interceptors.response.use(
 			ping().then((p) => {
 				if (p?.data?.status) {
 					// check token authotrization
-					if (Cookies.get(process.env.REACT_APP_ACCESS_TOKEN) === undefined) {
+					if (error?.response?.status === 401) {
+						store.dispatch(logoutAction());
+						message.error(
+							error?.response?.data?.message ||
+								error.message ||
+								"Data pengguna tidak terdaftar"
+						);
+					} else if (
+						Cookies.get(process.env.REACT_APP_ACCESS_TOKEN) === undefined
+					) {
 						store.dispatch(logoutAction());
 						message.error("Sesi anda berakhir");
-					} else if (error?.response?.status === 401) {
-						store.dispatch(logoutAction());
-						message.error("Data pengguna tidak terdaftar");
 					} else if (
 						// any error was handled
 						error?.code === "ERR_BAD_RESPONSE" &&

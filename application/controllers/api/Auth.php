@@ -24,7 +24,7 @@ class Auth extends REST_Controller {
         $data = $this->Auth_model->login($this->post('username'),$this->post('password'));
 
         if ($data['code'] != 0) {
-            $this->response($data, REST_Controller::HTTP_INTERNAL_SERVER_ERROR);
+            $this->response($data, REST_Controller::HTTP_UNAUTHORIZED);
         } else {
             $auth = $this->Auth_model->get_auth($this->post('username'));
             $this->response($auth, REST_Controller::HTTP_OK);

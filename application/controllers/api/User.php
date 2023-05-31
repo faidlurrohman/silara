@@ -64,6 +64,28 @@ class User extends REST_Controller {
         }
     }
 
+    public function update_password_post()
+    {
+        $this->do_update_password();
+    }
+
+    private function do_update_password()
+    {
+        $user = $this->Auth_model->check_token();
+
+        if ($user) {
+            $data = $this->User_model->update_password($user, $this->input_fields_self_password());
+
+            if ($data['code'] != 0) {
+                $this->response($data, REST_Controller::HTTP_INTERNAL_SERVER_ERROR);
+            } else {
+                $this->response($data, REST_Controller::HTTP_OK);
+            }
+        } else {
+            $this->response(['status'=> "Unauthorized"], REST_Controller::HTTP_UNAUTHORIZED);
+        }
+    }
+
     public function remove_delete($id)
     {
         return $this->do_delete($id);
@@ -84,6 +106,14 @@ class User extends REST_Controller {
         } else {
             $this->response(['status'=> "Unauthorized"], REST_Controller::HTTP_UNAUTHORIZED);
         }
+    }
+
+    private function input_fields_self_password($is_edit = 0)
+    {
+        return array(
+            'username' => $this->post_or_put('username', $is_edit),
+            'new_password' => $this->post_or_put('new_password', $is_edit),
+        );
     }
 
     private function input_fields($is_edit = 0)
