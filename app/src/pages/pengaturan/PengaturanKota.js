@@ -79,9 +79,8 @@ export default function PengaturanKota() {
 
 	const onActiveChange = (value) => {
 		modal.confirm({
-			content: `${value?.active ? `Nonaktifkan` : `Aktifkan`} data : ${
-				value?.label
-			} ?`,
+			title: `${value?.active ? `Nonaktifkan` : `Aktifkan`} data :`,
+			content: <>{value?.label}</>,
 			okText: "Ya",
 			cancelText: "Tidak",
 			centered: true,

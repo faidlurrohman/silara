@@ -91,9 +91,8 @@ export default function PengaturanPenandaTangan() {
 
 	const onActiveChange = (value) => {
 		modal.confirm({
-			content: `${value?.active ? `Nonaktifkan` : `Aktifkan`} data : ${
-				value?.nip
-			} ?`,
+			title: `${value?.active ? `Nonaktifkan` : `Aktifkan`} data :`,
+			content: <>{value?.nip}</>,
 			okText: "Ya",
 			cancelText: "Tidak",
 			centered: true,

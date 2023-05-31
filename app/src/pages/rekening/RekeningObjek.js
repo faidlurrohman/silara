@@ -114,9 +114,12 @@ export default function RekeningJenis() {
 
 	const onActiveChange = (value) => {
 		modal.confirm({
-			content: `${value?.active ? `Nonaktifkan` : `Aktifkan`} data : ${
-				value?.label
-			} ${value?.remark} ?`,
+			title: `${value?.active ? `Nonaktifkan` : `Aktifkan`} data :`,
+			content: (
+				<>
+					({value?.label}) {value?.remark}
+				</>
+			),
 			okText: "Ya",
 			cancelText: "Tidak",
 			centered: true,

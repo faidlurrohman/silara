@@ -104,9 +104,8 @@ export default function PengaturanPengguna() {
 
 	const onActiveChange = (value) => {
 		modal.confirm({
-			content: `${value?.active ? `Nonaktifkan` : `Aktifkan`} data : ${
-				value?.username
-			} ?`,
+			title: `${value?.active ? `Nonaktifkan` : `Aktifkan`} data :`,
+			content: <>{value?.username}</>,
 			okText: "Ya",
 			cancelText: "Tidak",
 			centered: true,
