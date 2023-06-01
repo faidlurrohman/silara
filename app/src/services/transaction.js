@@ -9,6 +9,16 @@ export const addTransaction = (values) => {
 	return axios.post("/api/transaction/add", values);
 };
 
-export const removeTransaction = (id) => {
+export const setActiveTransaction = (id) => {
 	return axios.delete(`/api/transaction/remove/${id}`);
+};
+
+export const getTransactionObjectList = () => {
+	return axios.get(`/api/transaction/object_list`);
+};
+
+export const getLastTransaction = (object_id) => {
+	return axios.get(
+		`/api/transaction/last_transaction?filter[account_object_id]=${object_id}`
+	);
 };

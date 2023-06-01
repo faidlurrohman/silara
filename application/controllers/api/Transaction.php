@@ -42,6 +42,51 @@ class Transaction extends REST_Controller {
         }
     }
 
+    public function last_transaction_get()
+    {
+        $this->do_get_last_transaction();
+    }
+
+    private function do_get_last_transaction()
+    {   
+        $user = $this->Auth_model->check_token();
+
+        if($user){
+            $filter = !empty($this->get('filter')) ? $this->get('filter') : new stdClass();
+            $data = $this->Transaction_model->get_last_transaction($user, $filter);
+        
+            if ($data['code'] != 0) {
+                $this->response($data, REST_Controller::HTTP_INTERNAL_SERVER_ERROR);
+            } else {
+                $this->response($data, REST_Controller::HTTP_OK);
+            }
+        } else {
+            $this->response(['status'=> "Unauthorized"], REST_Controller::HTTP_UNAUTHORIZED);
+        }
+    }
+
+    public function object_list_get()
+    {
+        $this->do_get_list_object();
+    }
+
+    private function do_get_list_object()
+    {   
+        $user = $this->Auth_model->check_token();
+
+        if($user){
+            $data = $this->Transaction_model->get_object_list($user);
+        
+            if ($data['code'] != 0) {
+                $this->response($data, REST_Controller::HTTP_INTERNAL_SERVER_ERROR);
+            } else {
+                $this->response($data, REST_Controller::HTTP_OK);
+            }
+        } else {
+            $this->response(['status'=> "Unauthorized"], REST_Controller::HTTP_UNAUTHORIZED);
+        }
+    }
+
     public function add_post()
     {
         $this->do_create();
