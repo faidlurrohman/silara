@@ -106,7 +106,7 @@ export default function Transaksi() {
 		setLastTransaction({});
 		form.resetFields();
 
-		if (role_id !== 1) {
+		if (role_id !== 1 && cities[0]?.id) {
 			form.setFieldsValue({ city_id: cities[0].id });
 		}
 	};
