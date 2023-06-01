@@ -143,11 +143,7 @@ export default function Header({ onSider, sider, onDrawer }) {
 							},
 						]}
 					>
-						<Input
-							disabled
-							readOnly
-							style={{ background: "#FFF", color: "#000" }}
-						/>
+						<Input disabled style={{ background: "#FFF", color: "#000" }} />
 					</Form.Item>
 					<Form.Item
 						label="Kata Sandi Baru"
