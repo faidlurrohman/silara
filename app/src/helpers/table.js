@@ -9,6 +9,7 @@ import {
 import { convertDate, viewDate } from "./date";
 import { COLORS, DATE_FORMAT_VIEW } from "./constants";
 import { dbDate } from "./date";
+import { formatterNumber } from "./number";
 const { RangePicker } = DatePicker;
 
 export const searchColumn = (
@@ -100,6 +101,8 @@ export const searchColumn = (
 	},
 	render: (value) => {
 		if (key.includes("date")) return viewDate(value);
+
+		if (key.includes("amount")) return formatterNumber(value);
 
 		return value;
 	},

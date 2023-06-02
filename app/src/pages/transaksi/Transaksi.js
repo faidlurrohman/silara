@@ -31,6 +31,7 @@ import { getCityList } from "../../services/city";
 import { convertDate, dbDate, viewDate } from "../../helpers/date";
 import axios from "axios";
 import useRole from "../../hooks/useRole";
+import { formatterNumber, parserNumber } from "../../helpers/number";
 
 export default function Transaksi() {
 	const { message, modal } = App.useApp();
@@ -370,7 +371,12 @@ export default function Transaksi() {
 								}),
 							]}
 						>
-							<InputNumber className="w-full" disabled={confirmLoading} />
+							<InputNumber
+								className="w-full"
+								disabled={confirmLoading}
+								formatter={(value) => formatterNumber(value)}
+								parser={(value) => parserNumber(value)}
+							/>
 						</Form.Item>
 						<Form.Item
 							label="Realisasi (Rp)"
@@ -395,7 +401,12 @@ export default function Transaksi() {
 								}),
 							]}
 						>
-							<InputNumber className="w-full" disabled={confirmLoading} />
+							<InputNumber
+								className="w-full"
+								disabled={confirmLoading}
+								formatter={(value) => formatterNumber(value)}
+								parser={(value) => parserNumber(value)}
+							/>
 						</Form.Item>
 						<Divider />
 						<Form.Item className="text-right mb-0">
