@@ -3,7 +3,7 @@ module.exports = {
 	theme: {
 		extend: {
 			fontFamily: {
-				noto: ["Noto Sans HK", "sans-serif"],
+				noto: ["Noto Sans HK"],
 			},
 			colors: {
 				primary: "#1677FF",

@@ -3,14 +3,19 @@
 @tailwind utilities;
 
 @layer base {
-  body {
-    margin: 0;
-    @apply text-sm font-noto;
-    font-weight: 400;
-  }
-  @media (max-width: 576px) {
-    .ant-picker-panels {
-      flex-direction: column !important;
-    }
-  }
+	body {
+		margin: 0;
+	}
+
+	@font-face {
+		font-family: "Noto Sans HK";
+		src: local("NotoSansHK-Regular"),
+			url("./assets/fonts/NotoSansHK-Regular.otf") format("truetype");
+	}
+
+	@media (max-width: 576px) {
+		.ant-picker-panels {
+			flex-direction: column !important;
+		}
+	}
 }
