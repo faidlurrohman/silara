@@ -124,7 +124,7 @@ export default function Transaksi() {
 			centered: true,
 			onOk() {
 				setActiveTransaction(value?.id).then(() => {
-					message.success(`Data berhasil dihapus`);
+					message.success(messageAction(true));
 					reloadTable();
 				});
 			},
