@@ -132,7 +132,7 @@ export default function Wrapper({ children }) {
 			</Drawer>
 			<Layout>
 				<HeaderComponent onDrawer={() => showDrawer()} />
-				<Content className="p-2.5 m-2.5 bg-white min-h-fit rounded-md">
+				<Content className="p-2.5 m-2.5 bg-white min-h-fit rounded-md shadow-sm">
 					{children}
 				</Content>
 				<Footer className="text-center m-0 p-4">
