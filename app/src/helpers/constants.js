@@ -98,17 +98,17 @@ const MENU_ITEM = [
 		children: [
 			{
 				key: "/laporan/realisasi-anggaran-kota",
-				label: "Anggaran Kota",
+				label: "Realisasi Anggaran Kota",
 				nav: "laporan/realisasi-anggaran-kota",
 			},
 			{
 				key: "/laporan/realisasi-anggaran-gabungan-kota",
-				label: "Anggaran Gabungan Kota",
+				label: "Realisasi Anggaran Gabungan Kota",
 				nav: "laporan/realisasi-anggaran-gabungan-kota",
 			},
 			{
 				key: "/laporan/rekapitulasi-pendapatan-dan-belanja",
-				label: "Pendapatan & Belanja",
+				label: "Rekapitulasi Pendapatan & Belanja",
 				nav: "laporan/rekapitulasi-pendapatan-dan-belanja",
 			},
 		],

@@ -81,10 +81,15 @@ export const searchColumn = (
 					onClick={() => confirm()}
 					icon={<SearchOutlined />}
 					size="small"
+					style={{ width: 65 }}
 				>
 					Cari
 				</Button>
-				<Button onClick={() => clearFilters()} size="small">
+				<Button
+					onClick={() => clearFilters()}
+					size="small"
+					style={{ width: 65 }}
+				>
 					Hapus
 				</Button>
 			</Space>
