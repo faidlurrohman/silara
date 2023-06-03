@@ -23,11 +23,16 @@ const LAPORAN_TMP = [
 ];
 
 const COLORS = {
-	primary: "#1677FF",
-	secondary: "#F59E0B",
-	success: "#EF4444",
-	danger: "#22C55E",
+	main: "#1C4F49",
+	mainDark: "#18423d",
+	secondary: "#FC671A",
+	secondaryOpacity: "rgba(252, 103, 26, 0.3)",
+	info: "#1677FF",
+	success: "#22C55E",
+	danger: "#EF4444",
 	disable: "#64748B",
+	white: "#FFFFFF",
+	black: "#000000",
 };
 /* 
   Usernames can only have: 

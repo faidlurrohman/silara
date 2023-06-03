@@ -3,11 +3,14 @@ module.exports = {
 	theme: {
 		extend: {
 			fontFamily: {
-				noto: ["Noto Sans HK"],
+				noto: ["Noto Sans HK Regular"],
+				medium: ["Noto Sans HK Medium"],
 			},
 			colors: {
-				primary: "#1677FF",
-				secondary: "#FF9E16",
+				main: "#1C4F49",
+				mainDark: "#18423d",
+				secondary: "#FC671A",
+				secondaryOpacity: "rgba(252, 103, 26, 0.3)",
 			},
 		},
 	},

@@ -3,15 +3,15 @@ import { useState } from "react";
 import HeaderComponent from "./Header";
 import { useNavigate } from "react-router-dom";
 import Copyright from "./Copyright";
-import { MENU_ITEM } from "../helpers/constants";
+import { COLORS, MENU_ITEM } from "../helpers/constants";
 import useRole from "../hooks/useRole";
+import { CloseOutlined } from "@ant-design/icons";
 
 const { Content, Footer, Sider } = Layout;
 const rootSubmenuKeys = ["1", "2", "3", "4", "5"];
 
 export default function Wrapper({ children }) {
 	const { role_id } = useRole();
-	const [sider, setSider] = useState(false);
 	const [drawer, setDrawer] = useState(false);
 	const [openKeys, setOpenKeys] = useState(["1"]);
 	const navigate = useNavigate();
@@ -68,15 +68,12 @@ export default function Wrapper({ children }) {
 				theme="light"
 				width={280}
 				trigger={null}
-				collapsible
-				collapsed={sider}
 				className="hidden md:grid"
 			>
 				<div className="h-8 m-4 bg-gray-400" />
 				<Menu
-					theme="light"
 					mode="inline"
-					className="text-sm"
+					className="font-medium menu-wide"
 					defaultSelectedKeys={["1"]}
 					openKeys={openKeys}
 					onOpenChange={onOpenChange}
@@ -84,30 +81,29 @@ export default function Wrapper({ children }) {
 				/>
 			</Sider>
 			<Drawer
-				title="Silara Kab Kota"
+				title={<span className="text-white">{process.env.REACT_APP_NAME}</span>}
+				closeIcon={<CloseOutlined style={{ color: COLORS.white }} />}
 				placement={`left`}
 				onClose={onClose}
 				open={drawer}
 				width={300}
-				bodyStyle={{ padding: 0 }}
+				headerStyle={{ backgroundColor: COLORS.main }}
+				bodyStyle={{ padding: 0, backgroundColor: COLORS.main }}
 			>
 				<Menu
 					mode="inline"
-					className="text-sm"
+					className="font-medium menu-wide"
 					defaultSelectedKeys={["1"]}
 					openKeys={openKeys}
 					onOpenChange={onOpenChange}
-					style={{ padding: 4 }}
 					items={items}
 				/>
 			</Drawer>
-			<Layout className="site-layout">
-				<HeaderComponent
-					onSider={() => setSider(!sider)}
-					sider={sider}
-					onDrawer={() => showDrawer()}
-				/>
-				<Content className="p-2.5 m-2.5 bg-white min-h-fit">{children}</Content>
+			<Layout>
+				<HeaderComponent onDrawer={() => showDrawer()} />
+				<Content className="p-2.5 m-2.5 bg-white min-h-fit rounded-md">
+					{children}
+				</Content>
 				<Footer className="text-center m-0 p-4">
 					<Copyright />
 				</Footer>

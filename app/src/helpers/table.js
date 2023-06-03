@@ -91,7 +91,9 @@ export const searchColumn = (
 		</div>
 	),
 	filterIcon: (filtered) => (
-		<SearchOutlined style={{ color: filtered ? COLORS.primary : undefined }} />
+		<SearchOutlined
+			style={{ color: filtered ? COLORS.secondary : undefined }}
+		/>
 	),
 	filteredValue: stateFilter[key] || null,
 	onFilterDropdownOpenChange: (visible) => {
@@ -143,8 +145,8 @@ export const actionColumn = (
 					disabled={!value?.active}
 					icon={<EditOutlined />}
 					style={{
-						color: value?.active ? COLORS.primary : COLORS.disable,
-						borderColor: value?.active ? COLORS.primary : COLORS.disable,
+						color: value?.active ? COLORS.info : COLORS.disable,
+						borderColor: value?.active ? COLORS.info : COLORS.disable,
 					}}
 					onClick={() => onAddUpdate(true, value)}
 				>
@@ -172,8 +174,8 @@ export const actionColumn = (
 						icon={value?.active ? <StopOutlined /> : <CheckCircleOutlined />}
 						danger={value?.active}
 						style={{
-							color: value?.active ? COLORS.success : COLORS.danger,
-							borderColor: value?.active ? COLORS.success : COLORS.danger,
+							color: value?.active ? COLORS.danger : COLORS.success,
+							borderColor: value?.active ? COLORS.danger : COLORS.success,
 						}}
 						onClick={() => onActiveChange(value)}
 					>

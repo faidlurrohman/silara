@@ -9,12 +9,7 @@ import {
 	Modal,
 	Space,
 } from "antd";
-import {
-	MenuFoldOutlined,
-	MenuOutlined,
-	MenuUnfoldOutlined,
-	UserOutlined,
-} from "@ant-design/icons";
+import { MenuOutlined, UserOutlined } from "@ant-design/icons";
 import { Layout } from "antd";
 import { useAppDispatch, useAppSelector } from "../hooks/useRedux";
 import { logoutAction } from "../store/actions/session";
@@ -22,9 +17,10 @@ import { useState } from "react";
 import useRole from "../hooks/useRole";
 import { updatePasswordUser } from "../services/user";
 import { messageAction } from "../helpers/response";
+import { COLORS } from "../helpers/constants";
 const { Header: HeaderAntd } = Layout;
 
-export default function Header({ onSider, sider, onDrawer }) {
+export default function Header({ onDrawer }) {
 	const session = useAppSelector((state) => state.session.user);
 	const { role_id } = useRole();
 	const dispatch = useAppDispatch();
@@ -69,27 +65,19 @@ export default function Header({ onSider, sider, onDrawer }) {
 
 	return (
 		<HeaderAntd
-			className="bg-white px-2.5 sticky top-0 w-full shadow-sm"
+			className="bg-main px-2.5 sticky top-0 w-full shadow-sm"
 			style={{ zIndex: 11 }}
 		>
 			<div className="flex justify-between">
-				<div className="relative hidden items-center md:grid">
-					<Button
-						type="text"
-						shape="circle"
-						icon={sider ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-						onClick={onSider}
-					/>
-				</div>
 				<div className="relative grid items-center md:hidden">
 					<Button
 						type="text"
 						shape="circle"
-						icon={<MenuOutlined />}
+						icon={<MenuOutlined style={{ color: COLORS.white }} />}
 						onClick={onDrawer}
 					/>
 				</div>
-				<div className="float-left">
+				<div className="flex-1 text-end">
 					<Dropdown
 						className="cursor-pointer"
 						placement="bottomLeft"
@@ -111,7 +99,19 @@ export default function Header({ onSider, sider, onDrawer }) {
 							pointAtCenter: true,
 						}}
 					>
-						<Avatar size="default" icon={<UserOutlined />} />
+						<Avatar
+							size="default"
+							style={{
+								backgroundColor: COLORS.secondary,
+								color: COLORS.white,
+							}}
+						>
+							{session?.username ? (
+								String(session?.username.charAt(0)).toUpperCase()
+							) : (
+								<UserOutlined />
+							)}
+						</Avatar>
 					</Dropdown>
 				</div>
 			</div>
@@ -143,7 +143,10 @@ export default function Header({ onSider, sider, onDrawer }) {
 							},
 						]}
 					>
-						<Input disabled style={{ background: "#FFF", color: "#000" }} />
+						<Input
+							disabled
+							style={{ background: COLORS.white, color: COLORS.black }}
+						/>
 					</Form.Item>
 					<Form.Item
 						label="Kata Sandi Baru"

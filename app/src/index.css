@@ -8,14 +8,68 @@
 	}
 
 	@font-face {
-		font-family: "Noto Sans HK";
+		font-family: "Noto Sans HK Regular";
 		src: local("NotoSansHK-Regular"),
 			url("./assets/fonts/NotoSansHK-Regular.otf") format("truetype");
 	}
 
-	@media (max-width: 576px) {
-		.ant-picker-panels {
-			flex-direction: column !important;
+	@font-face {
+		font-family: "Noto Sans HK Medium";
+		src: local("NotoSansHK-Medium"),
+			url("./assets/fonts/NotoSansHK-Medium.otf") format("truetype");
+	}
+}
+
+@layer components {
+	.checkbox-login {
+		color: theme("colors.white");
+
+		.ant-checkbox .ant-checkbox-inner {
+			background-color: theme("colors.main");
+			border-color: theme("colors.secondary");
 		}
+
+		.ant-checkbox-checked .ant-checkbox-inner {
+			background-color: theme("colors.secondary");
+			border-color: theme("colors.secondary");
+		}
+	}
+
+	.menu-wide {
+		color: theme("colors.white");
+		background-color: theme("colors.main");
+
+		.ant-menu-item-selected {
+			color: theme("colors.white");
+			background-color: theme("colors.secondary");
+		}
+
+		.ant-menu-item-active.ant-menu-item-selected:hover {
+			color: theme("colors.white");
+			background-color: theme("colors.secondary") !important;
+		}
+
+		.ant-menu-item-active:hover {
+			color: theme("colors.white") !important;
+			background-color: theme("colors.secondaryOpacity") !important;
+		}
+
+		.ant-menu-submenu-active > div:hover {
+			color: theme("colors.white") !important;
+			background-color: theme("colors.secondaryOpacity") !important;
+		}
+
+		> li {
+			> ul {
+				background-color: theme("colors.mainDark") !important;
+			}
+		}
+	}
+}
+
+/* date picker on mobile */
+@media (max-width: 576px) {
+	.ant-picker-panels {
+		flex-direction: column !important;
 	}
 }

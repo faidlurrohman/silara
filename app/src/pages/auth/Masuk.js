@@ -38,10 +38,14 @@ export default function Masuk() {
 
 	return (
 		<section className="flex w-full h-screen place-items-center items-center flex-col">
-			<div className="relative mx-6 my-auto md:m-auto md:w-6/12 lg:w-3/12 rounded-md p-8 h-auto bg-amber-500">
+			<div className="relative mx-0 my-auto md:m-auto md:w-6/12 lg:w-3/12 rounded-md p-8 h-auto bg-main shadow-lg">
 				<div className="mb-10 flex flex-col items-center">
-					<img alt="Logo" className="w-20 mb-2 md:w-40" src="/img_tmp.jpg" />
-					<h1 className="font-bold text-xl md:text-3xl mt-2">
+					<img
+						alt="Logo"
+						className="w-20 mb-2 md:w-40 rounded-full"
+						src="/img_tmp.jpg"
+					/>
+					<h1 className="font-bold text-xl md:text-3xl mt-2 text-white tracking-wider">
 						{process.env.REACT_APP_NAME}
 					</h1>
 				</div>
@@ -52,7 +56,7 @@ export default function Masuk() {
 					onFinish={handleSubmit}
 				>
 					<Form.Item
-						label="Nama Pengguna"
+						label={<span className="text-white">Nama Pengguna</span>}
 						name="username"
 						rules={[
 							{ required: true, message: "Nama Pengguna tidak boleh kosong" },
@@ -62,7 +66,7 @@ export default function Masuk() {
 					</Form.Item>
 
 					<Form.Item
-						label="Kata Sandi"
+						label={<span className="text-white">Kata Sandi</span>}
 						name="password"
 						rules={[
 							{ required: true, message: "Kata Sandi tidak boleh kosong" },
@@ -71,7 +75,7 @@ export default function Masuk() {
 						<Input.Password size="large" allowClear />
 					</Form.Item>
 					<Form.Item name="remember" valuePropName="checked">
-						<Checkbox>Pengingat Saya</Checkbox>
+						<Checkbox className="checkbox-login">Pengingat Saya</Checkbox>
 					</Form.Item>
 					<Form.Item className="mt-8">
 						<Button

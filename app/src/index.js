@@ -16,6 +16,7 @@ import locale from "antd/lib/locale/id_ID";
 
 import MyApp from "./App";
 import reportWebVitals from "./reportWebVitals";
+import { COLORS } from "./helpers/constants";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -29,7 +30,14 @@ ReactDOM.createRoot(document.getElementById("root")).render(
 				<ConfigProvider
 					theme={{
 						token: {
-							fontFamily: "Noto Sans HK",
+							fontFamily: "Noto Sans HK Regular",
+							colorPrimary: COLORS.secondary,
+							fontSize: 12,
+						},
+						components: {
+							Layout: {
+								colorBgContainer: COLORS.main,
+							},
 						},
 					}}
 					locale={locale}
