@@ -1,27 +1,48 @@
 import { Drawer, Layout, Menu } from "antd";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import HeaderComponent from "./Header";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import Copyright from "./Copyright";
 import { COLORS, MENU_ITEM } from "../helpers/constants";
 import useRole from "../hooks/useRole";
 import { CloseOutlined } from "@ant-design/icons";
 
 const { Content, Footer, Sider } = Layout;
-const rootSubmenuKeys = ["1", "2", "3", "4", "5"];
 
 export default function Wrapper({ children }) {
 	const { role_id } = useRole();
+	const location = useLocation();
 	const [drawer, setDrawer] = useState(false);
-	const [openKeys, setOpenKeys] = useState(["1"]);
+	const [openKeys, setOpenKeys] = useState([]);
+	const [currentMenu, setCurrentMenu] = useState([]);
 	const navigate = useNavigate();
 
 	const onOpenChange = (keys) => {
 		const latestOpenKey = keys.find((key) => openKeys.indexOf(key) === -1);
-		if (rootSubmenuKeys.indexOf(latestOpenKey) === -1) {
+
+		if (MENU_ITEM.map(({ key }) => key).indexOf(latestOpenKey) === -1) {
 			setOpenKeys(keys);
 		} else {
 			setOpenKeys(latestOpenKey ? [latestOpenKey] : []);
+		}
+	};
+
+	const onMenuClick = (current) => {
+		// trigger from location react router
+		if (current?.pathname) {
+			let spl = current?.pathname.split("/");
+
+			if (spl.length > 2) {
+				onOpenChange([`/${spl[1]}`]);
+			} else {
+				onOpenChange([]);
+			}
+
+			setCurrentMenu(current?.pathname);
+		}
+		// trigger from on click menu
+		else {
+			setCurrentMenu(current?.keyPath);
 		}
 	};
 
@@ -40,6 +61,10 @@ export default function Wrapper({ children }) {
 
 		navigate(route);
 	};
+
+	useEffect(() => {
+		onMenuClick(location);
+	}, []);
 
 	const items = MENU_ITEM.map(
 		(item) =>
@@ -74,9 +99,10 @@ export default function Wrapper({ children }) {
 				<Menu
 					mode="inline"
 					className="font-medium menu-wide"
-					defaultSelectedKeys={["1"]}
+					selectedKeys={currentMenu}
 					openKeys={openKeys}
 					onOpenChange={onOpenChange}
+					onClick={onMenuClick}
 					items={items}
 				/>
 			</Sider>
@@ -93,9 +119,10 @@ export default function Wrapper({ children }) {
 				<Menu
 					mode="inline"
 					className="font-medium menu-wide"
-					defaultSelectedKeys={["1"]}
+					selectedKeys={currentMenu}
 					openKeys={openKeys}
 					onOpenChange={onOpenChange}
+					onClick={onMenuClick}
 					items={items}
 				/>
 			</Drawer>

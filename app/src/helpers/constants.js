@@ -53,83 +53,83 @@ const MESSAGE = {
 };
 const MENU_ITEM = [
 	{
-		key: "1",
+		key: "/",
 		label: "Beranda",
 		roles: [1, 2, 3, 4],
 		nav: "/",
 	},
 	{
-		key: "2",
+		key: "/rekening",
 		label: "Master Rekening",
 		roles: [1, 3, 4],
 		children: [
 			{
-				key: "2_1",
+				key: "/rekening/akun",
 				label: "Akun",
 				nav: "rekening/akun",
 			},
 			{
-				key: "2_2",
+				key: "/rekening/kelompok",
 				label: "Kelompok",
 				nav: "rekening/kelompok",
 			},
 			{
-				key: "2_3",
+				key: "/rekening/jenis",
 				label: "Jenis",
 				nav: "rekening/jenis",
 			},
 			{
-				key: "2_4",
+				key: "/rekening/objek",
 				label: "Objek",
 				nav: "rekening/objek",
 			},
 		],
 	},
 	{
-		key: "3",
+		key: "/transaksi",
 		label: "Transaksi",
 		nav: "transaksi",
 		roles: [1, 2, 3, 4],
 	},
 	{
-		key: "4",
+		key: "/laporan",
 		label: "Laporan",
 		roles: [1, 2, 3, 4],
 		children: [
 			{
-				key: "4_1",
+				key: "/laporan/realisasi-anggaran-kota",
 				label: "Anggaran Kota",
 				nav: "laporan/realisasi-anggaran-kota",
 			},
 			{
-				key: "4_2",
+				key: "/laporan/realisasi-anggaran-gabungan-kota",
 				label: "Anggaran Gabungan Kota",
 				nav: "laporan/realisasi-anggaran-gabungan-kota",
 			},
 			{
-				key: "4_3",
+				key: "/laporan/rekapitulasi-pendapatan-dan-belanja",
 				label: "Pendapatan & Belanja",
 				nav: "laporan/rekapitulasi-pendapatan-dan-belanja",
 			},
 		],
 	},
 	{
-		key: "5",
+		key: "/pengaturan",
 		label: "Pengaturan",
 		roles: [1, 3, 4],
 		children: [
 			{
-				key: "5_1",
+				key: "/pengaturan/kota",
 				label: "Kota",
 				nav: "pengaturan/kota",
 			},
 			{
-				key: "5_2",
+				key: "/pengaturan/penanda-tangan",
 				label: "Penanda Tangan",
 				nav: "pengaturan/penanda-tangan",
 			},
 			{
-				key: "5_3",
+				key: "/pengaturan/pengguna",
 				label: "Pengguna",
 				nav: "pengaturan/pengguna",
 			},
