@@ -69,7 +69,7 @@ export default function Header({ onDrawer }) {
 			style={{ zIndex: 11 }}
 		>
 			<div className="flex justify-between">
-				<div className="relative grid items-center md:hidden">
+				<div className="relative grid items-center lg:hidden">
 					<Button
 						type="text"
 						shape="circle"

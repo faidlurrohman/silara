@@ -68,7 +68,7 @@ export default function Wrapper({ children }) {
 				theme="light"
 				width={280}
 				trigger={null}
-				className="hidden md:grid"
+				className="hidden lg:grid"
 			>
 				<div className="h-8 m-4 bg-gray-400" />
 				<Menu
