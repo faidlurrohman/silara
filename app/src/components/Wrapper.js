@@ -95,7 +95,11 @@ export default function Wrapper({ children }) {
 				trigger={null}
 				className="hidden lg:grid"
 			>
-				<div className="h-8 m-4 bg-gray-400" />
+				<div className="h-8 m-4 text-center">
+					<h2 className="text-white tracking-wider">
+						{process.env.REACT_APP_NAME}
+					</h2>
+				</div>
 				<Menu
 					mode="inline"
 					className="font-medium menu-wide"
