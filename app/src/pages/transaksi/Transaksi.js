@@ -248,36 +248,36 @@ export default function Transaksi() {
 							<div className="flex flex-1 flex-row space-x-7">
 								<div className="flex-0 flex-col space-y-2">
 									<div>
-										<h2 className="text-sm md:inline">{`Tanggal Transaksi`}</h2>
+										<h4 className="md:inline">{`Tanggal Transaksi`}</h4>
 									</div>
 									<div>
-										<h2 className="text-sm md:inline">{`Anggaran (Rp)`}</h2>
+										<h4 className="md:inline">{`Anggaran (Rp)`}</h4>
 									</div>
 									<div>
-										<h2 className="text-sm md:inline">{`Realisasi (Rp)`}</h2>
+										<h4 className="md:inline">{`Realisasi (Rp)`}</h4>
 									</div>
 								</div>
 								<div className="flex-1 flex-col space-y-2">
 									<div>
-										<h2 className="text-sm md:inline">
+										<h4 className="md:inline">
 											{lastTransaction?.trans_date
 												? viewDate(lastTransaction?.trans_date)
 												: `-`}
-										</h2>
+										</h4>
 									</div>
 									<div>
-										<h2 className="text-sm md:inline">
+										<h4 className="md:inline">
 											{lastTransaction?.plan_amount >= 0
 												? lastTransaction?.plan_amount
 												: `-`}
-										</h2>
+										</h4>
 									</div>
 									<div>
-										<h2 className="text-sm md:inline">
+										<h4 className="md:inline">
 											{lastTransaction?.real_amount >= 0
 												? lastTransaction?.real_amount
 												: `-`}
-										</h2>
+										</h4>
 									</div>
 								</div>
 							</div>
