@@ -74,7 +74,7 @@ function err_msg($query, $message = ''){
     switch ($code) {
         // data tidak ada
         case 101:
-            $message = 'Data tidak di temukan';
+            $message = 'Data tidak ditemukan';
             break;
         // data duplicate
         case 102:
@@ -82,11 +82,11 @@ function err_msg($query, $message = ''){
             break;
         // mode salah atau di luar salah satu C/U/D
         case 103:
-            $message = 'Data yang di kirim tidak sesuai';
+            $message = 'Data yang dikirim tidak sesuai';
             break;
         // schema tidak ada
         case 104:
-            $message = 'Data yang di kirim tidak sesuai';
+            $message = 'Data yang dikirim tidak sesuai';
             break;
         // user tidak ada
         case 105:
@@ -94,11 +94,11 @@ function err_msg($query, $message = ''){
             break;
         // format parameter salah
         case 106:
-            $message = 'Data yang di kirim tidak sesuai';
+            $message = 'Data yang dikirim tidak sesuai';
             break;
         // data alokasi kota tidak bisa dirubah
         case 110:
-            $message = 'Data alokasi kota sudah ada data transaksi dan tidak bisa di non alokasikan';
+            $message = 'Alokasi tidak bisa diubah, karena sudah terdapat transaksi';
             break;
     }
 
