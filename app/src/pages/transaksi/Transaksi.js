@@ -268,14 +268,14 @@ export default function Transaksi() {
 									<div>
 										<h4 className="md:inline">
 											{lastTransaction?.plan_amount >= 0
-												? lastTransaction?.plan_amount
+												? formatterNumber(lastTransaction?.plan_amount || 0)
 												: `-`}
 										</h4>
 									</div>
 									<div>
 										<h4 className="md:inline">
 											{lastTransaction?.real_amount >= 0
-												? lastTransaction?.real_amount
+												? formatterNumber(lastTransaction?.real_amount || 0)
 												: `-`}
 										</h4>
 									</div>
