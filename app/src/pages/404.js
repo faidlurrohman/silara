@@ -6,7 +6,7 @@ export default function NotFound() {
 		<div className="flex justify-center items-center w-full h-screen flex-col">
 			<img
 				className="max-w-full md:max-w-md"
-				src={"/404.png"}
+				src={`${process.env.PUBLIC_URL}/404.png`}
 				alt="Not found"
 			/>
 			<p className="m-0 text-right text-xs">
