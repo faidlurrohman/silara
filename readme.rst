@@ -18,7 +18,7 @@ Build & Deployment
 - In the next step, we will need to update **.env** named **REACT_APP_BASE_ROUTER** to **REACT_APP_BASE_ROUTER=/app**
 - Next, we need to make a build of the application so that we can deploy it on production. For making a build, hit **npm run build**
 - After process build complete and new folder **build** appear in root folder
-- Compress the folder **build** to .zip or any kind, then extract the file
+- Compress the folder **build** to .zip or any kind, then extract the file **build.zip** to **public_html/app**
 - Or copy all files inside **build** folder to **public_html/app**
 - After extract completed, then delete the xxx.zip in your *public_html*
 - Enjoy!!!
