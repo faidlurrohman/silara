@@ -22,7 +22,7 @@ import PengaturanPengguna from "./pages/pengaturan/PengaturanPengguna";
 
 function App() {
 	return (
-		<BrowserRouter basename="/silara_live">
+		<BrowserRouter basename={process.env.REACT_APP_BASE_ROUTER}>
 			<Routes>
 				<Route
 					path="/"
