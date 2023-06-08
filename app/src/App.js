@@ -21,63 +21,63 @@ import PengaturanPenandaTangan from "./pages/pengaturan/PengaturanPenandaTangan"
 import PengaturanPengguna from "./pages/pengaturan/PengaturanPengguna";
 
 function App() {
-  return (
-    <BrowserRouter>
-      <Routes>
-        <Route
-          path="/"
-          element={
-            <ProtectedRoute>
-              <Wrapper>
-                <Outlet />
-              </Wrapper>
-            </ProtectedRoute>
-          }
-        >
-          <Route index element={<Beranda />} />
-          <Route path="/rekening" element={<Outlet />}>
-            <Route path="akun" element={<RekeningAkun />} />
-            <Route path="kelompok" element={<RekeningKelompok />} />
-            <Route path="jenis" element={<RekeningJenis />} />
-            <Route path="objek" element={<RekeningObjek />} />
-          </Route>
-          <Route path="/transaksi" element={<Outlet />}>
-            <Route index element={<Transaksi />} />
-          </Route>
-          <Route path="/laporan" element={<Outlet />}>
-            <Route path="realisasi-anggaran-kota" element={<AnggaranKota />} />
-            <Route
-              path="realisasi-anggaran-gabungan-kota"
-              element={<AnggaranGabunganKota />}
-            />
-            <Route
-              path="rekapitulasi-pendapatan-dan-belanja"
-              element={<PendapatanBelanja />}
-            />
-          </Route>
-          <Route path="/pengaturan" element={<Outlet />}>
-            <Route path="kota" element={<PengaturanKota />} />
-            <Route
-              path="penanda-tangan"
-              element={<PengaturanPenandaTangan />}
-            />
-            <Route path="pengguna" element={<PengaturanPengguna />} />
-          </Route>
-        </Route>
-        <Route path="/auth">
-          <Route
-            path="masuk"
-            element={
-              <UnprotectedRoute>
-                <Masuk />
-              </UnprotectedRoute>
-            }
-          />
-        </Route>
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </BrowserRouter>
-  );
+	return (
+		<BrowserRouter basename="/silara_live">
+			<Routes>
+				<Route
+					path="/"
+					element={
+						<ProtectedRoute>
+							<Wrapper>
+								<Outlet />
+							</Wrapper>
+						</ProtectedRoute>
+					}
+				>
+					<Route index element={<Beranda />} />
+					<Route path="/rekening" element={<Outlet />}>
+						<Route path="akun" element={<RekeningAkun />} />
+						<Route path="kelompok" element={<RekeningKelompok />} />
+						<Route path="jenis" element={<RekeningJenis />} />
+						<Route path="objek" element={<RekeningObjek />} />
+					</Route>
+					<Route path="/transaksi" element={<Outlet />}>
+						<Route index element={<Transaksi />} />
+					</Route>
+					<Route path="/laporan" element={<Outlet />}>
+						<Route path="realisasi-anggaran-kota" element={<AnggaranKota />} />
+						<Route
+							path="realisasi-anggaran-gabungan-kota"
+							element={<AnggaranGabunganKota />}
+						/>
+						<Route
+							path="rekapitulasi-pendapatan-dan-belanja"
+							element={<PendapatanBelanja />}
+						/>
+					</Route>
+					<Route path="/pengaturan" element={<Outlet />}>
+						<Route path="kota" element={<PengaturanKota />} />
+						<Route
+							path="penanda-tangan"
+							element={<PengaturanPenandaTangan />}
+						/>
+						<Route path="pengguna" element={<PengaturanPengguna />} />
+					</Route>
+				</Route>
+				<Route path="/auth">
+					<Route
+						path="masuk"
+						element={
+							<UnprotectedRoute>
+								<Masuk />
+							</UnprotectedRoute>
+						}
+					/>
+				</Route>
+				<Route path="*" element={<NotFound />} />
+			</Routes>
+		</BrowserRouter>
+	);
 }
 
 export default App;
