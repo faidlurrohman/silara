@@ -18,6 +18,7 @@ import useRole from "../hooks/useRole";
 import { updatePasswordUser } from "../services/user";
 import { messageAction } from "../helpers/response";
 import { COLORS } from "../helpers/constants";
+import { upper } from "../helpers/typo";
 const { Header: HeaderAntd } = Layout;
 
 export default function Header({ onDrawer }) {
@@ -107,7 +108,7 @@ export default function Header({ onDrawer }) {
 							}}
 						>
 							{session?.username ? (
-								String(session?.username.charAt(0)).toUpperCase()
+								upper(String(session?.username.charAt(0)))
 							) : (
 								<UserOutlined />
 							)}

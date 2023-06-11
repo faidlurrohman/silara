@@ -188,7 +188,6 @@ export default function Transaksi() {
 			sorted,
 			"int"
 		),
-		,
 	];
 
 	useEffect(() => {
