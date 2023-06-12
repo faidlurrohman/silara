@@ -85,6 +85,8 @@ export default function AnggaranGabunganKota() {
 					});
 					setCities(_cities?.data?.data);
 					setSigners(_signer?.data?.data);
+
+					if (role_id !== 1) onCityFilterChange(_cities?.data?.data[0]?.id);
 				})
 			);
 	};
@@ -543,31 +545,33 @@ export default function AnggaranGabunganKota() {
 		const last = sheet.lastRow;
 
 		if (last) {
-			// signer date
-			let signerDateCell = last.number || 0;
-			signerDateCell += 3;
+			if (signerIs !== "") {
+				// signer date
+				let signerDateCell = last.number || 0;
+				signerDateCell += 3;
 
-			sheet.mergeCells(`C${signerDateCell}`, `E${signerDateCell}`);
-			sheet.getCell(`C${signerDateCell}`).value = viewDate(convertDate());
-			sheet.getCell(`C${signerDateCell}`).style = {
-				alignment: { vertical: "middle", horizontal: "center" },
-				font: { bold: false },
-			};
+				sheet.mergeCells(`C${signerDateCell}`, `E${signerDateCell}`);
+				sheet.getCell(`C${signerDateCell}`).value = viewDate(convertDate());
+				sheet.getCell(`C${signerDateCell}`).style = {
+					alignment: { vertical: "middle", horizontal: "center" },
+					font: { bold: false },
+				};
 
-			// signer
-			let signerCell = last.number || 0;
-			signerCell += 8;
+				// signer
+				let signerCell = last.number || 0;
+				signerCell += 8;
 
-			sheet.mergeCells(`C${signerCell}`, `E${signerCell}`);
-			sheet.getCell(`C${signerCell}`).value = signerIs;
-			sheet.getCell(`C${signerCell}`).style = {
-				alignment: { vertical: "middle", horizontal: "center" },
-				font: { bold: false },
-			};
+				sheet.mergeCells(`C${signerCell}`, `E${signerCell}`);
+				sheet.getCell(`C${signerCell}`).value = signerIs;
+				sheet.getCell(`C${signerCell}`).style = {
+					alignment: { vertical: "middle", horizontal: "center" },
+					font: { bold: false },
+				};
+			}
 
 			// sipd
 			let sipdCell = last.number || 0;
-			sipdCell += 11;
+			sipdCell += signerIs !== "" ? 11 : 3;
 
 			sheet.mergeCells(`A${sipdCell}`, `E${sipdCell}`);
 			sheet.getCell(
@@ -643,9 +647,7 @@ export default function AnggaranGabunganKota() {
 						loading={loading}
 						options={cities}
 						onChange={onCityFilterChange}
-						{...(role_id !== 1
-							? { value: cities[0]?.id || `Tidak ada kota` }
-							: { value: cityFilter })}
+						value={cityFilter}
 					/>
 				</div>
 				<ReloadButton onClick={reloadTable} stateLoading={loading} />
@@ -653,7 +655,11 @@ export default function AnggaranGabunganKota() {
 					<Button
 						type="primary"
 						icon={<ExportOutlined />}
-						onClick={() => onSignerModal(true)}
+						onClick={() =>
+							role_id === 1
+								? onSignerModal(true)
+								: exportToExcel(form?.getFieldsValue())
+						}
 					>
 						Ekspor
 					</Button>
