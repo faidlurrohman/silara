@@ -9,6 +9,10 @@ export const addSigner = (values) => {
 	return axios.post("/api/signer/add", values);
 };
 
+export const getSignerList = () => {
+	return axios.get(`/api/signer/list`);
+};
+
 export const setActiveSigner = (id) => {
 	return axios.delete(`/api/signer/remove/${id}`);
 };

@@ -42,6 +42,28 @@ class Signer extends REST_Controller {
         }
     }
 
+    public function list_get()
+    {
+        $this->do_get_list();
+    }
+
+    private function do_get_list()
+    {   
+        $user = $this->Auth_model->check_token();
+    
+        if ($user) {
+            $data = $this->Signer_model->get_list($user);
+
+            if ($data['code'] != 0) {
+                $this->response($data, REST_Controller::HTTP_INTERNAL_SERVER_ERROR);
+            } else {
+                $this->response($data, REST_Controller::HTTP_OK);
+            }
+        } else {
+            $this->response(['status'=> "Unauthorized"], REST_Controller::HTTP_UNAUTHORIZED);
+        }
+    }
+
     public function add_post()
     {
         $this->do_create();
