@@ -649,13 +649,15 @@ export default function AnggaranGabunganKota() {
 					/>
 				</div>
 				<ReloadButton onClick={reloadTable} stateLoading={loading} />
-				<Button
-					type="primary"
-					icon={<ExportOutlined />}
-					onClick={() => onSignerModal(true)}
-				>
-					Ekspor
-				</Button>
+				{!!exports?.data?.length && (
+					<Button
+						type="primary"
+						icon={<ExportOutlined />}
+						onClick={() => onSignerModal(true)}
+					>
+						Ekspor
+					</Button>
+				)}
 			</div>
 			<div className="mt-4">
 				<Table
