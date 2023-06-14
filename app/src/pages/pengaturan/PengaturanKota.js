@@ -1,4 +1,14 @@
-import { App, Button, Divider, Form, Input, Modal, Space, Table } from "antd";
+import {
+	App,
+	Button,
+	Divider,
+	Form,
+	Input,
+	Modal,
+	Space,
+	Table,
+	Upload,
+} from "antd";
 import { useEffect, useRef, useState } from "react";
 import { addCity, getCities, setActiveCity } from "../../services/city";
 import { PAGINATION } from "../../helpers/constants";
@@ -7,6 +17,7 @@ import ExportButton from "../../components/button/ExportButton";
 import ReloadButton from "../../components/button/ReloadButton";
 import AddButton from "../../components/button/AddButton";
 import { messageAction, responseGet } from "../../helpers/response";
+import { UploadOutlined } from "@ant-design/icons";
 
 export default function PengaturanKota() {
 	const { message, modal } = App.useApp();
@@ -65,15 +76,23 @@ export default function PengaturanKota() {
 	const addUpdateRow = (isEdit = false, value = null) => {
 		setShow(!isShow);
 
-		if (!isEdit) {
-			form.resetFields();
-			setEdit(false);
-		} else {
+		if (isEdit) {
 			setEdit(true);
 			form.setFieldsValue({
 				id: value?.id,
 				label: value?.label,
+				...(!["", null, undefined].includes(value?.logo) && {
+					logo: [
+						{
+							name: value?.logo,
+							url: `${process.env.REACT_APP_BASE_URL_API}/uploads/${value?.logo}`,
+						},
+					],
+				}),
 			});
+		} else {
+			form.resetFields();
+			setEdit(false);
 		}
 	};
 
@@ -96,12 +115,22 @@ export default function PengaturanKota() {
 	const handleAddUpdate = async (values) => {
 		setConfirmLoading(true);
 
-		addCity(values).then((response) => {
+		let customValues = {
+			...values,
+			logo:
+				values?.logo && !!values?.logo.length ? values?.logo[0]?.name : null,
+			blob:
+				values?.logo && !!values?.logo.length
+					? values?.logo[0]?.originFileObj
+					: null,
+		};
+
+		addCity(customValues).then((response) => {
 			setConfirmLoading(false);
 
 			if (response?.data?.code === 0) {
 				message.success(messageAction(isEdit));
-				addUpdateRow(isEdit);
+				addUpdateRow();
 				reloadTable();
 			}
 		});
@@ -146,7 +175,7 @@ export default function PengaturanKota() {
 				centered
 				open={isShow}
 				title={`${isEdit ? `Ubah` : `Tambah`} Data Kota`}
-				onCancel={() => addUpdateRow(isEdit)}
+				onCancel={() => addUpdateRow()}
 				footer={null}
 			>
 				<Divider />
@@ -157,7 +186,7 @@ export default function PengaturanKota() {
 					labelAlign="left"
 					onFinish={handleAddUpdate}
 					autoComplete="off"
-					initialValues={{ id: "" }}
+					initialValues={{ id: "", logo: [] }}
 				>
 					<Form.Item name="id" hidden>
 						<Input />
@@ -174,13 +203,57 @@ export default function PengaturanKota() {
 					>
 						<Input disabled={confirmLoading} />
 					</Form.Item>
+					<Form.Item
+						label="Logo Kota"
+						name="logo"
+						valuePropName="fileList"
+						getValueFromEvent={(e) => {
+							if (Array.isArray(e)) {
+								return e;
+							}
+
+							return e?.fileList;
+						}}
+						rules={[
+							() => ({
+								validator(_, value) {
+									if (value && !!value.length && !value[0]?.url) {
+										const isJpgOrPng = [
+											"image/png",
+											"image/jpeg",
+											"image/jpg",
+										].includes(value[0]?.type);
+										const isLt4MB = value[0]?.size / 1024 / 1024 < 4;
+
+										if (!isJpgOrPng)
+											return Promise.reject(
+												"You can only upload JPG/JPEG/PNG file!"
+											);
+
+										if (!isLt4MB)
+											return Promise.reject("Image must smaller than 2MB!");
+									}
+
+									return Promise.resolve();
+								},
+							}),
+						]}
+					>
+						<Upload
+							accept="image/png, image/jpeg, image/jpg"
+							maxCount={1}
+							disabled={confirmLoading}
+							beforeUpload={() => {
+								return false;
+							}}
+						>
+							<Button icon={<UploadOutlined />}>Unggah Berkas</Button>
+						</Upload>
+					</Form.Item>
 					<Divider />
 					<Form.Item className="text-right mb-0">
 						<Space direction="horizontal">
-							<Button
-								disabled={confirmLoading}
-								onClick={() => addUpdateRow(isEdit)}
-							>
+							<Button disabled={confirmLoading} onClick={() => addUpdateRow()}>
 								Kembali
 							</Button>
 							<Button loading={confirmLoading} htmlType="submit" type="primary">

@@ -113,6 +113,8 @@ class City extends REST_Controller {
         return array(
             'id' => $this->post_or_put('id', $is_edit),
             'label' => $this->post_or_put('label', $is_edit),
+            'logo' => $this->post_or_put('logo', $is_edit),
+            'blob' => $this->post_or_put('blob', $is_edit),
         );
     }
 

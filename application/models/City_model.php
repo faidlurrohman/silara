@@ -51,9 +51,29 @@ class City_model extends CI_Model {
             $mode = 'C';
         }
 
-        $sql = "SELECT * from {$this->cud}('".$mode."', '{$this->table}', '".$user['username']."', '[".json_encode($params)."]'::jsonb)";
-        $query = $this->db->query($sql,$params);
-        return model_response($query, 2);
+        if (!empty($_FILES['blob']['name'])){
+            $config['encrypt_name'] = TRUE;
+            $config['upload_path'] = 'uploads/';
+            $config['allowed_types'] = 'jpg|jpeg|png';  
+            $config['file_name'] = $_FILES['blob']['name'];
+            $config['overwrite'] = true;
+            $this->load->library('upload', $config);
+
+            if(!$this->upload->do_upload('blob'))  
+            {  
+                $error = $this->upload->display_errors(); 
+                echo json_encode(array('msg' => $error, 'success' => false));
+            }else{
+                $params["logo"] = $this->upload->data()['file_name'];
+                $sql = "SELECT * from {$this->cud}('".$mode."', '{$this->table}', '".$user['username']."', '[".json_encode($params)."]'::jsonb)";
+                $query = $this->db->query($sql,$params);
+                return model_response($query, 2);
+            }
+        }else{
+            $sql = "SELECT * from {$this->cud}('".$mode."', '{$this->table}', '".$user['username']."', '[".json_encode($params)."]'::jsonb)";
+            $query = $this->db->query($sql,$params);
+            return model_response($query, 2);
+        }
     }
 
     function delete($user, $params)
