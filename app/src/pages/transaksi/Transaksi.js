@@ -53,6 +53,7 @@ export default function Transaksi() {
 	const [lastTransaction, setLastTransaction] = useState({});
 	const [lastTransactionLoading, setLastTransactionLoading] = useState(false);
 	const [showCard, setShowCard] = useState(false);
+	const [exports, setExports] = useState([]);
 	const [loading, setLoading] = useState(false);
 
 	const reloadData = () => {
@@ -60,13 +61,18 @@ export default function Transaksi() {
 		axios
 			.all([
 				getTransaction(tableParams),
+				getTransaction({
+					...tableParams,
+					pagination: { ...tableParams.pagination, pageSize: 0 },
+				}),
 				getCityList(),
 				role_id === 1 ? getAccountList("object") : getTransactionObjectList(),
 			])
 			.then(
-				axios.spread((_transactions, _cities, _objects) => {
+				axios.spread((_transactions, _export, _cities, _objects) => {
 					setLoading(false);
 					setTransactions(responseGet(_transactions).data);
+					setExports(responseGet(_export).data);
 					setTableParams({
 						...tableParams,
 						pagination: {
@@ -201,11 +207,11 @@ export default function Transaksi() {
 				{role_id === 2 && (
 					<AddButton onClick={addData} stateLoading={loading} />
 				)}
-				{!!transactions?.length && (
+				{!!exports?.length && (
 					<ExportButton
-						data={transactions}
-						target={`transaction`}
-						stateLoading={loading}
+						data={exports}
+						master={`transaction`}
+						pdfOrientation={`landscape`}
 					/>
 				)}
 			</div>

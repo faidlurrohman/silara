@@ -17,6 +17,7 @@ import ExportButton from "../../components/button/ExportButton";
 import ReloadButton from "../../components/button/ReloadButton";
 import AddButton from "../../components/button/AddButton";
 import { messageAction, responseGet } from "../../helpers/response";
+import axios from "axios";
 
 export default function PengaturanPenandaTangan() {
 	const { message, modal } = App.useApp();
@@ -33,21 +34,34 @@ export default function PengaturanPenandaTangan() {
 	const [confirmLoading, setConfirmLoading] = useState(false);
 
 	const [signer, setSigner] = useState([]);
+	const [exports, setExports] = useState([]);
 	const [loading, setLoading] = useState(false);
 
 	const reloadData = () => {
 		setLoading(true);
-		getSigner(tableParams).then((response) => {
-			setLoading(false);
-			setSigner(responseGet(response).data);
-			setTableParams({
-				...tableParams,
-				pagination: {
-					...tableParams.pagination,
-					total: responseGet(response).total_count,
-				},
-			});
-		});
+
+		axios
+			.all([
+				getSigner(tableParams),
+				getSigner({
+					...tableParams,
+					pagination: { ...tableParams.pagination, pageSize: 0 },
+				}),
+			])
+			.then(
+				axios.spread((_data, _export) => {
+					setLoading(false);
+					setSigner(responseGet(_data).data);
+					setExports(responseGet(_export).data);
+					setTableParams({
+						...tableParams,
+						pagination: {
+							...tableParams.pagination,
+							total: responseGet(_data).total_count,
+						},
+					});
+				})
+			);
 	};
 
 	const onTableChange = (pagination, filters, sorter) => {
@@ -75,10 +89,7 @@ export default function PengaturanPenandaTangan() {
 	const addUpdateRow = (isEdit = false, value = null) => {
 		setShow(!isShow);
 
-		if (!isEdit) {
-			form.resetFields();
-			setEdit(false);
-		} else {
+		if (isEdit) {
 			setEdit(true);
 			form.setFieldsValue({
 				id: value?.id,
@@ -86,6 +97,9 @@ export default function PengaturanPenandaTangan() {
 				fullname: value?.fullname,
 				title: value?.title,
 			});
+		} else {
+			form.resetFields();
+			setEdit(false);
 		}
 	};
 
@@ -112,7 +126,7 @@ export default function PengaturanPenandaTangan() {
 
 			if (response?.data?.code === 0) {
 				message.success(messageAction(isEdit));
-				addUpdateRow(isEdit);
+				addUpdateRow();
 				reloadTable();
 			}
 		});
@@ -135,11 +149,11 @@ export default function PengaturanPenandaTangan() {
 			<div className="flex flex-col space-y-2 sm:space-y-0 sm:space-x-2 sm:flex-row md:space-y-0 md:space-x-2 md:flex-row">
 				<ReloadButton onClick={reloadTable} stateLoading={loading} />
 				<AddButton onClick={addUpdateRow} stateLoading={loading} />
-				{!!signer?.length && (
+				{!!exports?.length && (
 					<ExportButton
-						data={signer}
-						target={`signer`}
-						stateLoading={loading}
+						data={exports}
+						master={`signer`}
+						pdfOrientation="landscape"
 					/>
 				)}
 			</div>
@@ -163,7 +177,7 @@ export default function PengaturanPenandaTangan() {
 				centered
 				open={isShow}
 				title={`${isEdit ? `Ubah` : `Tambah`} Data Penanda Tangan`}
-				onCancel={() => addUpdateRow(isEdit)}
+				onCancel={() => addUpdateRow()}
 				footer={null}
 			>
 				<Divider />
@@ -218,10 +232,7 @@ export default function PengaturanPenandaTangan() {
 					<Divider />
 					<Form.Item className="text-right mb-0">
 						<Space direction="horizontal">
-							<Button
-								disabled={confirmLoading}
-								onClick={() => addUpdateRow(isEdit)}
-							>
+							<Button disabled={confirmLoading} onClick={() => addUpdateRow()}>
 								Kembali
 							</Button>
 							<Button loading={confirmLoading} htmlType="submit" type="primary">

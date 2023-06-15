@@ -18,6 +18,7 @@ import ReloadButton from "../../components/button/ReloadButton";
 import AddButton from "../../components/button/AddButton";
 import { messageAction, responseGet } from "../../helpers/response";
 import { UploadOutlined } from "@ant-design/icons";
+import axios from "axios";
 
 export default function PengaturanKota() {
 	const { message, modal } = App.useApp();
@@ -34,21 +35,33 @@ export default function PengaturanKota() {
 	const [confirmLoading, setConfirmLoading] = useState(false);
 
 	const [cities, setCities] = useState([]);
+	const [exports, setExports] = useState([]);
 	const [loading, setLoading] = useState(false);
 
 	const reloadData = () => {
 		setLoading(true);
-		getCities(tableParams).then((response) => {
-			setLoading(false);
-			setCities(responseGet(response).data);
-			setTableParams({
-				...tableParams,
-				pagination: {
-					...tableParams.pagination,
-					total: responseGet(response).total_count,
-				},
-			});
-		});
+		axios
+			.all([
+				getCities(tableParams),
+				getCities({
+					...tableParams,
+					pagination: { ...tableParams.pagination, pageSize: 0 },
+				}),
+			])
+			.then(
+				axios.spread((_data, _export) => {
+					setLoading(false);
+					setCities(responseGet(_data).data);
+					setExports(responseGet(_export).data);
+					setTableParams({
+						...tableParams,
+						pagination: {
+							...tableParams.pagination,
+							total: responseGet(_data).total_count,
+						},
+					});
+				})
+			);
 	};
 
 	const onTableChange = (pagination, filters, sorter) => {
@@ -151,9 +164,7 @@ export default function PengaturanKota() {
 			<div className="flex flex-col space-y-2 sm:space-y-0 sm:space-x-2 sm:flex-row md:space-y-0 md:space-x-2 md:flex-row">
 				<ReloadButton onClick={reloadTable} stateLoading={loading} />
 				<AddButton onClick={addUpdateRow} stateLoading={loading} />
-				{!!cities?.length && (
-					<ExportButton data={cities} target={`city`} stateLoading={loading} />
-				)}
+				{!!exports?.length && <ExportButton data={exports} master={`city`} />}
 			</div>
 			<div className="mt-4">
 				<Table

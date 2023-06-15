@@ -40,24 +40,35 @@ export default function RekeningKelompok() {
 
 	const [accountGroup, setAccountGroup] = useState([]);
 	const [accountBase, setAccountBase] = useState([]);
+	const [exports, setExports] = useState([]);
 	const [loading, setLoading] = useState(false);
 
 	const reloadData = () => {
 		setLoading(true);
-		axios.all([getAccount("group", tableParams), getAccountList("base")]).then(
-			axios.spread((_groups, _bases) => {
-				setLoading(false);
-				setAccountGroup(responseGet(_groups).data);
-				setTableParams({
+		axios
+			.all([
+				getAccount("group", tableParams),
+				getAccount("group", {
 					...tableParams,
-					pagination: {
-						...tableParams.pagination,
-						total: responseGet(_groups).total_count,
-					},
-				});
-				setAccountBase(_bases?.data?.data);
-			})
-		);
+					pagination: { ...tableParams.pagination, pageSize: 0 },
+				}),
+				getAccountList("base"),
+			])
+			.then(
+				axios.spread((_groups, _export, _bases) => {
+					setLoading(false);
+					setAccountGroup(responseGet(_groups).data);
+					setExports(responseGet(_export).data);
+					setTableParams({
+						...tableParams,
+						pagination: {
+							...tableParams.pagination,
+							total: responseGet(_groups).total_count,
+						},
+					});
+					setAccountBase(_bases?.data?.data);
+				})
+			);
 	};
 
 	const onTableChange = (pagination, filters, sorter) => {
@@ -85,10 +96,7 @@ export default function RekeningKelompok() {
 	const addUpdateRow = (isEdit = false, value = null) => {
 		setShow(!isShow);
 
-		if (!isEdit) {
-			form.resetFields();
-			setEdit(false);
-		} else {
+		if (isEdit) {
 			setEdit(true);
 			form.setFieldsValue({
 				id: value?.id,
@@ -96,6 +104,9 @@ export default function RekeningKelompok() {
 				label: value?.label,
 				remark: value?.remark,
 			});
+		} else {
+			form.resetFields();
+			setEdit(false);
 		}
 	};
 
@@ -126,7 +137,7 @@ export default function RekeningKelompok() {
 
 			if (response?.data?.code === 0) {
 				message.success(messageAction(isEdit));
-				addUpdateRow(isEdit);
+				addUpdateRow();
 				reloadTable();
 			}
 		});
@@ -156,11 +167,11 @@ export default function RekeningKelompok() {
 			<div className="flex flex-col space-y-2 sm:space-y-0 sm:space-x-2 sm:flex-row md:space-y-0 md:space-x-2 md:flex-row">
 				<ReloadButton onClick={reloadTable} stateLoading={loading} />
 				<AddButton onClick={addUpdateRow} stateLoading={loading} />
-				{!!accountGroup?.length && (
+				{!!exports?.length && (
 					<ExportButton
-						data={accountGroup}
-						target={`account_group`}
-						stateLoading={loading}
+						data={exports}
+						master={`account_group`}
+						pdfOrientation={`landscape`}
 					/>
 				)}
 			</div>
@@ -184,7 +195,7 @@ export default function RekeningKelompok() {
 				centered
 				open={isShow}
 				title={`${isEdit ? `Ubah` : `Tambah`} Data Rekening Kelompok`}
-				onCancel={() => addUpdateRow(isEdit)}
+				onCancel={() => addUpdateRow()}
 				footer={null}
 			>
 				<Divider />
@@ -253,10 +264,7 @@ export default function RekeningKelompok() {
 					<Divider />
 					<Form.Item className="text-right mb-0">
 						<Space direction="horizontal">
-							<Button
-								disabled={confirmLoading}
-								onClick={() => addUpdateRow(isEdit)}
-							>
+							<Button disabled={confirmLoading} onClick={() => addUpdateRow()}>
 								Kembali
 							</Button>
 							<Button loading={confirmLoading} htmlType="submit" type="primary">

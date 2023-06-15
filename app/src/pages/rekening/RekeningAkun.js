@@ -11,6 +11,7 @@ import { messageAction, responseGet } from "../../helpers/response";
 import ReloadButton from "../../components/button/ReloadButton";
 import AddButton from "../../components/button/AddButton";
 import ExportButton from "../../components/button/ExportButton";
+import axios from "axios";
 
 export default function RekeningAkun() {
 	const { message, modal } = App.useApp();
@@ -27,22 +28,34 @@ export default function RekeningAkun() {
 	const [confirmLoading, setConfirmLoading] = useState(false);
 
 	const [accountBase, setAccountBase] = useState([]);
+	const [exports, setExports] = useState([]);
 	const [loading, setLoading] = useState(false);
 
 	const reloadData = () => {
 		setLoading(true);
-		getAccount("base", tableParams).then((response) => {
-			setLoading(false);
+		axios
+			.all([
+				getAccount("base", tableParams),
+				getAccount("base", {
+					...tableParams,
+					pagination: { ...tableParams.pagination, pageSize: 0 },
+				}),
+			])
+			.then(
+				axios.spread((_data, _export) => {
+					setLoading(false);
+					setExports(responseGet(_export).data);
 
-			setAccountBase(responseGet(response).data);
-			setTableParams({
-				...tableParams,
-				pagination: {
-					...tableParams.pagination,
-					total: responseGet(response).total_count,
-				},
-			});
-		});
+					setAccountBase(responseGet(_data).data);
+					setTableParams({
+						...tableParams,
+						pagination: {
+							...tableParams.pagination,
+							total: responseGet(_data).total_count,
+						},
+					});
+				})
+			);
 	};
 
 	const onTableChange = (pagination, filters, sorter) => {
@@ -70,16 +83,16 @@ export default function RekeningAkun() {
 	const addUpdateRow = (isEdit = false, value = null) => {
 		setShow(!isShow);
 
-		if (!isEdit) {
-			form.resetFields();
-			setEdit(false);
-		} else {
+		if (isEdit) {
 			setEdit(true);
 			form.setFieldsValue({
 				id: value?.id,
 				label: value?.label,
 				remark: value?.remark,
 			});
+		} else {
+			form.resetFields();
+			setEdit(false);
 		}
 	};
 
@@ -110,7 +123,7 @@ export default function RekeningAkun() {
 
 			if (response?.data?.code === 0) {
 				message.success(messageAction(isEdit));
-				addUpdateRow(isEdit);
+				addUpdateRow();
 				reloadTable();
 			}
 		});
@@ -132,12 +145,8 @@ export default function RekeningAkun() {
 			<div className="flex flex-col space-y-2 sm:space-y-0 sm:space-x-2 sm:flex-row md:space-y-0 md:space-x-2 md:flex-row">
 				<ReloadButton onClick={reloadTable} stateLoading={loading} />
 				<AddButton onClick={addUpdateRow} stateLoading={loading} />
-				{!!accountBase?.length && (
-					<ExportButton
-						data={accountBase}
-						target={`account_base`}
-						stateLoading={loading}
-					/>
+				{!!exports?.length && (
+					<ExportButton data={exports} master={`account_base`} />
 				)}
 			</div>
 			<div className="mt-4">
@@ -160,7 +169,7 @@ export default function RekeningAkun() {
 				centered
 				open={isShow}
 				title={`${isEdit ? `Ubah` : `Tambah`} Data Rekening Akun`}
-				onCancel={() => addUpdateRow(isEdit)}
+				onCancel={() => addUpdateRow()}
 				footer={null}
 			>
 				<Divider />
@@ -206,10 +215,7 @@ export default function RekeningAkun() {
 					<Divider />
 					<Form.Item className="text-right mb-0">
 						<Space direction="horizontal">
-							<Button
-								disabled={confirmLoading}
-								onClick={() => addUpdateRow(isEdit)}
-							>
+							<Button disabled={confirmLoading} onClick={() => addUpdateRow()}>
 								Kembali
 							</Button>
 							<Button loading={confirmLoading} htmlType="submit" type="primary">

@@ -38,25 +38,37 @@ export default function PengaturanPengguna() {
 	const [users, setUsers] = useState([]);
 	const [cities, setCities] = useState([]);
 	const [roles, setRoles] = useState([]);
+	const [exports, setExports] = useState([]);
 	const [loading, setLoading] = useState(false);
 
 	const reloadData = () => {
 		setLoading(true);
-		axios.all([getUsers(tableParams), getCityList(), getRoleList()]).then(
-			axios.spread((_users, _cities, _roles) => {
-				setLoading(false);
-				setUsers(responseGet(_users).data);
-				setTableParams({
+		axios
+			.all([
+				getUsers(tableParams),
+				getUsers({
 					...tableParams,
-					pagination: {
-						...tableParams.pagination,
-						total: responseGet(_users).total_count,
-					},
-				});
-				setCities(_cities?.data?.data);
-				setRoles(_roles?.data?.data);
-			})
-		);
+					pagination: { ...tableParams.pagination, pageSize: 0 },
+				}),
+				getCityList(),
+				getRoleList(),
+			])
+			.then(
+				axios.spread((_users, _export, _cities, _roles) => {
+					setLoading(false);
+					setUsers(responseGet(_users).data);
+					setExports(responseGet(_export).data);
+					setTableParams({
+						...tableParams,
+						pagination: {
+							...tableParams.pagination,
+							total: responseGet(_users).total_count,
+						},
+					});
+					setCities(_cities?.data?.data);
+					setRoles(_roles?.data?.data);
+				})
+			);
 	};
 
 	const onTableChange = (pagination, filters, sorter) => {
@@ -84,10 +96,7 @@ export default function PengaturanPengguna() {
 	const addUpdateRow = (isEdit = false, value = null) => {
 		setShow(!isShow);
 
-		if (!isEdit) {
-			form.resetFields();
-			setEdit(false);
-		} else {
+		if (isEdit) {
 			setEdit(true);
 
 			form.setFieldsValue({
@@ -99,6 +108,9 @@ export default function PengaturanPengguna() {
 				role_id: value?.role_id,
 				city_id: value?.city_id,
 			});
+		} else {
+			form.resetFields();
+			setEdit(false);
 		}
 	};
 
@@ -125,7 +137,7 @@ export default function PengaturanPengguna() {
 
 			if (response?.data?.code === 0) {
 				message.success(messageAction(isEdit));
-				addUpdateRow(isEdit);
+				addUpdateRow();
 				reloadTable();
 			}
 		});
@@ -155,8 +167,12 @@ export default function PengaturanPengguna() {
 			<div className="flex flex-col space-y-2 sm:space-y-0 sm:space-x-2 sm:flex-row md:space-y-0 md:space-x-2 md:flex-row">
 				<ReloadButton onClick={reloadTable} stateLoading={loading} />
 				<AddButton onClick={addUpdateRow} stateLoading={loading} />
-				{!!users?.length && (
-					<ExportButton data={users} target={`user`} stateLoading={loading} />
+				{!!exports?.length && (
+					<ExportButton
+						data={exports}
+						master={`user`}
+						pdfOrientation="landscape"
+					/>
 				)}
 			</div>
 			<div className="mt-4">
@@ -179,7 +195,7 @@ export default function PengaturanPengguna() {
 				centered
 				open={isShow}
 				title={`${isEdit ? `Ubah` : `Tambah`} Data Pengguna`}
-				onCancel={() => addUpdateRow(isEdit)}
+				onCancel={() => addUpdateRow()}
 				footer={null}
 			>
 				<Divider />
@@ -298,10 +314,7 @@ export default function PengaturanPengguna() {
 					<Divider />
 					<Form.Item className="text-right mb-0">
 						<Space direction="horizontal">
-							<Button
-								disabled={confirmLoading}
-								onClick={() => addUpdateRow(isEdit)}
-							>
+							<Button disabled={confirmLoading} onClick={() => addUpdateRow()}>
 								Kembali
 							</Button>
 							<Button loading={confirmLoading} htmlType="submit" type="primary">

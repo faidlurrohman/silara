@@ -46,6 +46,7 @@ export default function RekeningJenis() {
 	const [accountObject, setAccountObject] = useState([]);
 	const [accountType, setAccountType] = useState([]);
 	const [cities, setCities] = useState([]);
+	const [exports, setExports] = useState([]);
 	const [loading, setLoading] = useState(false);
 
 	const reloadData = () => {
@@ -53,13 +54,18 @@ export default function RekeningJenis() {
 		axios
 			.all([
 				getAccount("object", tableParams),
+				getAccount("object", {
+					...tableParams,
+					pagination: { ...tableParams.pagination, pageSize: 0 },
+				}),
 				getAccountList("type"),
 				getCityList(),
 			])
 			.then(
-				axios.spread((_objects, _types, _cities) => {
+				axios.spread((_objects, _export, _types, _cities) => {
 					setLoading(false);
 					setAccountObject(responseGet(_objects).data);
+					setExports(responseGet(_export).data);
 					setTableParams({
 						...tableParams,
 						pagination: {
@@ -98,10 +104,7 @@ export default function RekeningJenis() {
 	const addUpdateRow = (isEdit = false, value = null) => {
 		setShow(!isShow);
 
-		if (!isEdit) {
-			form.resetFields();
-			setEdit(false);
-		} else {
+		if (isEdit) {
 			setEdit(true);
 			form.setFieldsValue({
 				id: value?.id,
@@ -109,6 +112,9 @@ export default function RekeningJenis() {
 				label: value?.label,
 				remark: value?.remark,
 			});
+		} else {
+			form.resetFields();
+			setEdit(false);
 		}
 	};
 
@@ -166,7 +172,7 @@ export default function RekeningJenis() {
 
 			if (response?.data?.code === 0) {
 				message.success(messageAction(isEdit));
-				addUpdateRow(isEdit);
+				addUpdateRow();
 				reloadTable();
 			}
 		});
@@ -196,11 +202,11 @@ export default function RekeningJenis() {
 			<div className="flex flex-col space-y-2 sm:space-y-0 sm:space-x-2 sm:flex-row md:space-y-0 md:space-x-2 md:flex-row">
 				<ReloadButton onClick={reloadTable} stateLoading={loading} />
 				<AddButton onClick={addUpdateRow} stateLoading={loading} />
-				{!!accountObject?.length && (
+				{!!exports?.length && (
 					<ExportButton
-						data={accountObject}
-						target={`account_object`}
-						stateLoading={loading}
+						data={exports}
+						master={`account_object`}
+						pdfOrientation={`landscape`}
 					/>
 				)}
 			</div>
@@ -224,7 +230,7 @@ export default function RekeningJenis() {
 				centered
 				open={isShow}
 				title={`${isEdit ? `Ubah` : `Tambah`} Data Rekening Objek`}
-				onCancel={() => addUpdateRow(isEdit)}
+				onCancel={() => addUpdateRow()}
 				footer={null}
 			>
 				<Divider />
@@ -293,10 +299,7 @@ export default function RekeningJenis() {
 					<Divider />
 					<Form.Item className="text-right mb-0">
 						<Space direction="horizontal">
-							<Button
-								disabled={confirmLoading}
-								onClick={() => addUpdateRow(isEdit)}
-							>
+							<Button disabled={confirmLoading} onClick={() => addUpdateRow()}>
 								Kembali
 							</Button>
 							<Button loading={confirmLoading} htmlType="submit" type="primary">
