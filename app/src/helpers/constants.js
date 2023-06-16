@@ -44,7 +44,6 @@ const COLORS = {
 const REGEX_USERNAME = /^[a-zA-Z0-9_\.]+$/;
 const DATE_UTC = "Asia/Jakarta";
 const DATE_FORMAT_DB = "YYYY-MM-DD";
-const DATE_FORMAT_EXPORT = "YYYYMMDD";
 const DATE_FORMAT_VIEW = "DD MMMM YYYY";
 const PAGINATION = { pagination: { current: 1, pageSize: 10 } };
 const MESSAGE = {
@@ -240,7 +239,6 @@ export {
 	DATE_UTC,
 	DATE_FORMAT_VIEW,
 	DATE_FORMAT_DB,
-	DATE_FORMAT_EXPORT,
 	TRANSAKSI_TMP,
 	LAPORAN_TMP,
 };

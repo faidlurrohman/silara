@@ -1,10 +1,5 @@
 import dayjs from "dayjs";
-import {
-	DATE_FORMAT_DB,
-	DATE_FORMAT_EXPORT,
-	DATE_FORMAT_VIEW,
-	DATE_UTC,
-} from "./constants";
+import { DATE_FORMAT_DB, DATE_FORMAT_VIEW, DATE_UTC } from "./constants";
 
 export const convertDate = (date) => {
 	if (date) return dayjs(date);
@@ -18,8 +13,4 @@ export const dbDate = (date) => {
 
 export const viewDate = (date) => {
 	return dayjs(date).utc(DATE_UTC).format(DATE_FORMAT_VIEW);
-};
-
-export const exportDate = (date) => {
-	return dayjs(date).utc(DATE_UTC).format(DATE_FORMAT_EXPORT);
 };
