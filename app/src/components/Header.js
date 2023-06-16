@@ -99,6 +99,7 @@ export default function Header({ onDrawer }) {
 						arrow={{
 							pointAtCenter: true,
 						}}
+						trigger={["click"]}
 					>
 						<Avatar
 							size="default"
