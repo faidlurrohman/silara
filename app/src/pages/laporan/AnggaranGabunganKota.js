@@ -1,20 +1,10 @@
 import React, { useEffect, useRef, useState } from "react";
-import {
-	Button,
-	DatePicker,
-	Divider,
-	Form,
-	Modal,
-	Select,
-	Space,
-	Table,
-} from "antd";
+import { DatePicker, Select, Table } from "antd";
 import axios from "axios";
 import ReloadButton from "../../components/button/ReloadButton";
 import { getCityList } from "../../services/city";
 import { DATE_FORMAT_VIEW, PAGINATION } from "../../helpers/constants";
-import dayjs from "dayjs";
-import { convertDate, dbDate, viewDate } from "../../helpers/date";
+import { convertDate, dbDate } from "../../helpers/date";
 import useRole from "../../hooks/useRole";
 import { getRealPlanCities } from "../../services/report";
 import { responseGet } from "../../helpers/response";
@@ -22,25 +12,19 @@ import { searchColumn } from "../../helpers/table";
 import { formatterNumber } from "../../helpers/number";
 import { upper } from "../../helpers/typo";
 import _ from "lodash";
-import { ExportOutlined } from "@ant-design/icons";
-import { getSignerList } from "../../services/signer";
+import ExportButton from "../../components/button/ExportButton";
 
-const ExcelJS = require("exceljs");
 const { RangePicker } = DatePicker;
-
-const defaultStartPicker = dayjs().startOf("year");
-const defaultEndPicker = convertDate();
 
 export default function AnggaranGabunganKota() {
 	const { role_id } = useRole();
-	const [form] = Form.useForm();
 
 	const searchInput = useRef(null);
 	const [filtered, setFiltered] = useState({});
 	const [sorted, setSorted] = useState({});
 	const [dateRangeFilter, setDateRangeFilter] = useState([
-		defaultStartPicker,
-		defaultEndPicker,
+		convertDate().startOf("year"),
+		convertDate(),
 	]);
 	const [cityFilter, setCityFilter] = useState([]);
 	const [tableParams, setTableParams] = useState({
@@ -53,11 +37,8 @@ export default function AnggaranGabunganKota() {
 
 	const [data, setData] = useState([]);
 	const [cities, setCities] = useState([]);
-	const [loading, setLoading] = useState(false);
-
-	const [signers, setSigners] = useState([]);
 	const [exports, setExports] = useState([]);
-	const [signerModal, setSignerModal] = useState(false);
+	const [loading, setLoading] = useState(false);
 
 	const reloadData = () => {
 		setLoading(true);
@@ -69,10 +50,9 @@ export default function AnggaranGabunganKota() {
 					pagination: { ...tableParams.pagination, pageSize: 0 },
 				}),
 				getCityList(),
-				getSignerList(),
 			])
 			.then(
-				axios.spread((_data, _export, _cities, _signer) => {
+				axios.spread((_data, _export, _cities) => {
 					setLoading(false);
 					setData(responseGet(_data).data);
 					setExports(setDataExport(responseGet(_export).data));
@@ -84,9 +64,8 @@ export default function AnggaranGabunganKota() {
 						},
 					});
 					setCities(_cities?.data?.data);
-					setSigners(_signer?.data?.data);
 
-					if (role_id !== 1) onCityFilterChange(_cities?.data?.data[0]?.id);
+					if (role_id !== 1) onCityFilterChange([_cities?.data?.data[0]?.id]);
 				})
 			);
 	};
@@ -139,14 +118,16 @@ export default function AnggaranGabunganKota() {
 
 	const reloadTable = () => {
 		setCityFilter([]);
-		setDateRangeFilter([defaultStartPicker, defaultEndPicker]);
+		setDateRangeFilter([convertDate().startOf("year"), convertDate()]);
 		setFiltered({});
 		setSorted({});
 		setTableParams({
 			...PAGINATION,
 			filters: {
 				city_id: null,
-				trans_date: [[dbDate(defaultStartPicker), dbDate(defaultEndPicker)]],
+				trans_date: [
+					[dbDate(convertDate().startOf("year")), dbDate(convertDate())],
+				],
 			},
 		});
 	};
@@ -388,224 +369,6 @@ export default function AnggaranGabunganKota() {
 		return results;
 	};
 
-	const exportToExcel = async (v) => {
-		const workbook = new ExcelJS.Workbook();
-		const sheet = workbook.addWorksheet("LRA Gabungan Kota");
-		const signerIs = signers.find((d) => d?.id === v?.signer_id)?.label || "";
-
-		// title
-		sheet.mergeCells("B1", "D1");
-		sheet.mergeCells("B2", "D2");
-		sheet.mergeCells("B3", "D3");
-		sheet.mergeCells("B4", "D4");
-		sheet.mergeCells("B5", "D5");
-		sheet.mergeCells("B6", "D6");
-		sheet.mergeCells("B7", "D7");
-		sheet.mergeCells("B8", "D8");
-		sheet.getCell("B3").value =
-			"LAPORAN REALISASI ANGGARAN PENDAPATAN DAN BELANJA DAERAH (KONSOLIDASI)";
-		sheet.getCell("B3").style = {
-			alignment: { vertical: "middle", horizontal: "center" },
-			font: { bold: true },
-		};
-		sheet.getCell(
-			"B4"
-		).value = `KABUPATEN/KOTA SE-PROVINSI KEPULAUAN RIAU ANGGARAN ${viewDate(
-			dateRangeFilter[1]
-		)}`;
-		sheet.getCell("B4").style = {
-			alignment: { vertical: "middle", horizontal: "center" },
-			font: { bold: true },
-		};
-		sheet.getCell("B5").value = `${viewDate(
-			dateRangeFilter[0]
-		)} Sampai ${viewDate(dateRangeFilter[1])}`;
-		sheet.getCell("B5").style = {
-			alignment: { vertical: "middle", horizontal: "center" },
-			font: { bold: true },
-		};
-		// header
-		sheet.addRow([]);
-		sheet.mergeCells("A9", "A10");
-		sheet.mergeCells("B9", "B10");
-		sheet.getCell("A9").value = `KODE REKENING`;
-		sheet.getCell("A9").style = {
-			alignment: { vertical: "middle", horizontal: "center" },
-			font: { bold: true },
-		};
-		sheet.getCell("B9").value = `URAIAN`;
-		sheet.getCell("B9").style = {
-			alignment: { vertical: "middle", horizontal: "center" },
-			font: { bold: true },
-		};
-
-		let sc = 3,
-			sr = 9;
-		let col = [
-				{ key: "code", width: 18 },
-				{ key: "label", width: 50 },
-			],
-			scol = ["1", "2"];
-		_.map(exports?.cities, (item) => {
-			sheet.mergeCells(sr, sc, sr, sc + 2);
-
-			const cr = sheet.getRow(sr);
-			const crb = sheet.getRow(sr + 1);
-			cr.getCell(sc).value = upper(item?.city);
-			cr.getCell(sc).style = {
-				alignment: { vertical: "middle", horizontal: "center" },
-				font: { bold: true },
-			};
-			crb.height = 25;
-			crb.getCell(sc).value = "ANGGARAN";
-			crb.getCell(sc + 1).value = "REALISASI";
-			crb.getCell(sc + 2).value = "%";
-			crb.getCell(sc).style = {
-				alignment: { vertical: "middle", horizontal: "center" },
-				font: { bold: true },
-			};
-			crb.getCell(sc + 1).style = {
-				alignment: { vertical: "middle", horizontal: "center" },
-				font: { bold: true },
-			};
-			crb.getCell(sc + 2).style = {
-				alignment: { vertical: "middle", horizontal: "center" },
-				font: { bold: true },
-			};
-			col.push({ key: `${item?.city_id}_plan_amount`, width: 18 });
-			col.push({ key: `${item?.city_id}_real_amount`, width: 18 });
-			col.push({ key: `${item?.city_id}_percentage`, width: 18 });
-			scol.push(`${sc}`);
-			scol.push(`${sc + 1}`);
-			scol.push(`${sc + 2} = (${sc + 1} / ${sc}) * 100`);
-
-			sc += 3;
-		});
-		sheet.addRow(scol);
-		sheet.addRow(_.fill(scol, ""));
-		sheet.columns = col;
-
-		// data
-		sheet.addRows(exports?.data, "i");
-		sheet.eachRow((row, number) => {
-			if ([9, 10, 11, 12].includes(number)) {
-				row.eachCell((cell) => {
-					cell.style = {
-						alignment: { vertical: "middle", horizontal: "center" },
-						font: { bold: true },
-						border: {
-							top: { style: "thin" },
-							left: { style: "thin" },
-							bottom: { style: "thin" },
-							right: { style: "thin" },
-						},
-					};
-				});
-			} else if (number > 9) {
-				row.eachCell((cell) => {
-					const codeShell = sheet.getCell(`A${number}`);
-					const countTick = codeShell.value.split(".").length;
-
-					if (
-						cell._column._key.includes("plan_amount") ||
-						cell._column._key.includes("real_amount") ||
-						cell._column._key.includes("percentage")
-					) {
-						cell.style = {
-							font: { bold: countTick <= 2 },
-							alignment: {
-								horizontal: "right",
-								vertical: "middle",
-							},
-						};
-					} else {
-						cell.style = {
-							font: { bold: countTick <= 2 },
-							alignment: {
-								horizontal: "left",
-								vertical: "middle",
-							},
-						};
-					}
-
-					cell.style = {
-						...cell.style,
-						border: {
-							top: { style: "thin" },
-							left: { style: "thin" },
-							bottom: { style: "thin" },
-							right: { style: "thin" },
-						},
-					};
-				});
-			}
-		});
-
-		// make signer and sipd
-		const last = sheet.lastRow;
-
-		if (last) {
-			if (signerIs !== "") {
-				// signer date
-				let signerDateCell = last.number || 0;
-				signerDateCell += 3;
-
-				sheet.mergeCells(`C${signerDateCell}`, `E${signerDateCell}`);
-				sheet.getCell(`C${signerDateCell}`).value = viewDate(convertDate());
-				sheet.getCell(`C${signerDateCell}`).style = {
-					alignment: { vertical: "middle", horizontal: "center" },
-					font: { bold: false },
-				};
-
-				// signer
-				let signerCell = last.number || 0;
-				signerCell += 8;
-
-				sheet.mergeCells(`C${signerCell}`, `E${signerCell}`);
-				sheet.getCell(`C${signerCell}`).value = signerIs;
-				sheet.getCell(`C${signerCell}`).style = {
-					alignment: { vertical: "middle", horizontal: "center" },
-					font: { bold: false },
-				};
-			}
-
-			// sipd
-			let sipdCell = last.number || 0;
-			sipdCell += signerIs !== "" ? 11 : 3;
-
-			sheet.mergeCells(`A${sipdCell}`, `E${sipdCell}`);
-			sheet.getCell(
-				`A${sipdCell}`
-			).value = `Dicetak Oleh SIPD Kementrian Dalam Negeri`;
-			sheet.getCell(`A${sipdCell}`).style = {
-				alignment: { vertical: "middle", horizontal: "center" },
-				font: { bold: false },
-			};
-		}
-
-		workbook.xlsx.writeBuffer().then(function (data) {
-			const blob = new Blob([data], {
-				type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-			});
-			const url = window.URL.createObjectURL(blob);
-			const anchor = document.createElement("a");
-
-			anchor.href = url;
-			anchor.download = `LAPORAN-REALISASI-ANGGARAN-GABUNGAN-KOTA-${dbDate(
-				convertDate()
-			)}.xlsx`;
-			anchor.click();
-			window.URL.revokeObjectURL(url);
-
-			onSignerModal(false);
-		});
-	};
-
-	const onSignerModal = (show) => {
-		setSignerModal(show);
-		form.resetFields();
-	};
-
 	useEffect(() => {
 		reloadData();
 	}, [JSON.stringify(tableParams)]);
@@ -652,17 +415,14 @@ export default function AnggaranGabunganKota() {
 				</div>
 				<ReloadButton onClick={reloadTable} stateLoading={loading} />
 				{!!exports?.data?.length && (
-					<Button
-						type="primary"
-						icon={<ExportOutlined />}
-						onClick={() =>
-							role_id === 1
-								? onSignerModal(true)
-								: exportToExcel(form?.getFieldsValue())
-						}
-					>
-						Ekspor
-					</Button>
+					<ExportButton
+						data={exports}
+						date={dateRangeFilter}
+						report={`gabungankota`}
+						pdfOrientation="landscape"
+						fileName="LAPORAN-REALISASI-ANGGARAN-GABUNGAN-KOTA"
+						types={["xlsx"]}
+					/>
 				)}
 			</div>
 			<div className="mt-4">
@@ -680,47 +440,6 @@ export default function AnggaranGabunganKota() {
 					pagination={tableParams.pagination}
 				/>
 			</div>
-			<Modal
-				style={{ margin: 10 }}
-				centered
-				open={signerModal}
-				title={`Ekspor Data`}
-				onCancel={() => onSignerModal(false)}
-				footer={null}
-			>
-				<Divider />
-				<Form
-					form={form}
-					name="basic"
-					labelCol={{ span: 8 }}
-					labelAlign="left"
-					onFinish={exportToExcel}
-					autoComplete="off"
-					initialValues={{ signer_id: "" }}
-				>
-					<Form.Item
-						label="Penanda Tangan"
-						name="signer_id"
-						rules={[
-							{
-								required: true,
-								message: "Penanda Tangan tidak boleh kosong!",
-							},
-						]}
-					>
-						<Select loading={loading} options={signers} />
-					</Form.Item>
-					<Divider />
-					<Form.Item className="text-right mb-0">
-						<Space direction="horizontal">
-							<Button onClick={() => onSignerModal(false)}>Kembali</Button>
-							<Button htmlType="submit" type="primary">
-								Simpan
-							</Button>
-						</Space>
-					</Form.Item>
-				</Form>
-			</Modal>
 		</>
 	);
 }

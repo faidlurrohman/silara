@@ -17,6 +17,7 @@ class App extends CI_Controller {
 	public function rest_server()
 	{
         $this->load->helper('url');
+        // $this->load->helper('file');
         $this->load->view('rest_server');
 	}
 
@@ -30,6 +31,19 @@ class App extends CI_Controller {
 		}
 		echo json_encode(['status' => $r]);
 	}
+
+	public function logo($image)
+    {
+        $file_path = "uploads/" . $image; //<-- specify the image  file
+
+        if(file_exists($file_path)){ 
+            $mime = mime_content_type($file_path); //<-- detect file type
+            header('Content-Length: '.filesize($file_path)); //<-- sends filesize header
+            header("Content-Type: $mime"); //<-- send mime-type header
+            header('Content-Disposition: inline; filename="'.$file_path.'";'); //<-- sends filename header
+            readfile($file_path); //<--reads and outputs the file onto the output buffer
+        }
+    }
 
 	protected function _authenticate_CORS()
 	{
