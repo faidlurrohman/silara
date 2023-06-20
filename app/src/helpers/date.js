@@ -1,7 +1,9 @@
 import dayjs from "dayjs";
 import { DATE_FORMAT_DB, DATE_FORMAT_VIEW, DATE_UTC } from "./constants";
 
-export const convertDate = (date) => {
+export const convertDate = (date, useFormat) => {
+	if (useFormat) return dayjs(date).utc(DATE_UTC).format(useFormat);
+
 	if (date) return dayjs(date);
 
 	return dayjs();
