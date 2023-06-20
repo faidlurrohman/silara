@@ -38,10 +38,10 @@ export default function PDFFile({
 							(KONSOLIDASI)
 						</Text>
 						<Text style={styles.reportTitle}>
-							{`Tahun Anggaran ${viewDate(date[1]).split(" ").pop()}`}
+							{upper(`Tahun Anggaran ${viewDate(date[1]).split(" ").pop()}`)}
 						</Text>
 						<Text style={styles.reportTitle}>
-							{`${viewDate(date[0])} Sampai ${viewDate(date[1])}`}
+							{upper(`${viewDate(date[0])} Sampai ${viewDate(date[1])}`)}
 						</Text>
 					</View>
 					<Image
