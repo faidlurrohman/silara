@@ -13,6 +13,7 @@ import _ from "lodash";
 import logoKemendagri from "../../assets/images/logo-kemendagri.png";
 import axios from "axios";
 import axiosInstance from "../../services/axios";
+import { formatterNumber } from "../../helpers/number";
 
 const ExcelJS = require("exceljs");
 
@@ -88,155 +89,7 @@ export default function ExportButton({
 		}
 
 		if (report) {
-			if (report === "gabungankota") {
-				// title
-				sheet.mergeCells("B1", "D1");
-				sheet.mergeCells("B2", "D2");
-				sheet.mergeCells("B3", "D3");
-				sheet.mergeCells("B4", "D4");
-				sheet.mergeCells("B5", "D5");
-				sheet.mergeCells("B6", "D6");
-				sheet.mergeCells("B7", "D7");
-				sheet.mergeCells("B8", "D8");
-				sheet.getCell("B3").value =
-					"LAPORAN REALISASI ANGGARAN PENDAPATAN DAN BELANJA DAERAH (KONSOLIDASI)";
-				sheet.getCell("B3").style = {
-					alignment: { vertical: "middle", horizontal: "center" },
-					font: { bold: true },
-				};
-				sheet.getCell(
-					"B4"
-				).value = `KABUPATEN/KOTA SE-PROVINSI KEPULAUAN RIAU ANGGARAN ${viewDate(
-					date[1]
-				)}`;
-				sheet.getCell("B4").style = {
-					alignment: { vertical: "middle", horizontal: "center" },
-					font: { bold: true },
-				};
-				sheet.getCell("B5").value = `${viewDate(date[0])} Sampai ${viewDate(
-					date[1]
-				)}`;
-				sheet.getCell("B5").style = {
-					alignment: { vertical: "middle", horizontal: "center" },
-					font: { bold: true },
-				};
-				// header
-				sheet.addRow([]);
-				sheet.mergeCells("A9", "A10");
-				sheet.mergeCells("B9", "B10");
-				sheet.getCell("A9").value = `KODE REKENING`;
-				sheet.getCell("A9").style = {
-					alignment: { vertical: "middle", horizontal: "center" },
-					font: { bold: true },
-				};
-				sheet.getCell("B9").value = `URAIAN`;
-				sheet.getCell("B9").style = {
-					alignment: { vertical: "middle", horizontal: "center" },
-					font: { bold: true },
-				};
-
-				let sc = 3,
-					sr = 9;
-				let col = [
-						{ key: "code", width: 18 },
-						{ key: "label", width: 50 },
-					],
-					scol = ["1", "2"];
-				_.map(data?.cities, (item) => {
-					sheet.mergeCells(sr, sc, sr, sc + 2);
-
-					const cr = sheet.getRow(sr);
-					const crb = sheet.getRow(sr + 1);
-					cr.getCell(sc).value = upper(item?.city);
-					cr.getCell(sc).style = {
-						alignment: { vertical: "middle", horizontal: "center" },
-						font: { bold: true },
-					};
-					crb.height = 25;
-					crb.getCell(sc).value = "ANGGARAN";
-					crb.getCell(sc + 1).value = "REALISASI";
-					crb.getCell(sc + 2).value = "%";
-					crb.getCell(sc).style = {
-						alignment: { vertical: "middle", horizontal: "center" },
-						font: { bold: true },
-					};
-					crb.getCell(sc + 1).style = {
-						alignment: { vertical: "middle", horizontal: "center" },
-						font: { bold: true },
-					};
-					crb.getCell(sc + 2).style = {
-						alignment: { vertical: "middle", horizontal: "center" },
-						font: { bold: true },
-					};
-					col.push({ key: `${item?.city_id}_plan_amount`, width: 18 });
-					col.push({ key: `${item?.city_id}_real_amount`, width: 18 });
-					col.push({ key: `${item?.city_id}_percentage`, width: 18 });
-					scol.push(`${sc}`);
-					scol.push(`${sc + 1}`);
-					scol.push(`${sc + 2} = (${sc + 1} / ${sc}) * 100`);
-
-					sc += 3;
-				});
-				sheet.addRow(scol);
-				sheet.addRow(_.fill(scol, ""));
-				sheet.columns = col;
-
-				// data
-				sheet.addRows(data?.data, "i");
-				sheet.eachRow((row, number) => {
-					if ([9, 10, 11, 12].includes(number)) {
-						row.eachCell((cell) => {
-							cell.style = {
-								alignment: { vertical: "middle", horizontal: "center" },
-								font: { bold: true },
-								border: {
-									top: { style: "thin" },
-									left: { style: "thin" },
-									bottom: { style: "thin" },
-									right: { style: "thin" },
-								},
-							};
-						});
-					} else if (number > 9) {
-						row.eachCell((cell) => {
-							const codeShell = sheet.getCell(`A${number}`);
-							const countTick = codeShell.value.split(".").length;
-
-							if (
-								cell._column._key.includes("plan_amount") ||
-								cell._column._key.includes("real_amount") ||
-								cell._column._key.includes("percentage")
-							) {
-								cell.style = {
-									font: { bold: countTick <= 2 },
-									alignment: {
-										horizontal: "right",
-										vertical: "middle",
-									},
-								};
-							} else {
-								cell.style = {
-									font: { bold: countTick <= 2 },
-									alignment: {
-										horizontal: "left",
-										vertical: "middle",
-									},
-								};
-							}
-
-							cell.style = {
-								...cell.style,
-								border: {
-									top: { style: "thin" },
-									left: { style: "thin" },
-									bottom: { style: "thin" },
-									right: { style: "thin" },
-								},
-							};
-						});
-					}
-				});
-			} else if (report === "kota") {
+			if (report === "kota") {
 				const chooseCity = data[0].city_label || "";
 				const chooseCityLogo = data[0].city_logo || "";
 
@@ -385,31 +238,421 @@ export default function ExportButton({
 						});
 					}
 				});
+			} else if (report === "gabungankota") {
+				// header
+				sheet.mergeCells("A8", "A9");
+				sheet.mergeCells("B8", "B9");
+				sheet.getCell("A8").value = `KODE REKENING`;
+				sheet.getCell("A8").style = {
+					alignment: { vertical: "middle", horizontal: "center" },
+					font: { bold: true },
+				};
+				sheet.getCell("B8").value = `URAIAN`;
+				sheet.getCell("B8").style = {
+					alignment: { vertical: "middle", horizontal: "center" },
+					font: { bold: true },
+				};
+
+				let sc = 3,
+					sr = 8;
+				let col = [
+						{ key: "code", width: 18 },
+						{ key: "label", width: 50 },
+					],
+					scol = ["1", "2"];
+				_.map(data?.cities, (item) => {
+					sheet.mergeCells(sr, sc, sr, sc + 2);
+
+					const cr = sheet.getRow(sr);
+					const crb = sheet.getRow(sr + 1);
+					cr.getCell(sc).value = upper(item?.city);
+					cr.getCell(sc).style = {
+						alignment: { vertical: "middle", horizontal: "center" },
+						font: { bold: true },
+					};
+					crb.height = 25;
+					crb.getCell(sc).value = "ANGGARAN";
+					crb.getCell(sc + 1).value = "REALISASI";
+					crb.getCell(sc + 2).value = "%";
+					crb.getCell(sc).style = {
+						alignment: { vertical: "middle", horizontal: "center" },
+						font: { bold: true },
+					};
+					crb.getCell(sc + 1).style = {
+						alignment: { vertical: "middle", horizontal: "center" },
+						font: { bold: true },
+					};
+					crb.getCell(sc + 2).style = {
+						alignment: { vertical: "middle", horizontal: "center" },
+						font: { bold: true },
+					};
+					col.push({ key: `${item?.city_id}_plan_amount`, width: 18 });
+					col.push({ key: `${item?.city_id}_real_amount`, width: 18 });
+					col.push({ key: `${item?.city_id}_percentage`, width: 18 });
+					scol.push(`${sc}`);
+					scol.push(`${sc + 1}`);
+					scol.push(`${sc + 2} = (${sc + 1} / ${sc}) * 100`);
+
+					sc += 3;
+				});
+				sheet.addRow(scol);
+				sheet.addRow(_.fill(scol, ""));
+				sheet.columns = col;
+
+				// data
+				sheet.addRows(data?.data, "i");
+				sheet.eachRow((row, number) => {
+					if ([8, 9, 10, 11].includes(number)) {
+						row.eachCell((cell) => {
+							cell.style = {
+								alignment: { vertical: "middle", horizontal: "center" },
+								font: { bold: true },
+								border: {
+									top: { style: "thin" },
+									left: { style: "thin" },
+									bottom: { style: "thin" },
+									right: { style: "thin" },
+								},
+							};
+						});
+					} else if (number > 8) {
+						row.eachCell((cell) => {
+							const codeShell = sheet.getCell(`A${number}`);
+							const countTick = codeShell.value.split(".").length;
+
+							if (
+								cell._column._key.includes("plan_amount") ||
+								cell._column._key.includes("real_amount") ||
+								cell._column._key.includes("percentage")
+							) {
+								cell.style = {
+									font: { bold: countTick <= 2 },
+									alignment: {
+										horizontal: "right",
+										vertical: "middle",
+									},
+								};
+							} else {
+								cell.style = {
+									font: { bold: countTick <= 2 },
+									alignment: {
+										horizontal: "left",
+										vertical: "middle",
+									},
+								};
+							}
+
+							cell.style = {
+								...cell.style,
+								border: {
+									top: { style: "thin" },
+									left: { style: "thin" },
+									bottom: { style: "thin" },
+									right: { style: "thin" },
+								},
+							};
+						});
+					}
+				});
+
+				// title
+				let firstrow = sheet.getRow(8);
+				let firstcell = firstrow._cells[0];
+				let lastcell = firstrow._cells[firstrow._cells.length - 1];
+				let firstchellchar = firstcell._address.charAt(0);
+				let lastchellchar = lastcell._address.charAt(0);
+
+				for (let pos = 1; pos <= 7; pos++) {
+					sheet.mergeCells(`${firstchellchar}${pos}`, `${lastchellchar}${pos}`);
+
+					if (pos === 3) {
+						sheet.getCell(`${firstchellchar}${pos}`).value =
+							"LAPORAN REALISASI ANGGARAN PENDAPATAN DAN BELANJA DAERAH (KONSOLIDASI)";
+						sheet.getCell(`${firstchellchar}${pos}`).style = {
+							alignment: { vertical: "middle", horizontal: "center" },
+							font: { bold: true },
+						};
+					} else if (pos === 4) {
+						sheet.getCell(
+							`${firstchellchar}${pos}`
+						).value = `KABUPATEN/KOTA SE-PROVINSI KEPULAUAN RIAU ANGGARAN ${viewDate(
+							date[1]
+						)}`;
+						sheet.getCell(`${firstchellchar}${pos}`).style = {
+							alignment: { vertical: "middle", horizontal: "center" },
+							font: { bold: true },
+						};
+					} else if (pos === 5) {
+						sheet.getCell(`${firstchellchar}${pos}`).value = upper(
+							`${viewDate(date[0])} Sampai ${viewDate(date[1])}`
+						);
+						sheet.getCell(`${firstchellchar}${pos}`).style = {
+							alignment: { vertical: "middle", horizontal: "center" },
+							font: { bold: true },
+						};
+					}
+				}
+			} else if (report === "rekapitulasi") {
+				// header
+				sheet.mergeCells("A8", "A10");
+				sheet.mergeCells("B8", "B10");
+				sheet.getCell("A8").value = `NO`;
+				sheet.getCell("A8").style = {
+					alignment: { vertical: "middle", horizontal: "center" },
+					font: { bold: true },
+				};
+				sheet.getCell("B8").value = `KABUPATEN / KOTA`;
+				sheet.getCell("B8").style = {
+					alignment: { vertical: "middle", horizontal: "center" },
+					font: { bold: true },
+				};
+
+				let colBase = 3,
+					rowBase = 8;
+				let col = [
+					{ key: "no", width: 7 },
+					{ key: "label", width: 35 },
+				];
+
+				_.map(data?.bases, (base) => {
+					sheet.mergeCells(rowBase, colBase, rowBase, colBase + 1);
+
+					const rowBase1 = sheet.getRow(rowBase);
+					const rowBase2 = sheet.getRow(rowBase + 1);
+					const rowBase3 = sheet.getRow(rowBase + 2);
+					// akun base label
+					rowBase1.getCell(colBase).value = upper(base?.base);
+					// target
+					rowBase2.getCell(colBase).value = "TARGET";
+					// realisasi
+					rowBase2.getCell(colBase + 1).value = "REALISASI";
+					// Rp
+					rowBase3.getCell(colBase).value = "(Rp)";
+					// Rp
+					rowBase3.getCell(colBase + 1).value = "(Rp)";
+					// %
+					sheet.mergeCells(rowBase, colBase + 2, rowBase + 2, colBase + 2);
+					rowBase1.getCell(colBase + 2).value = "%";
+
+					col.push({ key: `${base?.base_id}_plan_amount`, width: 22 });
+					col.push({ key: `${base?.base_id}_real_amount`, width: 22 });
+					col.push({ key: `${base?.base_id}_percentage`, width: 12 });
+
+					colBase += 3;
+				});
+				sheet.columns = col;
+
+				// data
+				sheet.addRows(data?.data, "i");
+				sheet.eachRow((row, number) => {
+					if ([8, 9, 10].includes(number)) {
+						row.eachCell((cell) => {
+							cell.style = {
+								alignment: { vertical: "middle", horizontal: "center" },
+								font: { bold: true },
+								border: {
+									top: { style: "thin" },
+									left: { style: "thin" },
+									bottom: { style: "thin" },
+									right: { style: "thin" },
+								},
+							};
+						});
+					} else if (number > 8) {
+						row.eachCell((cell) => {
+							if (
+								cell._column._key === "no" ||
+								cell._column._key.includes("percentage")
+							) {
+								cell.style = {
+									alignment: {
+										horizontal: "center",
+										vertical: "middle",
+									},
+								};
+							} else if (
+								cell._column._key.includes("plan_amount") ||
+								cell._column._key.includes("real_amount")
+							) {
+								cell.style = {
+									alignment: {
+										horizontal: "right",
+										vertical: "middle",
+									},
+								};
+							}
+
+							cell.style = {
+								...cell.style,
+								border: {
+									top: { style: "thin" },
+									left: { style: "thin" },
+									bottom: { style: "thin" },
+									right: { style: "thin" },
+								},
+							};
+						});
+					}
+				});
+
+				// total
+				const totalRow = sheet.lastRow;
+				let total = ["TOTAL", ""];
+
+				_.map(data?.bases, (base) => {
+					let tpa = 0,
+						tra = 0,
+						tp = 0;
+
+					tpa = _.sumBy(base?.children, `account_base_plan_amount`);
+					tra = _.sumBy(base?.children, `account_base_real_amount`);
+					tp = parseFloat((tra / tpa) * 100).toFixed(2);
+
+					total.push(formatterNumber(tpa));
+					total.push(formatterNumber(tra));
+					total.push(tp);
+				});
+				sheet.addRow(total);
+				sheet.getRow(totalRow.number + 1).eachCell((cell) => {
+					let cellno = cell._column._number;
+					let cellkey = cell._column._key;
+
+					if (cellno === 2) {
+						sheet.mergeCells(
+							`A${totalRow?.number + 1}`,
+							`B${totalRow?.number + 1}`
+						);
+						sheet.getCell(`A${totalRow?.number + 1}`).style = {
+							alignment: {
+								horizontal: "center",
+								vertical: "middle",
+							},
+							font: { bold: true },
+							border: {
+								top: { style: "thin" },
+								left: { style: "thin" },
+								bottom: { style: "thin" },
+								right: { style: "thin" },
+							},
+						};
+						sheet.getCell(`B${totalRow?.number + 1}`).style = {
+							alignment: {
+								horizontal: "center",
+								vertical: "middle",
+							},
+							font: { bold: true },
+							border: {
+								top: { style: "thin" },
+								left: { style: "thin" },
+								bottom: { style: "thin" },
+								right: { style: "thin" },
+							},
+						};
+					} else if (cellno > 2) {
+						if (cellkey.includes("percentage")) {
+							cell.style = {
+								alignment: {
+									horizontal: "center",
+									vertical: "middle",
+								},
+							};
+						} else if (
+							cellkey.includes("plan_amount") ||
+							cellkey.includes("real_amount")
+						) {
+							cell.style = {
+								alignment: {
+									horizontal: "right",
+									vertical: "middle",
+								},
+							};
+						}
+
+						cell.style = {
+							...cell.style,
+							font: { bold: true },
+							border: {
+								top: { style: "thin" },
+								left: { style: "thin" },
+								bottom: { style: "thin" },
+								right: { style: "thin" },
+							},
+						};
+					}
+				});
+
+				// title
+				let firstrow = sheet.getRow(8);
+				let firstcell = firstrow._cells[0];
+				let lastcell = firstrow._cells[firstrow._cells.length - 1];
+				let firstchellchar = firstcell._address.charAt(0);
+				let lastchellchar = lastcell._address.charAt(0);
+
+				for (let pos = 1; pos <= 7; pos++) {
+					sheet.mergeCells(`${firstchellchar}${pos}`, `${lastchellchar}${pos}`);
+
+					if (pos === 3) {
+						sheet.getCell(`${firstchellchar}${pos}`).value =
+							"REKAPITULASI PENDAPATAN DAN BELANJA";
+						sheet.getCell(`${firstchellchar}${pos}`).style = {
+							alignment: { vertical: "middle", horizontal: "center" },
+							font: { bold: true },
+						};
+					} else if (pos === 4) {
+						sheet.getCell(
+							`${firstchellchar}${pos}`
+						).value = `APBD KABUPATEN / KOTA SE-PROVINSI KEPULAUAN RIAU TAHUN ANGGARAN ${convertDate(
+							date[0],
+							"YYYY"
+						)}`;
+						sheet.getCell(`${firstchellchar}${pos}`).style = {
+							alignment: { vertical: "middle", horizontal: "center" },
+							font: { bold: true },
+						};
+					} else if (pos === 5) {
+						sheet.getCell(`${firstchellchar}${pos}`).value = `PER ${upper(
+							viewDate(date[1])
+						)}`;
+						sheet.getCell(`${firstchellchar}${pos}`).style = {
+							alignment: { vertical: "middle", horizontal: "center" },
+							font: { bold: true },
+						};
+					}
+				}
 			}
 
 			// make signer and sipd
 			const last = sheet.lastRow;
 
 			if (last) {
+				let firstCellSigner = last._cells[last._cells.length - 3];
+				let lastCellSigner = last._cells[last._cells.length - 1];
+				let firstCellSignerChar = firstCellSigner._address.charAt(0);
+				let lastCellSignerChar = lastCellSigner._address.charAt(0);
+
 				if (signerIs !== "") {
 					// signer date
-					let signerDateCell = last.number || 0;
-					signerDateCell += 3;
+					let signerDateCell = (last.number || 0) + 3;
+					let firstCellSignerDateTarget = `${firstCellSignerChar}${signerDateCell}`;
+					let lastCellDateSignerTarget = `${lastCellSignerChar}${signerDateCell}`;
 
-					sheet.mergeCells(`C${signerDateCell}`, `E${signerDateCell}`);
-					sheet.getCell(`C${signerDateCell}`).value = viewDate(convertDate());
-					sheet.getCell(`C${signerDateCell}`).style = {
+					sheet.mergeCells(firstCellSignerDateTarget, lastCellDateSignerTarget);
+					sheet.getCell(firstCellSignerDateTarget).value = viewDate(
+						convertDate()
+					);
+					sheet.getCell(firstCellSignerDateTarget).style = {
 						alignment: { vertical: "middle", horizontal: "center" },
 						font: { bold: false },
 					};
 
 					// signer
-					let signerCell = last.number || 0;
-					signerCell += 8;
+					let signerCell = (last.number || 0) + 8;
+					let firstCellSignerTarget = `${firstCellSignerChar}${signerCell}`;
+					let lastCellSignerTarget = `${lastCellSignerChar}${signerCell}`;
 
-					sheet.mergeCells(`C${signerCell}`, `E${signerCell}`);
-					sheet.getCell(`C${signerCell}`).value = signerIs;
-					sheet.getCell(`C${signerCell}`).style = {
+					sheet.mergeCells(firstCellSignerTarget, lastCellSignerTarget);
+					sheet.getCell(firstCellSignerTarget).value = signerIs;
+					sheet.getCell(firstCellSignerTarget).style = {
 						alignment: { vertical: "middle", horizontal: "center" },
 						font: { bold: false },
 					};
@@ -419,7 +662,7 @@ export default function ExportButton({
 				let sipdCell = last.number || 0;
 				sipdCell += signerIs !== "" ? 11 : 3;
 
-				sheet.mergeCells(`A${sipdCell}`, `E${sipdCell}`);
+				sheet.mergeCells(`A${sipdCell}`, `${lastCellSignerChar}${sipdCell}`);
 				sheet.getCell(
 					`A${sipdCell}`
 				).value = `Dicetak Oleh SIPD Kementrian Dalam Negeri`;
