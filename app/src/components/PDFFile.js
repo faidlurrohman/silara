@@ -264,20 +264,6 @@ export default function PDFFile({
 					}
 					fixed
 				/>
-				<Text
-					style={{
-						fontSize: 10,
-						color: "grey",
-						position: "absolute",
-						bottom: 15,
-						left: 0,
-						right: 0,
-						textAlign: "center",
-					}}
-					fixed
-				>
-					Dicetak Oleh SIPD Kementrian Dalam Negeri
-				</Text>
 			</Page>
 		</Document>
 	);

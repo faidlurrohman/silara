@@ -657,19 +657,6 @@ export default function ExportButton({
 						font: { bold: false },
 					};
 				}
-
-				// sipd
-				let sipdCell = last.number || 0;
-				sipdCell += signerIs !== "" ? 11 : 3;
-
-				sheet.mergeCells(`A${sipdCell}`, `${lastCellSignerChar}${sipdCell}`);
-				sheet.getCell(
-					`A${sipdCell}`
-				).value = `Dicetak Oleh SIPD Kementrian Dalam Negeri`;
-				sheet.getCell(`A${sipdCell}`).style = {
-					alignment: { vertical: "middle", horizontal: "center" },
-					font: { bold: false },
-				};
 			}
 		}
 
