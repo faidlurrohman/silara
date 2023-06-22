@@ -64,10 +64,19 @@ export default function Objek() {
 						  }
 						: tableParams
 				),
-				getAccount("object", {
-					...tableParams,
-					pagination: { ...tableParams.pagination, pageSize: 0 },
-				}),
+				getAccount(
+					"object",
+					id
+						? {
+								...tableParams,
+								filters: { account_type_id: [id] },
+								pagination: { ...tableParams.pagination, pageSize: 0 },
+						  }
+						: {
+								...tableParams,
+								pagination: { ...tableParams.pagination, pageSize: 0 },
+						  }
+				),
 				getAccountList("type"),
 				getCityList(),
 			])

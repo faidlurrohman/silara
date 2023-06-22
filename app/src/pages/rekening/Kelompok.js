@@ -59,10 +59,19 @@ export default function Kelompok() {
 						  }
 						: tableParams
 				),
-				getAccount("group", {
-					...tableParams,
-					pagination: { ...tableParams.pagination, pageSize: 0 },
-				}),
+				getAccount(
+					"group",
+					id
+						? {
+								...tableParams,
+								filters: { account_base_id: [id] },
+								pagination: { ...tableParams.pagination, pageSize: 0 },
+						  }
+						: {
+								...tableParams,
+								pagination: { ...tableParams.pagination, pageSize: 0 },
+						  }
+				),
 				getAccountList("base"),
 			])
 			.then(

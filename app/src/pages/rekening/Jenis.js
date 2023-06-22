@@ -59,10 +59,19 @@ export default function Jenis() {
 						  }
 						: tableParams
 				),
-				getAccount("type", {
-					...tableParams,
-					pagination: { ...tableParams.pagination, pageSize: 0 },
-				}),
+				getAccount(
+					"type",
+					id
+						? {
+								...tableParams,
+								filters: { account_group_id: [id] },
+								pagination: { ...tableParams.pagination, pageSize: 0 },
+						  }
+						: {
+								...tableParams,
+								pagination: { ...tableParams.pagination, pageSize: 0 },
+						  }
+				),
 				getAccountList("group"),
 			])
 			.then(
