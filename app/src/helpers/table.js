@@ -176,7 +176,7 @@ export const actionColumn = (
 					Ubah
 				</Button>
 			)}
-			{value?.use_allocation_button && (
+			{/* {value?.use_allocation_button && (
 				<Button
 					size="small"
 					disabled={!value?.active}
@@ -189,7 +189,7 @@ export const actionColumn = (
 				>
 					Alokasi
 				</Button>
-			)}
+			)} */}
 			{onActiveChange && value?.role_id !== 1 && (
 				<>
 					<Button
