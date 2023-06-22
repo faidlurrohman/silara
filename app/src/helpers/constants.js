@@ -42,8 +42,21 @@ const MENU_ITEM = [
 	{
 		key: "/transaksi",
 		label: "Transaksi",
-		nav: "transaksi",
 		roles: [1, 2, 3, 4],
+		children: [
+			{
+				key: "/transaksi/anggaran",
+				label: "Anggaran",
+				nav: "transaksi/anggaran",
+				roles: [1, 2, 3, 4],
+			},
+			{
+				key: "/transaksi/realisasi",
+				label: "Realisasi",
+				nav: "transaksi/realisasi",
+				roles: [1, 2, 3, 4],
+			},
+		],
 	},
 	{
 		key: "/laporan",
@@ -101,7 +114,8 @@ const MENU_NAVIGATION = {
 	kelompok: "Rekening Kelompok",
 	jenis: "Rekening Jenis",
 	objek: "Rekening Objek",
-	"/transaksi": "Transaksi",
+	"/transaksi/anggaran": "Transaksi Anggaran",
+	"/transaksi/realisasi": "Transaksi Realisasi",
 	"/laporan/realisasi-anggaran-kota": "Laporan Realaisasi Anggaran Kota",
 	"/laporan/realisasi-anggaran-gabungan-kota":
 		"Laporan Realaisasi Anggaran Gabungan Kota",

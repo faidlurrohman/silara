@@ -5,6 +5,7 @@ import {
 	Routes,
 	useParams,
 } from "react-router-dom";
+import useRole from "./hooks/useRole";
 
 import Masuk from "./pages/auth/Masuk";
 import NotFound from "./pages/404";
@@ -14,7 +15,6 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import UnprotectedRoute from "./components/UnprotectedRoute";
 import Wrapper from "./components/Wrapper";
 
-import Transaksi from "./pages/transaksi/Transaksi";
 import AnggaranKota from "./pages/laporan/AnggaranKota";
 import AnggaranGabunganKota from "./pages/laporan/AnggaranGabunganKota";
 import PendapatanBelanja from "./pages/laporan/PendapatanBelanja";
@@ -27,7 +27,8 @@ import Kelompok from "./pages/rekening/Kelompok";
 import Jenis from "./pages/rekening/Jenis";
 import Objek from "./pages/rekening/Objek";
 
-import useRole from "./hooks/useRole";
+import Anggaran from "./pages/transaksi/Anggaran";
+import Realisasi from "./pages/transaksi/Realisasi";
 
 function DynamicWrapper({ children }) {
 	const { id } = useParams();
@@ -99,7 +100,8 @@ function App() {
 						</Route>
 					)}
 					<Route path="/transaksi" element={<Outlet />}>
-						<Route index element={<Transaksi />} />
+						<Route path="anggaran" element={<Anggaran />} />
+						<Route path="realisasi" element={<Realisasi />} />
 					</Route>
 					<Route path="/laporan" element={<Outlet />}>
 						<Route path="realisasi-anggaran-kota" element={<AnggaranKota />} />
