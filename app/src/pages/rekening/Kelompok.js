@@ -23,10 +23,13 @@ import AddButton from "../../components/button/AddButton";
 import ExportButton from "../../components/button/ExportButton";
 import { messageAction, responseGet } from "../../helpers/response";
 import axios from "axios";
+import { useNavigate, useParams } from "react-router-dom";
 
-export default function RekeningJenis() {
+export default function Kelompok() {
 	const { message, modal } = App.useApp();
 	const [form] = Form.useForm();
+	const navigate = useNavigate();
+	const { id } = useParams();
 
 	const searchInput = useRef(null);
 
@@ -38,8 +41,8 @@ export default function RekeningJenis() {
 	const [isEdit, setEdit] = useState(false);
 	const [confirmLoading, setConfirmLoading] = useState(false);
 
-	const [accountType, setAccountType] = useState([]);
 	const [accountGroup, setAccountGroup] = useState([]);
+	const [accountBase, setAccountBase] = useState([]);
 	const [exports, setExports] = useState([]);
 	const [loading, setLoading] = useState(false);
 
@@ -47,26 +50,34 @@ export default function RekeningJenis() {
 		setLoading(true);
 		axios
 			.all([
-				getAccount("type", tableParams),
-				getAccount("type", {
+				getAccount(
+					"group",
+					id
+						? {
+								...tableParams,
+								filters: { ...tableParams.filters, account_base_id: [id] },
+						  }
+						: tableParams
+				),
+				getAccount("group", {
 					...tableParams,
 					pagination: { ...tableParams.pagination, pageSize: 0 },
 				}),
-				getAccountList("group"),
+				getAccountList("base"),
 			])
 			.then(
-				axios.spread((_types, _export, _groups) => {
+				axios.spread((_groups, _export, _bases) => {
 					setLoading(false);
-					setAccountType(responseGet(_types).data);
+					setAccountGroup(responseGet(_groups).data);
 					setExports(responseGet(_export).data);
 					setTableParams({
 						...tableParams,
 						pagination: {
 							...tableParams.pagination,
-							total: responseGet(_types).total_count,
+							total: responseGet(_groups).total_count,
 						},
 					});
-					setAccountGroup(_groups?.data?.data);
+					setAccountBase(_bases?.data?.data);
 				})
 			);
 	};
@@ -83,7 +94,7 @@ export default function RekeningJenis() {
 
 		// `dataSource` is useless since `pageSize` changed
 		if (pagination.pageSize !== tableParams.pagination?.pageSize) {
-			setAccountType([]);
+			setAccountGroup([]);
 		}
 	};
 
@@ -100,13 +111,17 @@ export default function RekeningJenis() {
 			setEdit(true);
 			form.setFieldsValue({
 				id: value?.id,
-				account_group_id: value?.account_group_id,
+				account_base_id: value?.account_base_id,
 				label: value?.label,
 				remark: value?.remark,
 			});
 		} else {
 			form.resetFields();
 			setEdit(false);
+
+			if (id && accountBase.find((i) => i?.id === Number(id))) {
+				form.setFieldsValue({ account_base_id: Number(id) });
+			}
 		}
 	};
 
@@ -122,7 +137,7 @@ export default function RekeningJenis() {
 			cancelText: "Tidak",
 			centered: true,
 			onOk() {
-				setActiveAccount("type", value?.id).then(() => {
+				setActiveAccount("group", value?.id).then(() => {
 					message.success(messageAction(true));
 					reloadTable();
 				});
@@ -132,7 +147,7 @@ export default function RekeningJenis() {
 
 	const handleAddUpdate = (values) => {
 		setConfirmLoading(true);
-		addAccount("type", values).then((response) => {
+		addAccount("group", values).then((response) => {
 			setConfirmLoading(false);
 
 			if (response?.data?.code === 0) {
@@ -143,11 +158,15 @@ export default function RekeningJenis() {
 		});
 	};
 
+	const onNavigateDetail = (values) => {
+		navigate(`/rekening/jenis/${values?.id}`);
+	};
+
 	const columns = [
 		searchColumn(
 			searchInput,
-			"account_group_label",
-			"Kelompok Rekening",
+			"account_base_label",
+			"Akun Rekening",
 			filtered,
 			true,
 			sorted
@@ -155,12 +174,12 @@ export default function RekeningJenis() {
 		searchColumn(searchInput, "label", "Label", filtered, true, sorted),
 		searchColumn(searchInput, "remark", "Keterangan", filtered, true, sorted),
 		activeColumn(filtered),
-		actionColumn(addUpdateRow, onActiveChange),
+		actionColumn(addUpdateRow, onActiveChange, null, onNavigateDetail),
 	];
 
 	useEffect(() => {
 		reloadData();
-	}, [JSON.stringify(tableParams)]);
+	}, [JSON.stringify(tableParams), id]);
 
 	return (
 		<>
@@ -170,7 +189,7 @@ export default function RekeningJenis() {
 				{!!exports?.length && (
 					<ExportButton
 						data={exports}
-						master={`account_type`}
+						master={`account_group`}
 						pdfOrientation={`landscape`}
 					/>
 				)}
@@ -183,7 +202,7 @@ export default function RekeningJenis() {
 					}}
 					bordered
 					loading={loading}
-					dataSource={accountType}
+					dataSource={accountGroup}
 					columns={columns}
 					rowKey={(record) => record?.id}
 					onChange={onTableChange}
@@ -194,7 +213,7 @@ export default function RekeningJenis() {
 				style={{ margin: 10 }}
 				centered
 				open={isShow}
-				title={`${isEdit ? `Ubah` : `Tambah`} Data Rekening Jenis`}
+				title={`${isEdit ? `Ubah` : `Tambah`} Data Rekening Kelompok`}
 				onCancel={() => addUpdateRow()}
 				footer={null}
 			>
@@ -212,12 +231,12 @@ export default function RekeningJenis() {
 						<Input />
 					</Form.Item>
 					<Form.Item
-						label="Kelompok Rekening"
-						name="account_group_id"
+						label="Akun Rekening"
+						name="account_base_id"
 						rules={[
 							{
 								required: true,
-								message: "Kelompok Rekening tidak boleh kosong!",
+								message: "Akun Rekening tidak boleh kosong!",
 							},
 						]}
 					>
@@ -231,7 +250,7 @@ export default function RekeningJenis() {
 							}
 							disabled={confirmLoading}
 							loading={loading}
-							options={accountGroup}
+							options={accountBase}
 						/>
 					</Form.Item>
 					<Form.Item

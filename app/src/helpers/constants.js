@@ -1,27 +1,3 @@
-const TRANSAKSI_TMP = [
-	{
-		id: Math.floor(Math.random() * 1000),
-		key: Math.floor(Math.random() * 1000),
-		date: "2022-04-04",
-		city: "Label 1",
-		object_account: "Label 1",
-		object_id: "1",
-		budget: 500000,
-		realization: 340000,
-	},
-];
-
-const LAPORAN_TMP = [
-	{
-		id: Math.floor(Math.random() * 1000),
-		key: Math.floor(Math.random() * 1000),
-		date: "2022-04-04",
-		city: "Label 1",
-		budget: 500000,
-		realization: 340000,
-	},
-];
-
 const COLORS = {
 	main: "#1C4F49",
 	mainDark: "#18423d",
@@ -60,29 +36,8 @@ const MENU_ITEM = [
 	{
 		key: "/rekening",
 		label: "Master Rekening",
-		roles: [1, 3, 4],
-		children: [
-			{
-				key: "/rekening/akun",
-				label: "Akun",
-				nav: "rekening/akun",
-			},
-			{
-				key: "/rekening/kelompok",
-				label: "Kelompok",
-				nav: "rekening/kelompok",
-			},
-			{
-				key: "/rekening/jenis",
-				label: "Jenis",
-				nav: "rekening/jenis",
-			},
-			{
-				key: "/rekening/objek",
-				label: "Objek",
-				nav: "rekening/objek",
-			},
-		],
+		roles: [1, 3],
+		nav: "rekening",
 	},
 	{
 		key: "/transaksi",
@@ -99,42 +54,65 @@ const MENU_ITEM = [
 				key: "/laporan/realisasi-anggaran-kota",
 				label: "Realisasi Anggaran Kota",
 				nav: "laporan/realisasi-anggaran-kota",
+				roles: [1, 2, 3, 4],
 			},
 			{
 				key: "/laporan/realisasi-anggaran-gabungan-kota",
 				label: "Realisasi Anggaran Gabungan Kota",
 				nav: "laporan/realisasi-anggaran-gabungan-kota",
+				roles: [1, 3],
 			},
 			{
 				key: "/laporan/rekapitulasi-pendapatan-dan-belanja",
 				label: "Rekapitulasi Pendapatan & Belanja",
 				nav: "laporan/rekapitulasi-pendapatan-dan-belanja",
+				roles: [1, 3],
 			},
 		],
 	},
 	{
 		key: "/pengaturan",
 		label: "Pengaturan",
-		roles: [1, 3, 4],
+		roles: [1, 3],
 		children: [
 			{
 				key: "/pengaturan/kota",
 				label: "Kota",
 				nav: "pengaturan/kota",
+				roles: [1, 3],
 			},
 			{
 				key: "/pengaturan/penanda-tangan",
 				label: "Penanda Tangan",
 				nav: "pengaturan/penanda-tangan",
+				roles: [1, 3],
 			},
 			{
 				key: "/pengaturan/pengguna",
 				label: "Pengguna",
 				nav: "pengaturan/pengguna",
+				roles: [1, 3],
 			},
 		],
 	},
 ];
+const MENU_NAVIGATION = {
+	rekening: "Rekening Akun",
+	kelompok: "Rekening Kelompok",
+	jenis: "Rekening Jenis",
+	objek: "Rekening Objek",
+	"/transaksi": "Transaksi",
+	"/laporan/realisasi-anggaran-kota": "Laporan Realaisasi Anggaran Kota",
+	"/laporan/realisasi-anggaran-gabungan-kota":
+		"Laporan Realaisasi Anggaran Gabungan Kota",
+	"/laporan/rekapitulasi-pendapatan-dan-belanja":
+		"Laporan Rekapitulasi Pendapatan & Belanja",
+	"/pengaturan/kota": "Pengaturan Kota",
+	"/pengaturan/kota": "Pengaturan Kota",
+	"/pengaturan/kota": "Pengaturan Kota",
+	"/pengaturan/penanda-tangan": "Pengaturan Penanda Tangan",
+	"/pengaturan/pengguna": "Pengaturan Pengguna",
+};
 const EXPORT_TARGET = {
 	city: {
 		filename: `SILARA-MASTER-KOTA`,
@@ -215,23 +193,11 @@ const EXPORT_TARGET = {
 		],
 	},
 };
-const MENU_ACCESS = {
-	1: ["all"],
-	2: [
-		"/",
-		"/transaksi",
-		"/laporan/realisasi-anggaran-kota",
-		"/laporan/realisasi-anggaran-gabungan-kota",
-		"/laporan/rekapitulasi-pendapatan-dan-belanja",
-	],
-	3: ["all"],
-	4: ["all"],
-};
 
 export {
-	MENU_ACCESS,
 	COLORS,
 	MENU_ITEM,
+	MENU_NAVIGATION,
 	REGEX_USERNAME,
 	PAGINATION,
 	MESSAGE,
@@ -239,6 +205,4 @@ export {
 	DATE_UTC,
 	DATE_FORMAT_VIEW,
 	DATE_FORMAT_DB,
-	TRANSAKSI_TMP,
-	LAPORAN_TMP,
 };

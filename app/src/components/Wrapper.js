@@ -1,13 +1,25 @@
-import { Drawer, Layout, Menu } from "antd";
 import { useEffect, useState } from "react";
+import { Breadcrumb, Drawer, Layout, Menu } from "antd";
 import HeaderComponent from "./Header";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import Copyright from "./Copyright";
-import { COLORS, MENU_ITEM } from "../helpers/constants";
+import { COLORS, MENU_ITEM, MENU_NAVIGATION } from "../helpers/constants";
 import useRole from "../hooks/useRole";
 import { CloseOutlined } from "@ant-design/icons";
+import _ from "lodash";
 
 const { Content, Footer, Sider } = Layout;
+
+const initLink = [
+	{
+		title: (
+			<Link to="/" style={{ color: COLORS.main }}>
+				Beranda
+			</Link>
+		),
+		key: "beranda",
+	},
+];
 
 export default function Wrapper({ children }) {
 	const { role_id } = useRole();
@@ -15,6 +27,7 @@ export default function Wrapper({ children }) {
 	const [drawer, setDrawer] = useState(false);
 	const [openKeys, setOpenKeys] = useState([]);
 	const [currentMenu, setCurrentMenu] = useState([]);
+	const [navLink, setNavLink] = useState(initLink);
 	const navigate = useNavigate();
 
 	const onOpenChange = (keys) => {
@@ -38,7 +51,8 @@ export default function Wrapper({ children }) {
 				onOpenChange([]);
 			}
 
-			setCurrentMenu(current?.pathname);
+			if (current?.pathname.includes("rekening")) setCurrentMenu(`/${spl[1]}`);
+			else setCurrentMenu(current?.pathname);
 		}
 		// trigger from on click menu
 		else {
@@ -64,20 +78,84 @@ export default function Wrapper({ children }) {
 
 	useEffect(() => {
 		onMenuClick(location);
-	}, []);
 
-	const items = MENU_ITEM.map(
-		(item) =>
-			item.roles.includes(role_id) &&
-			(item?.children
-				? {
-						...item,
-						children: item?.children.map((child) => ({
-							...child,
-							onClick: () => navigating(child?.nav),
+		const pathSnippets = location.pathname.split("/").filter((i) => i);
+
+		if (!!pathSnippets.length) {
+			if (pathSnippets[0] === "rekening") {
+				const trg = {
+					rekening: ["rekening"],
+					kelompok: ["rekening", "kelompok"],
+					jenis: ["rekening", "kelompok", "jenis"],
+					objek: ["rekening", "kelompok", "jenis", "objek"],
+				};
+
+				const ltrg = {
+					rekening: "rekening",
+					kelompok: "/rekening/kelompok",
+					jenis: "/rekening/jenis",
+					objek: "/rekening/objek",
+				};
+
+				const ftrg = [];
+
+				trg[pathSnippets[1] || pathSnippets[0]].map((path, index) => {
+					if (MENU_NAVIGATION[path]) {
+						ftrg.push({
+							key: path,
+							title: (
+								<Link to={ltrg[path]} style={{ color: COLORS.main }}>
+									{MENU_NAVIGATION[path]}
+								</Link>
+							),
+						});
+					}
+				});
+
+				setNavLink(initLink.concat(ftrg));
+			} else {
+				pathSnippets.map((_, index) => {
+					const url = `/${pathSnippets.slice(0, index + 1).join("/")}`;
+
+					if (MENU_NAVIGATION[url]) {
+						setNavLink([
+							...initLink,
+							{
+								key: url,
+								title: (
+									<Link to={url} style={{ color: COLORS.main }}>
+										{MENU_NAVIGATION[url]}
+									</Link>
+								),
+							},
+						]);
+					}
+				});
+			}
+		} else {
+			setNavLink(initLink);
+		}
+	}, [location]);
+
+	const items = _.map(
+		MENU_ITEM.filter((i) => i.roles.includes(role_id)),
+		(nest) => {
+			if (nest?.children) {
+				nest = {
+					...nest,
+					children: nest?.children
+						.filter((j) => j.roles.includes(role_id))
+						.map((k) => ({
+							...k,
+							onClick: () => navigating(k?.nav),
 						})),
-				  }
-				: { ...item, onClick: () => navigating(item?.nav) })
+				};
+			} else {
+				nest = { ...nest, onClick: () => navigating(nest?.nav) };
+			}
+
+			return nest;
+		}
 	);
 
 	return (
@@ -132,6 +210,7 @@ export default function Wrapper({ children }) {
 			</Drawer>
 			<Layout>
 				<HeaderComponent onDrawer={() => showDrawer()} />
+				<Breadcrumb items={navLink} className="px-4 pt-3" />
 				<Content className="p-2.5 m-2.5 bg-white min-h-fit rounded-md shadow-sm">
 					{children}
 				</Content>

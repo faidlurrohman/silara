@@ -1,21 +1,36 @@
-import { App, Button, Divider, Form, Input, Modal, Space, Table } from "antd";
+import {
+	App,
+	Button,
+	Divider,
+	Form,
+	Input,
+	Modal,
+	Select,
+	Space,
+	Table,
+} from "antd";
 import { useEffect, useRef, useState } from "react";
 import {
 	addAccount,
 	getAccount,
+	getAccountList,
 	setActiveAccount,
+	setAllocationAccount,
 } from "../../services/account";
 import { PAGINATION } from "../../helpers/constants";
-import { actionColumn, activeColumn, searchColumn } from "../../helpers/table";
 import { messageAction, responseGet } from "../../helpers/response";
+import { actionColumn, activeColumn, searchColumn } from "../../helpers/table";
+import { getCityList } from "../../services/city";
 import ReloadButton from "../../components/button/ReloadButton";
 import AddButton from "../../components/button/AddButton";
 import ExportButton from "../../components/button/ExportButton";
 import axios from "axios";
+import { useParams } from "react-router-dom";
 
-export default function RekeningAkun() {
+export default function Objek() {
 	const { message, modal } = App.useApp();
 	const [form] = Form.useForm();
+	const { id } = useParams();
 
 	const searchInput = useRef(null);
 
@@ -27,7 +42,12 @@ export default function RekeningAkun() {
 	const [isEdit, setEdit] = useState(false);
 	const [confirmLoading, setConfirmLoading] = useState(false);
 
-	const [accountBase, setAccountBase] = useState([]);
+	const [isShowAllocation, setShowAllocation] = useState(false);
+	const [selectedObject, setSelectedObject] = useState({});
+
+	const [accountObject, setAccountObject] = useState([]);
+	const [accountType, setAccountType] = useState([]);
+	const [cities, setCities] = useState([]);
 	const [exports, setExports] = useState([]);
 	const [loading, setLoading] = useState(false);
 
@@ -35,25 +55,36 @@ export default function RekeningAkun() {
 		setLoading(true);
 		axios
 			.all([
-				getAccount("base", tableParams),
-				getAccount("base", {
+				getAccount(
+					"object",
+					id
+						? {
+								...tableParams,
+								filters: { ...tableParams.filters, account_type_id: [id] },
+						  }
+						: tableParams
+				),
+				getAccount("object", {
 					...tableParams,
 					pagination: { ...tableParams.pagination, pageSize: 0 },
 				}),
+				getAccountList("type"),
+				getCityList(),
 			])
 			.then(
-				axios.spread((_data, _export) => {
+				axios.spread((_objects, _export, _types, _cities) => {
 					setLoading(false);
+					setAccountObject(responseGet(_objects).data);
 					setExports(responseGet(_export).data);
-
-					setAccountBase(responseGet(_data).data);
 					setTableParams({
 						...tableParams,
 						pagination: {
 							...tableParams.pagination,
-							total: responseGet(_data).total_count,
+							total: responseGet(_objects).total_count,
 						},
 					});
+					setAccountType(_types?.data?.data);
+					setCities(_cities?.data?.data);
 				})
 			);
 	};
@@ -70,7 +101,7 @@ export default function RekeningAkun() {
 
 		// `dataSource` is useless since `pageSize` changed
 		if (pagination.pageSize !== tableParams.pagination?.pageSize) {
-			setAccountBase([]);
+			setAccountObject([]);
 		}
 	};
 
@@ -87,12 +118,17 @@ export default function RekeningAkun() {
 			setEdit(true);
 			form.setFieldsValue({
 				id: value?.id,
+				account_type_id: value?.account_type_id,
 				label: value?.label,
 				remark: value?.remark,
 			});
 		} else {
 			form.resetFields();
 			setEdit(false);
+
+			if (id && accountType.find((i) => i?.id === Number(id))) {
+				form.setFieldsValue({ account_type_id: Number(id) });
+			}
 		}
 	};
 
@@ -108,7 +144,7 @@ export default function RekeningAkun() {
 			cancelText: "Tidak",
 			centered: true,
 			onOk() {
-				setActiveAccount("base", value?.id).then(() => {
+				setActiveAccount("object", value?.id).then(() => {
 					message.success(messageAction(true));
 					reloadTable();
 				});
@@ -116,9 +152,36 @@ export default function RekeningAkun() {
 		});
 	};
 
+	const onAllocationChange = (isShowAllocation = false, value = {}) => {
+		setShowAllocation(isShowAllocation);
+
+		if (isShowAllocation) {
+			setSelectedObject(value);
+			form.setFieldsValue({
+				id: value?.id,
+				allocation_cities: value?.allocation_cities || [],
+			});
+		} else {
+			form.resetFields();
+			setSelectedObject({});
+		}
+	};
+
+	const handleAddAllocation = (values) => {
+		setConfirmLoading(true);
+		setAllocationAccount("object", values).then((response) => {
+			setConfirmLoading(false);
+			if (response?.data?.code === 0) {
+				message.success(messageAction(true));
+				onAllocationChange();
+				reloadTable();
+			}
+		});
+	};
+
 	const handleAddUpdate = (values) => {
 		setConfirmLoading(true);
-		addAccount("base", values).then((response) => {
+		addAccount("object", values).then((response) => {
 			setConfirmLoading(false);
 
 			if (response?.data?.code === 0) {
@@ -130,15 +193,23 @@ export default function RekeningAkun() {
 	};
 
 	const columns = [
+		searchColumn(
+			searchInput,
+			"account_type_label",
+			"Jenis Rekening",
+			filtered,
+			true,
+			sorted
+		),
 		searchColumn(searchInput, "label", "Label", filtered, true, sorted),
 		searchColumn(searchInput, "remark", "Keterangan", filtered, true, sorted),
 		activeColumn(filtered),
-		actionColumn(addUpdateRow, onActiveChange),
+		actionColumn(addUpdateRow, onActiveChange, onAllocationChange),
 	];
 
 	useEffect(() => {
 		reloadData();
-	}, [JSON.stringify(tableParams)]);
+	}, [JSON.stringify(tableParams), id]);
 
 	return (
 		<>
@@ -146,7 +217,11 @@ export default function RekeningAkun() {
 				<ReloadButton onClick={reloadTable} stateLoading={loading} />
 				<AddButton onClick={addUpdateRow} stateLoading={loading} />
 				{!!exports?.length && (
-					<ExportButton data={exports} master={`account_base`} />
+					<ExportButton
+						data={exports}
+						master={`account_object`}
+						pdfOrientation={`landscape`}
+					/>
 				)}
 			</div>
 			<div className="mt-4">
@@ -157,7 +232,7 @@ export default function RekeningAkun() {
 					}}
 					bordered
 					loading={loading}
-					dataSource={accountBase}
+					dataSource={accountObject}
 					columns={columns}
 					rowKey={(record) => record?.id}
 					onChange={onTableChange}
@@ -168,14 +243,14 @@ export default function RekeningAkun() {
 				style={{ margin: 10 }}
 				centered
 				open={isShow}
-				title={`${isEdit ? `Ubah` : `Tambah`} Data Rekening Akun`}
+				title={`${isEdit ? `Ubah` : `Tambah`} Data Rekening Objek`}
 				onCancel={() => addUpdateRow()}
 				footer={null}
 			>
 				<Divider />
 				<Form
 					form={form}
-					name="basic"
+					name="action"
 					labelCol={{ span: 8 }}
 					labelAlign="left"
 					onFinish={handleAddUpdate}
@@ -184,6 +259,29 @@ export default function RekeningAkun() {
 				>
 					<Form.Item name="id" hidden>
 						<Input />
+					</Form.Item>
+					<Form.Item
+						label="Jenis Rekening"
+						name="account_type_id"
+						rules={[
+							{
+								required: true,
+								message: "Jenis Rekening tidak boleh kosong!",
+							},
+						]}
+					>
+						<Select
+							showSearch
+							optionFilterProp="children"
+							filterOption={(input, option) =>
+								(option?.label ?? "")
+									.toLowerCase()
+									.includes(input.toLowerCase())
+							}
+							disabled={confirmLoading}
+							loading={loading}
+							options={accountType}
+						/>
 					</Form.Item>
 					<Form.Item
 						label="Label"
@@ -216,6 +314,59 @@ export default function RekeningAkun() {
 					<Form.Item className="text-right mb-0">
 						<Space direction="horizontal">
 							<Button disabled={confirmLoading} onClick={() => addUpdateRow()}>
+								Kembali
+							</Button>
+							<Button loading={confirmLoading} htmlType="submit" type="primary">
+								Simpan
+							</Button>
+						</Space>
+					</Form.Item>
+				</Form>
+			</Modal>
+			<Modal
+				style={{ margin: 10 }}
+				centered
+				open={isShowAllocation}
+				title={`Alokasi - ${selectedObject?.account_object_label || ``}`}
+				onCancel={() => onAllocationChange()}
+				footer={null}
+			>
+				<Divider />
+				<Form
+					form={form}
+					name="allocation"
+					labelCol={{ span: 4 }}
+					labelAlign="left"
+					onFinish={handleAddAllocation}
+					autoComplete="off"
+					initialValues={{ id: "", allocation_cities: [] }}
+				>
+					<Form.Item name="id" hidden>
+						<Input />
+					</Form.Item>
+					<Form.Item label="Kota" name="allocation_cities">
+						<Select
+							allowClear
+							mode="multiple"
+							showSearch
+							optionFilterProp="children"
+							filterOption={(input, option) =>
+								(option?.label ?? "")
+									.toLowerCase()
+									.includes(input.toLowerCase())
+							}
+							disabled={confirmLoading}
+							loading={loading}
+							options={cities}
+						/>
+					</Form.Item>
+					<Divider />
+					<Form.Item className="text-right mb-0">
+						<Space direction="horizontal">
+							<Button
+								disabled={confirmLoading}
+								onClick={() => onAllocationChange()}
+							>
 								Kembali
 							</Button>
 							<Button loading={confirmLoading} htmlType="submit" type="primary">

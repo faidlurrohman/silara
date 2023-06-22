@@ -3,6 +3,7 @@ import {
 	CheckCircleOutlined,
 	ClusterOutlined,
 	EditOutlined,
+	EllipsisOutlined,
 	SearchOutlined,
 	StopOutlined,
 } from "@ant-design/icons";
@@ -138,7 +139,8 @@ export const activeColumn = (stateFilter) => ({
 export const actionColumn = (
 	onAddUpdate = null,
 	onActiveChange = null,
-	onAllocationChange = null
+	onAllocationChange = null,
+	onNavigateDetail = null
 ) => ({
 	title: "#",
 	key: "action",
@@ -146,6 +148,20 @@ export const actionColumn = (
 	width: 100,
 	render: (value) => (
 		<Space size="small">
+			{onNavigateDetail && (
+				<Button
+					size="small"
+					disabled={!value?.active}
+					icon={<EllipsisOutlined />}
+					style={{
+						color: value?.active ? COLORS.main : COLORS.disable,
+						borderColor: value?.active ? COLORS.main : COLORS.disable,
+					}}
+					onClick={() => onNavigateDetail(value)}
+				>
+					Rincian
+				</Button>
+			)}
 			{onAddUpdate && (
 				<Button
 					size="small"

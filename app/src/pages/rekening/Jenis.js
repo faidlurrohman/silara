@@ -23,10 +23,13 @@ import AddButton from "../../components/button/AddButton";
 import ExportButton from "../../components/button/ExportButton";
 import { messageAction, responseGet } from "../../helpers/response";
 import axios from "axios";
+import { useNavigate, useParams } from "react-router-dom";
 
-export default function RekeningKelompok() {
+export default function Jenis() {
 	const { message, modal } = App.useApp();
 	const [form] = Form.useForm();
+	const navigate = useNavigate();
+	const { id } = useParams();
 
 	const searchInput = useRef(null);
 
@@ -38,8 +41,8 @@ export default function RekeningKelompok() {
 	const [isEdit, setEdit] = useState(false);
 	const [confirmLoading, setConfirmLoading] = useState(false);
 
+	const [accountType, setAccountType] = useState([]);
 	const [accountGroup, setAccountGroup] = useState([]);
-	const [accountBase, setAccountBase] = useState([]);
 	const [exports, setExports] = useState([]);
 	const [loading, setLoading] = useState(false);
 
@@ -47,26 +50,34 @@ export default function RekeningKelompok() {
 		setLoading(true);
 		axios
 			.all([
-				getAccount("group", tableParams),
-				getAccount("group", {
+				getAccount(
+					"type",
+					id
+						? {
+								...tableParams,
+								filters: { ...tableParams.filters, account_group_id: [id] },
+						  }
+						: tableParams
+				),
+				getAccount("type", {
 					...tableParams,
 					pagination: { ...tableParams.pagination, pageSize: 0 },
 				}),
-				getAccountList("base"),
+				getAccountList("group"),
 			])
 			.then(
-				axios.spread((_groups, _export, _bases) => {
+				axios.spread((_types, _export, _groups) => {
 					setLoading(false);
-					setAccountGroup(responseGet(_groups).data);
+					setAccountType(responseGet(_types).data);
 					setExports(responseGet(_export).data);
 					setTableParams({
 						...tableParams,
 						pagination: {
 							...tableParams.pagination,
-							total: responseGet(_groups).total_count,
+							total: responseGet(_types).total_count,
 						},
 					});
-					setAccountBase(_bases?.data?.data);
+					setAccountGroup(_groups?.data?.data);
 				})
 			);
 	};
@@ -83,7 +94,7 @@ export default function RekeningKelompok() {
 
 		// `dataSource` is useless since `pageSize` changed
 		if (pagination.pageSize !== tableParams.pagination?.pageSize) {
-			setAccountGroup([]);
+			setAccountType([]);
 		}
 	};
 
@@ -100,13 +111,17 @@ export default function RekeningKelompok() {
 			setEdit(true);
 			form.setFieldsValue({
 				id: value?.id,
-				account_base_id: value?.account_base_id,
+				account_group_id: value?.account_group_id,
 				label: value?.label,
 				remark: value?.remark,
 			});
 		} else {
 			form.resetFields();
 			setEdit(false);
+
+			if (id && accountGroup.find((i) => i?.id === Number(id))) {
+				form.setFieldsValue({ account_group_id: Number(id) });
+			}
 		}
 	};
 
@@ -122,7 +137,7 @@ export default function RekeningKelompok() {
 			cancelText: "Tidak",
 			centered: true,
 			onOk() {
-				setActiveAccount("group", value?.id).then(() => {
+				setActiveAccount("type", value?.id).then(() => {
 					message.success(messageAction(true));
 					reloadTable();
 				});
@@ -132,7 +147,7 @@ export default function RekeningKelompok() {
 
 	const handleAddUpdate = (values) => {
 		setConfirmLoading(true);
-		addAccount("group", values).then((response) => {
+		addAccount("type", values).then((response) => {
 			setConfirmLoading(false);
 
 			if (response?.data?.code === 0) {
@@ -143,11 +158,15 @@ export default function RekeningKelompok() {
 		});
 	};
 
+	const onNavigateDetail = (values) => {
+		navigate(`/rekening/objek/${values?.id}`);
+	};
+
 	const columns = [
 		searchColumn(
 			searchInput,
-			"account_base_label",
-			"Akun Rekening",
+			"account_group_label",
+			"Kelompok Rekening",
 			filtered,
 			true,
 			sorted
@@ -155,12 +174,12 @@ export default function RekeningKelompok() {
 		searchColumn(searchInput, "label", "Label", filtered, true, sorted),
 		searchColumn(searchInput, "remark", "Keterangan", filtered, true, sorted),
 		activeColumn(filtered),
-		actionColumn(addUpdateRow, onActiveChange),
+		actionColumn(addUpdateRow, onActiveChange, null, onNavigateDetail),
 	];
 
 	useEffect(() => {
 		reloadData();
-	}, [JSON.stringify(tableParams)]);
+	}, [JSON.stringify(tableParams), id]);
 
 	return (
 		<>
@@ -170,7 +189,7 @@ export default function RekeningKelompok() {
 				{!!exports?.length && (
 					<ExportButton
 						data={exports}
-						master={`account_group`}
+						master={`account_type`}
 						pdfOrientation={`landscape`}
 					/>
 				)}
@@ -183,7 +202,7 @@ export default function RekeningKelompok() {
 					}}
 					bordered
 					loading={loading}
-					dataSource={accountGroup}
+					dataSource={accountType}
 					columns={columns}
 					rowKey={(record) => record?.id}
 					onChange={onTableChange}
@@ -194,7 +213,7 @@ export default function RekeningKelompok() {
 				style={{ margin: 10 }}
 				centered
 				open={isShow}
-				title={`${isEdit ? `Ubah` : `Tambah`} Data Rekening Kelompok`}
+				title={`${isEdit ? `Ubah` : `Tambah`} Data Rekening Jenis`}
 				onCancel={() => addUpdateRow()}
 				footer={null}
 			>
@@ -212,12 +231,12 @@ export default function RekeningKelompok() {
 						<Input />
 					</Form.Item>
 					<Form.Item
-						label="Akun Rekening"
-						name="account_base_id"
+						label="Kelompok Rekening"
+						name="account_group_id"
 						rules={[
 							{
 								required: true,
-								message: "Akun Rekening tidak boleh kosong!",
+								message: "Kelompok Rekening tidak boleh kosong!",
 							},
 						]}
 					>
@@ -231,7 +250,7 @@ export default function RekeningKelompok() {
 							}
 							disabled={confirmLoading}
 							loading={loading}
-							options={accountBase}
+							options={accountGroup}
 						/>
 					</Form.Item>
 					<Form.Item

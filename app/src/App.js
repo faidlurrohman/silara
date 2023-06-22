@@ -1,4 +1,10 @@
-import { BrowserRouter, Outlet, Route, Routes } from "react-router-dom";
+import {
+	BrowserRouter,
+	Outlet,
+	Route,
+	Routes,
+	useParams,
+} from "react-router-dom";
 
 import Masuk from "./pages/auth/Masuk";
 import NotFound from "./pages/404";
@@ -8,10 +14,6 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import UnprotectedRoute from "./components/UnprotectedRoute";
 import Wrapper from "./components/Wrapper";
 
-import RekeningAkun from "./pages/rekening/RekeningAkun";
-import RekeningJenis from "./pages/rekening/RekeningJenis";
-import RekeningKelompok from "./pages/rekening/RekeningKelompok";
-import RekeningObjek from "./pages/rekening/RekeningObjek";
 import Transaksi from "./pages/transaksi/Transaksi";
 import AnggaranKota from "./pages/laporan/AnggaranKota";
 import AnggaranGabunganKota from "./pages/laporan/AnggaranGabunganKota";
@@ -20,7 +22,30 @@ import PengaturanKota from "./pages/pengaturan/PengaturanKota";
 import PengaturanPenandaTangan from "./pages/pengaturan/PengaturanPenandaTangan";
 import PengaturanPengguna from "./pages/pengaturan/PengaturanPengguna";
 
+import Akun from "./pages/rekening/Akun";
+import Kelompok from "./pages/rekening/Kelompok";
+import Jenis from "./pages/rekening/Jenis";
+import Objek from "./pages/rekening/Objek";
+
+import useRole from "./hooks/useRole";
+
+function DynamicWrapper({ children }) {
+	const { id } = useParams();
+
+	if (isNaN(Number(id))) {
+		return <NotFound useNav={false} />;
+	}
+
+	if (!/^[0-9]+$/.exec(Number(id))) {
+		return <NotFound useNav={false} />;
+	}
+
+	return children;
+}
+
 function App() {
+	const { is_super_admin } = useRole();
+
 	return (
 		<BrowserRouter basename={process.env.REACT_APP_BASE_ROUTER}>
 			<Routes>
@@ -35,34 +60,72 @@ function App() {
 					}
 				>
 					<Route index element={<Beranda />} />
-					<Route path="/rekening" element={<Outlet />}>
-						<Route path="akun" element={<RekeningAkun />} />
-						<Route path="kelompok" element={<RekeningKelompok />} />
-						<Route path="jenis" element={<RekeningJenis />} />
-						<Route path="objek" element={<RekeningObjek />} />
-					</Route>
+					{is_super_admin && (
+						<Route path="/rekening" element={<Outlet />}>
+							<Route index element={<Akun />} />
+							<Route path="kelompok" element={<Outlet />}>
+								<Route index element={<Kelompok />} />
+								<Route
+									path=":id"
+									element={
+										<DynamicWrapper>
+											<Kelompok />
+										</DynamicWrapper>
+									}
+								/>
+							</Route>
+							<Route path="jenis" element={<Outlet />}>
+								<Route index element={<Jenis />} />
+								<Route
+									path=":id"
+									element={
+										<DynamicWrapper>
+											<Jenis />
+										</DynamicWrapper>
+									}
+								/>
+							</Route>
+							<Route path="objek" element={<Outlet />}>
+								<Route index element={<Objek />} />
+								<Route
+									path=":id"
+									element={
+										<DynamicWrapper>
+											<Objek />
+										</DynamicWrapper>
+									}
+								/>
+							</Route>
+						</Route>
+					)}
 					<Route path="/transaksi" element={<Outlet />}>
 						<Route index element={<Transaksi />} />
 					</Route>
 					<Route path="/laporan" element={<Outlet />}>
 						<Route path="realisasi-anggaran-kota" element={<AnggaranKota />} />
-						<Route
-							path="realisasi-anggaran-gabungan-kota"
-							element={<AnggaranGabunganKota />}
-						/>
-						<Route
-							path="rekapitulasi-pendapatan-dan-belanja"
-							element={<PendapatanBelanja />}
-						/>
+						{is_super_admin && (
+							<>
+								<Route
+									path="realisasi-anggaran-gabungan-kota"
+									element={<AnggaranGabunganKota />}
+								/>
+								<Route
+									path="rekapitulasi-pendapatan-dan-belanja"
+									element={<PendapatanBelanja />}
+								/>
+							</>
+						)}
 					</Route>
-					<Route path="/pengaturan" element={<Outlet />}>
-						<Route path="kota" element={<PengaturanKota />} />
-						<Route
-							path="penanda-tangan"
-							element={<PengaturanPenandaTangan />}
-						/>
-						<Route path="pengguna" element={<PengaturanPengguna />} />
-					</Route>
+					{is_super_admin && (
+						<Route path="/pengaturan" element={<Outlet />}>
+							<Route path="kota" element={<PengaturanKota />} />
+							<Route
+								path="penanda-tangan"
+								element={<PengaturanPenandaTangan />}
+							/>
+							<Route path="pengguna" element={<PengaturanPengguna />} />
+						</Route>
+					)}
 				</Route>
 				<Route path="/auth">
 					<Route
