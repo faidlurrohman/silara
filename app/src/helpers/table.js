@@ -1,7 +1,6 @@
-import { Button, DatePicker, Input, InputNumber, Space } from "antd";
+import { Button, DatePicker, Input, InputNumber, Space, Tooltip } from "antd";
 import {
 	CheckCircleOutlined,
-	ClusterOutlined,
 	EditOutlined,
 	EllipsisOutlined,
 	SearchOutlined,
@@ -25,6 +24,7 @@ export const searchColumn = (
 	title: labelHeader,
 	dataIndex: key,
 	key: key,
+	ellipsis: true,
 	...(stateFilter && {
 		filterDropdown: ({
 			setSelectedKeys,
@@ -110,11 +110,16 @@ export const searchColumn = (
 		},
 	}),
 	render: (value) => {
-		if (key.includes("date")) return viewDate(value);
+		let showValue = value;
 
-		if (key.includes("amount")) return formatterNumber(value);
+		if (key.includes("date")) showValue = viewDate(value);
+		else if (key.includes("amount")) showValue = formatterNumber(value);
 
-		return value;
+		return (
+			<Tooltip placement="topLeft" title={showValue}>
+				{showValue}
+			</Tooltip>
+		);
 	},
 	// IF USING SORT
 	...(useSort && {
