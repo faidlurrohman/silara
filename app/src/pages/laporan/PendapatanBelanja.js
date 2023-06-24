@@ -5,7 +5,6 @@ import ReloadButton from "../../components/button/ReloadButton";
 import { getCityList } from "../../services/city";
 import { DATE_FORMAT_VIEW, PAGINATION } from "../../helpers/constants";
 import { convertDate, dbDate } from "../../helpers/date";
-import useRole from "../../hooks/useRole";
 import { getRecapitulationCities } from "../../services/report";
 import { responseGet } from "../../helpers/response";
 import { searchColumn } from "../../helpers/table";
@@ -16,37 +15,29 @@ import ExportButton from "../../components/button/ExportButton";
 const { RangePicker } = DatePicker;
 
 export default function PendapatanBelanja() {
-	const { role_id } = useRole();
-
-	const searchInput = useRef(null);
-	const [filtered, setFiltered] = useState({});
-	const [sorted, setSorted] = useState({});
-	const [dateRangeFilter, setDateRangeFilter] = useState([
-		convertDate().startOf("year"),
-		convertDate(),
-	]);
-	const [cityFilter, setCityFilter] = useState([]);
-	const [tableParams, setTableParams] = useState({
-		...PAGINATION,
-		filters: {
-			city_id: null,
-			trans_date: [[dbDate(dateRangeFilter[0]), dbDate(dateRangeFilter[1])]],
-		},
-	});
-
 	const [data, setData] = useState([]);
 	const [cities, setCities] = useState([]);
 	const [exports, setExports] = useState([]);
 	const [loading, setLoading] = useState(false);
 
-	const reloadData = () => {
+	const tableFilterInputRef = useRef(null);
+	const [tableFiltered, setTableFiltered] = useState({});
+	const [tableSorted, setTableSorted] = useState({});
+	const [dateRangeFilter, setDateRangeFilter] = useState([
+		convertDate().startOf("year"),
+		convertDate(),
+	]);
+	const [cityFilter, setCityFilter] = useState([]);
+	const [tablePage, setTablePage] = useState(PAGINATION);
+
+	const getData = (params) => {
 		setLoading(true);
 		axios
 			.all([
-				getRecapitulationCities(tableParams),
+				getRecapitulationCities(params),
 				getRecapitulationCities({
-					...tableParams,
-					pagination: { ...tableParams.pagination, pageSize: 0 },
+					...params,
+					pagination: { ...params.pagination, pageSize: 0 },
 				}),
 				getCityList(),
 			])
@@ -54,110 +45,120 @@ export default function PendapatanBelanja() {
 				axios.spread((_data, _export, _cities) => {
 					setLoading(false);
 					setData(responseGet(_data).data);
+					setCities(_cities?.data?.data);
 					setExports(setDataExport(responseGet(_export).data));
-					setTableParams({
-						...tableParams,
+					setTablePage({
 						pagination: {
-							...tableParams.pagination,
+							...params.pagination,
 							total: responseGet(_data).total_count,
 						},
 					});
-					setCities(_cities?.data?.data);
-
-					if (role_id !== 1) onCityFilterChange([_cities?.data?.data[0]?.id]);
 				})
 			);
 	};
 
-	const onTableChange = (pagination, filters, sorter) => {
-		setFiltered(filters);
-		setSorted(sorter);
+	const reloadTable = () => {
+		setTableFiltered({});
+		setTableSorted({});
+		setDateRangeFilter([convertDate().startOf("year"), convertDate()]);
+		setCityFilter([]);
+		getData({
+			...PAGINATION,
+			filters: {
+				trans_date: [
+					[dbDate(convertDate().startOf("year")), dbDate(convertDate())],
+				],
+				city_id: null,
+			},
+		});
+	};
 
-		setTableParams({
+	const onTableChange = (pagination, filters, sorter) => {
+		setTableFiltered(filters);
+		setTableSorted(sorter);
+		getData({
 			pagination,
 			filters: {
 				...filters,
-				city_id: cityFilter ? [cityFilter] : null,
 				trans_date: [[dbDate(dateRangeFilter[0]), dbDate(dateRangeFilter[1])]],
+				city_id: cityFilter ? [cityFilter] : null,
 			},
 			...sorter,
 		});
 
 		// `dataSource` is useless since `pageSize` changed
-		if (pagination.pageSize !== tableParams.pagination?.pageSize) {
+		if (pagination.pageSize !== tablePage.pagination?.pageSize) {
 			setData([]);
 		}
 	};
 
 	const onDateRangeFilterChange = (values) => {
 		setDateRangeFilter(values);
-		setFiltered({});
-		setSorted({});
-		setTableParams({
+		setTableFiltered({});
+		setTableSorted({});
+		getData({
 			...PAGINATION,
 			filters: {
-				city_id: cityFilter ? [cityFilter] : null,
 				trans_date: [[dbDate(values[0]), dbDate(values[1])]],
+				city_id: cityFilter ? [cityFilter] : null,
 			},
 		});
 	};
 
 	const onCityFilterChange = (value) => {
 		setCityFilter(value);
-		setFiltered({});
-		setSorted({});
-		setTableParams({
+		setTableFiltered({});
+		setTableSorted({});
+		getData({
 			...PAGINATION,
 			filters: {
-				city_id: value ? [value] : null,
 				trans_date: [[dbDate(dateRangeFilter[0]), dbDate(dateRangeFilter[1])]],
-			},
-		});
-	};
-
-	const reloadTable = () => {
-		setCityFilter([]);
-		setDateRangeFilter([convertDate().startOf("year"), convertDate()]);
-		setFiltered({});
-		setSorted({});
-		setTableParams({
-			...PAGINATION,
-			filters: {
-				city_id: null,
-				trans_date: [
-					[dbDate(convertDate().startOf("year")), dbDate(convertDate())],
-				],
+				city_id: value ? [value] : null,
 			},
 		});
 	};
 
 	const columns = [
-		searchColumn(searchInput, "trans_date", "Tanggal", null, true, sorted),
-		searchColumn(searchInput, "city_label", "Kota", null, true, sorted),
 		searchColumn(
-			searchInput,
-			"account_base_label",
-			"Akun Rekening",
-			filtered,
+			tableFilterInputRef,
+			"trans_date",
+			"Tanggal",
+			null,
 			true,
-			sorted
+			tableSorted
 		),
 		searchColumn(
-			searchInput,
+			tableFilterInputRef,
+			"city_label",
+			"Kota",
+			null,
+			true,
+			tableSorted
+		),
+		searchColumn(
+			tableFilterInputRef,
+			"account_base_label",
+			"Akun Rekening",
+			tableFiltered,
+			true,
+			tableSorted
+		),
+		searchColumn(
+			tableFilterInputRef,
 			"account_base_plan_amount",
 			"Anggaran",
-			filtered,
+			tableFiltered,
 			true,
-			sorted,
+			tableSorted,
 			"int"
 		),
 		searchColumn(
-			searchInput,
+			tableFilterInputRef,
 			"account_base_real_amount",
 			"Realisasi",
-			filtered,
+			tableFiltered,
 			true,
-			sorted,
+			tableSorted,
 			"int"
 		),
 	];
@@ -287,9 +288,7 @@ export default function PendapatanBelanja() {
 		return results;
 	};
 
-	useEffect(() => {
-		reloadData();
-	}, [JSON.stringify(tableParams)]);
+	useEffect(() => getData(PAGINATION), []);
 
 	return (
 		<>
@@ -324,7 +323,6 @@ export default function PendapatanBelanja() {
 						filterOption={(input, option) =>
 							(option?.label ?? "").includes(input)
 						}
-						disabled={role_id !== 1}
 						loading={loading}
 						options={cities}
 						onChange={onCityFilterChange}
@@ -350,12 +348,14 @@ export default function PendapatanBelanja() {
 						x: "100%",
 					}}
 					bordered
+					size="small"
 					loading={loading}
 					dataSource={data}
 					columns={columns}
 					rowKey={(record) => `${record?.account_base_id}_${record?.city_id}`}
 					onChange={onTableChange}
-					pagination={tableParams.pagination}
+					pagination={tablePage.pagination}
+					tableLayout="auto"
 				/>
 			</div>
 		</>
