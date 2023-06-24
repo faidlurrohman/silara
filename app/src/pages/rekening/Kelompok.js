@@ -24,6 +24,7 @@ import ExportButton from "../../components/button/ExportButton";
 import { messageAction, responseGet } from "../../helpers/response";
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
+import { checkParams } from "../../helpers/url";
 
 export default function Kelompok() {
 	const { message, modal } = App.useApp();
@@ -31,47 +32,26 @@ export default function Kelompok() {
 	const navigate = useNavigate();
 	const { id } = useParams();
 
-	const searchInput = useRef(null);
-
-	const [filtered, setFiltered] = useState({});
-	const [sorted, setSorted] = useState({});
-	const [tableParams, setTableParams] = useState(PAGINATION);
-
-	const [isShow, setShow] = useState(false);
-	const [isEdit, setEdit] = useState(false);
-	const [confirmLoading, setConfirmLoading] = useState(false);
-
 	const [accountGroup, setAccountGroup] = useState([]);
 	const [accountBase, setAccountBase] = useState([]);
 	const [exports, setExports] = useState([]);
 	const [loading, setLoading] = useState(false);
 
-	const reloadData = () => {
+	const tableFilterInputRef = useRef(null);
+	const [tableFiltered, setTableFiltered] = useState({});
+	const [tableSorted, setTableSorted] = useState({});
+	const [tablePage, setTablePage] = useState(PAGINATION);
+
+	const [isShow, setShow] = useState(false);
+	const [isEdit, setEdit] = useState(false);
+	const [confirmLoading, setConfirmLoading] = useState(false);
+
+	const getData = (params) => {
 		setLoading(true);
 		axios
 			.all([
-				getAccount(
-					"group",
-					id
-						? {
-								...tableParams,
-								filters: { ...tableParams.filters, account_base_id: [id] },
-						  }
-						: tableParams
-				),
-				getAccount(
-					"group",
-					id
-						? {
-								...tableParams,
-								filters: { account_base_id: [id] },
-								pagination: { ...tableParams.pagination, pageSize: 0 },
-						  }
-						: {
-								...tableParams,
-								pagination: { ...tableParams.pagination, pageSize: 0 },
-						  }
-				),
+				getAccount("group", checkParams(params, id, "account_base_id")),
+				getAccount("group", checkParams(params, id, "account_base_id", true)),
 				getAccountList("base"),
 			])
 			.then(
@@ -79,38 +59,32 @@ export default function Kelompok() {
 					setLoading(false);
 					setAccountGroup(responseGet(_groups).data);
 					setExports(responseGet(_export).data);
-					setTableParams({
-						...tableParams,
+					setAccountBase(_bases?.data?.data);
+					setTablePage({
 						pagination: {
-							...tableParams.pagination,
+							...params.pagination,
 							total: responseGet(_groups).total_count,
 						},
 					});
-					setAccountBase(_bases?.data?.data);
 				})
 			);
 	};
 
 	const onTableChange = (pagination, filters, sorter) => {
-		setFiltered(filters);
-		setSorted(sorter);
-
-		setTableParams({
-			pagination,
-			filters,
-			...sorter,
-		});
+		setTableFiltered(filters);
+		setTableSorted(sorter);
+		getData({ pagination, filters, ...sorter });
 
 		// `dataSource` is useless since `pageSize` changed
-		if (pagination.pageSize !== tableParams.pagination?.pageSize) {
+		if (pagination.pageSize !== tablePage.pagination?.pageSize) {
 			setAccountGroup([]);
 		}
 	};
 
 	const reloadTable = () => {
-		setFiltered({});
-		setSorted({});
-		setTableParams(PAGINATION);
+		setTableFiltered({});
+		setTableSorted({});
+		getData(PAGINATION);
 	};
 
 	const addUpdateRow = (isEdit = false, value = null) => {
@@ -173,22 +147,34 @@ export default function Kelompok() {
 
 	const columns = [
 		searchColumn(
-			searchInput,
+			tableFilterInputRef,
 			"account_base_label",
 			"Akun Rekening",
-			filtered,
+			tableFiltered,
 			true,
-			sorted
+			tableSorted
 		),
-		searchColumn(searchInput, "label", "Label", filtered, true, sorted),
-		searchColumn(searchInput, "remark", "Keterangan", filtered, true, sorted),
-		activeColumn(filtered),
+		searchColumn(
+			tableFilterInputRef,
+			"label",
+			"Label",
+			tableFiltered,
+			true,
+			tableSorted
+		),
+		searchColumn(
+			tableFilterInputRef,
+			"remark",
+			"Keterangan",
+			tableFiltered,
+			true,
+			tableSorted
+		),
+		activeColumn(tableFiltered),
 		actionColumn(addUpdateRow, onActiveChange, null, onNavigateDetail),
 	];
 
-	useEffect(() => {
-		reloadData();
-	}, [JSON.stringify(tableParams), id]);
+	useEffect(() => getData(PAGINATION), []);
 
 	return (
 		<>
@@ -210,12 +196,13 @@ export default function Kelompok() {
 						x: "100%",
 					}}
 					bordered
+					size="small"
 					loading={loading}
 					dataSource={accountGroup}
 					columns={columns}
 					rowKey={(record) => record?.id}
 					onChange={onTableChange}
-					pagination={tableParams.pagination}
+					pagination={tablePage.pagination}
 					tableLayout="auto"
 				/>
 			</div>

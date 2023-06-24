@@ -26,17 +26,23 @@ import AddButton from "../../components/button/AddButton";
 import ExportButton from "../../components/button/ExportButton";
 import axios from "axios";
 import { useParams } from "react-router-dom";
+import { checkParams } from "../../helpers/url";
 
 export default function Objek() {
 	const { message, modal } = App.useApp();
 	const [form] = Form.useForm();
 	const { id } = useParams();
 
-	const searchInput = useRef(null);
+	const [accountObject, setAccountObject] = useState([]);
+	const [accountType, setAccountType] = useState([]);
+	const [cities, setCities] = useState([]);
+	const [exports, setExports] = useState([]);
+	const [loading, setLoading] = useState(false);
 
-	const [filtered, setFiltered] = useState({});
-	const [sorted, setSorted] = useState({});
-	const [tableParams, setTableParams] = useState(PAGINATION);
+	const tableFilterInputRef = useRef(null);
+	const [tableFiltered, setTableFiltered] = useState({});
+	const [tableSorted, setTableSorted] = useState({});
+	const [tablePage, setTablePage] = useState(PAGINATION);
 
 	const [isShow, setShow] = useState(false);
 	const [isEdit, setEdit] = useState(false);
@@ -45,38 +51,12 @@ export default function Objek() {
 	const [isShowAllocation, setShowAllocation] = useState(false);
 	const [selectedObject, setSelectedObject] = useState({});
 
-	const [accountObject, setAccountObject] = useState([]);
-	const [accountType, setAccountType] = useState([]);
-	const [cities, setCities] = useState([]);
-	const [exports, setExports] = useState([]);
-	const [loading, setLoading] = useState(false);
-
-	const reloadData = () => {
+	const getData = (params) => {
 		setLoading(true);
 		axios
 			.all([
-				getAccount(
-					"object",
-					id
-						? {
-								...tableParams,
-								filters: { ...tableParams.filters, account_type_id: [id] },
-						  }
-						: tableParams
-				),
-				getAccount(
-					"object",
-					id
-						? {
-								...tableParams,
-								filters: { account_type_id: [id] },
-								pagination: { ...tableParams.pagination, pageSize: 0 },
-						  }
-						: {
-								...tableParams,
-								pagination: { ...tableParams.pagination, pageSize: 0 },
-						  }
-				),
+				getAccount("object", checkParams(params, id, "account_type_id")),
+				getAccount("object", checkParams(params, id, "account_type_id", true)),
 				getAccountList("type"),
 				getCityList(),
 			])
@@ -85,39 +65,33 @@ export default function Objek() {
 					setLoading(false);
 					setAccountObject(responseGet(_objects).data);
 					setExports(responseGet(_export).data);
-					setTableParams({
-						...tableParams,
+					setAccountType(_types?.data?.data);
+					setCities(_cities?.data?.data);
+					setTablePage({
 						pagination: {
-							...tableParams.pagination,
+							...params.pagination,
 							total: responseGet(_objects).total_count,
 						},
 					});
-					setAccountType(_types?.data?.data);
-					setCities(_cities?.data?.data);
 				})
 			);
 	};
 
 	const onTableChange = (pagination, filters, sorter) => {
-		setFiltered(filters);
-		setSorted(sorter);
-
-		setTableParams({
-			pagination,
-			filters,
-			...sorter,
-		});
+		setTableFiltered(filters);
+		setTableSorted(sorter);
+		getData({ pagination, filters, ...sorter });
 
 		// `dataSource` is useless since `pageSize` changed
-		if (pagination.pageSize !== tableParams.pagination?.pageSize) {
+		if (pagination.pageSize !== tablePage.pagination?.pageSize) {
 			setAccountObject([]);
 		}
 	};
 
 	const reloadTable = () => {
-		setFiltered({});
-		setSorted({});
-		setTableParams(PAGINATION);
+		setTableFiltered({});
+		setTableSorted({});
+		getData(PAGINATION);
 	};
 
 	const addUpdateRow = (isEdit = false, value = null) => {
@@ -203,22 +177,34 @@ export default function Objek() {
 
 	const columns = [
 		searchColumn(
-			searchInput,
+			tableFilterInputRef,
 			"account_type_label",
 			"Jenis Rekening",
-			filtered,
+			tableFiltered,
 			true,
-			sorted
+			tableSorted
 		),
-		searchColumn(searchInput, "label", "Label", filtered, true, sorted),
-		searchColumn(searchInput, "remark", "Keterangan", filtered, true, sorted),
-		activeColumn(filtered),
+		searchColumn(
+			tableFilterInputRef,
+			"label",
+			"Label",
+			tableFiltered,
+			true,
+			tableSorted
+		),
+		searchColumn(
+			tableFilterInputRef,
+			"remark",
+			"Keterangan",
+			tableFiltered,
+			true,
+			tableSorted
+		),
+		activeColumn(tableFiltered),
 		actionColumn(addUpdateRow, onActiveChange, onAllocationChange),
 	];
 
-	useEffect(() => {
-		reloadData();
-	}, [JSON.stringify(tableParams), id]);
+	useEffect(() => getData(PAGINATION), []);
 
 	return (
 		<>
@@ -240,12 +226,13 @@ export default function Objek() {
 						x: "100%",
 					}}
 					bordered
+					size="small"
 					loading={loading}
 					dataSource={accountObject}
 					columns={columns}
 					rowKey={(record) => record?.id}
 					onChange={onTableChange}
-					pagination={tableParams.pagination}
+					pagination={tablePage.pagination}
 					tableLayout="auto"
 				/>
 			</div>

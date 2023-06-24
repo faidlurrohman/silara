@@ -19,40 +19,37 @@ export default function Akun() {
 	const [form] = Form.useForm();
 	const navigate = useNavigate();
 
-	const searchInput = useRef(null);
+	const [accountBase, setAccountBase] = useState([]);
+	const [exports, setExports] = useState([]);
+	const [loading, setLoading] = useState(false);
 
-	const [filtered, setFiltered] = useState({});
-	const [sorted, setSorted] = useState({});
-	const [tableParams, setTableParams] = useState(PAGINATION);
+	const tableFilterInputRef = useRef(null);
+	const [tableFiltered, setTableFiltered] = useState({});
+	const [tableSorted, setTableSorted] = useState({});
+	const [tablePage, setTablePage] = useState(PAGINATION);
 
 	const [isShow, setShow] = useState(false);
 	const [isEdit, setEdit] = useState(false);
 	const [confirmLoading, setConfirmLoading] = useState(false);
 
-	const [accountBase, setAccountBase] = useState([]);
-	const [exports, setExports] = useState([]);
-	const [loading, setLoading] = useState(false);
-
-	const reloadData = () => {
+	const getData = (params) => {
 		setLoading(true);
 		axios
 			.all([
-				getAccount("base", tableParams),
+				getAccount("base", params),
 				getAccount("base", {
-					...tableParams,
-					pagination: { ...tableParams.pagination, pageSize: 0 },
+					...params,
+					pagination: { ...params.pagination, pageSize: 0 },
 				}),
 			])
 			.then(
 				axios.spread((_data, _export) => {
 					setLoading(false);
 					setExports(responseGet(_export).data);
-
 					setAccountBase(responseGet(_data).data);
-					setTableParams({
-						...tableParams,
+					setTablePage({
 						pagination: {
-							...tableParams.pagination,
+							...params.pagination,
 							total: responseGet(_data).total_count,
 						},
 					});
@@ -61,25 +58,20 @@ export default function Akun() {
 	};
 
 	const onTableChange = (pagination, filters, sorter) => {
-		setFiltered(filters);
-		setSorted(sorter);
-
-		setTableParams({
-			pagination,
-			filters,
-			...sorter,
-		});
+		setTableFiltered(filters);
+		setTableSorted(sorter);
+		getData({ pagination, filters, ...sorter });
 
 		// `dataSource` is useless since `pageSize` changed
-		if (pagination.pageSize !== tableParams.pagination?.pageSize) {
+		if (pagination.pageSize !== tablePage.pagination?.pageSize) {
 			setAccountBase([]);
 		}
 	};
 
 	const reloadTable = () => {
-		setFiltered({});
-		setSorted({});
-		setTableParams(PAGINATION);
+		setTableFiltered({});
+		setTableSorted({});
+		getData(PAGINATION);
 	};
 
 	const addUpdateRow = (isEdit = false, value = null) => {
@@ -136,15 +128,27 @@ export default function Akun() {
 	};
 
 	const columns = [
-		searchColumn(searchInput, "label", "Label", filtered, true, sorted),
-		searchColumn(searchInput, "remark", "Keterangan", filtered, true, sorted),
-		activeColumn(filtered),
+		searchColumn(
+			tableFilterInputRef,
+			"label",
+			"Label",
+			tableFiltered,
+			true,
+			tableSorted
+		),
+		searchColumn(
+			tableFilterInputRef,
+			"remark",
+			"Keterangan",
+			tableFiltered,
+			true,
+			tableSorted
+		),
+		activeColumn(tableFiltered),
 		actionColumn(addUpdateRow, onActiveChange, null, onNavigateDetail),
 	];
 
-	useEffect(() => {
-		reloadData();
-	}, [JSON.stringify(tableParams)]);
+	useEffect(() => getData(PAGINATION), []);
 
 	return (
 		<>
@@ -162,12 +166,13 @@ export default function Akun() {
 						x: "100%",
 					}}
 					bordered
+					size="small"
 					loading={loading}
 					dataSource={accountBase}
 					columns={columns}
 					rowKey={(record) => record?.id}
 					onChange={onTableChange}
-					pagination={tableParams.pagination}
+					pagination={tablePage.pagination}
 					tableLayout="auto"
 				/>
 			</div>

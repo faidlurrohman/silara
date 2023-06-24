@@ -35,17 +35,8 @@ import { formatterNumber, parserNumber } from "../../helpers/number";
 
 export default function Realisasi() {
 	const { message, modal } = App.useApp();
-	const { role_id } = useRole();
+	const { is_super_admin } = useRole();
 	const [form] = Form.useForm();
-
-	const searchInput = useRef(null);
-
-	const [filtered, setFiltered] = useState({});
-	const [sorted, setSorted] = useState({});
-	const [tableParams, setTableParams] = useState(PAGINATION);
-
-	const [isShow, setShow] = useState(false);
-	const [confirmLoading, setConfirmLoading] = useState(false);
 
 	const [transactions, setTransactions] = useState([]);
 	const [cities, setCities] = useState([]);
@@ -56,55 +47,59 @@ export default function Realisasi() {
 	const [exports, setExports] = useState([]);
 	const [loading, setLoading] = useState(false);
 
-	const reloadData = () => {
+	const tableFilterInputRef = useRef(null);
+	const [tableFiltered, setTableFiltered] = useState({});
+	const [tableSorted, setTableSorted] = useState({});
+	const [tablePage, setTablePage] = useState(PAGINATION);
+
+	const [isShow, setShow] = useState(false);
+	const [confirmLoading, setConfirmLoading] = useState(false);
+
+	const getData = (params) => {
 		setLoading(true);
 		axios
 			.all([
-				getTransaction(tableParams),
+				getTransaction(params),
 				getTransaction({
-					...tableParams,
-					pagination: { ...tableParams.pagination, pageSize: 0 },
+					...params,
+					pagination: { ...params.pagination, pageSize: 0 },
 				}),
 				getCityList(),
-				role_id === 1 ? getAccountList("object") : getTransactionObjectList(),
+				getAccountList("object"),
+				getTransactionObjectList(),
 			])
 			.then(
 				axios.spread((_transactions, _export, _cities, _objects) => {
 					setLoading(false);
 					setTransactions(responseGet(_transactions).data);
 					setExports(responseGet(_export).data);
-					setTableParams({
-						...tableParams,
+					setCities(_cities?.data?.data);
+					setAccountObject(_objects?.data?.data);
+					setTablePage({
 						pagination: {
-							...tableParams.pagination,
+							...params.pagination,
 							total: responseGet(_transactions).total_count,
 						},
 					});
-					setCities(_cities?.data?.data);
-					setAccountObject(_objects?.data?.data);
 				})
 			);
 	};
 
 	const onTableChange = (pagination, filters, sorter) => {
-		setFiltered(filters);
-		setSorted(sorter);
-		setTableParams({
-			pagination,
-			filters,
-			...sorter,
-		});
+		setTableFiltered(filters);
+		setTableSorted(sorter);
+		getData({ pagination, filters, ...sorter });
 
 		// `dataSource` is useless since `pageSize` changed
-		if (pagination.pageSize !== tableParams.pagination?.pageSize) {
+		if (pagination.pageSize !== tablePage.pagination?.pageSize) {
 			setTransactions([]);
 		}
 	};
 
 	const reloadTable = () => {
-		setFiltered({});
-		setSorted({});
-		setTableParams(PAGINATION);
+		setTableFiltered({});
+		setTableSorted({});
+		getData(PAGINATION);
 	};
 
 	const addData = () => {
@@ -113,7 +108,7 @@ export default function Realisasi() {
 		setLastTransaction({});
 		form.resetFields();
 
-		if (role_id !== 1 && cities[0]?.id) {
+		if (!is_super_admin !== 1 && cities[0]?.id) {
 			form.setFieldsValue({ city_id: cities[0].id });
 		}
 	};
@@ -178,36 +173,48 @@ export default function Realisasi() {
 	};
 
 	const columns = [
-		searchColumn(searchInput, "trans_date", "Tanggal", filtered, true, sorted),
-		searchColumn(searchInput, "city_label", "Kota", filtered, true, sorted),
 		searchColumn(
-			searchInput,
-			"account_object_label",
-			"Objek Rekening",
-			filtered,
+			tableFilterInputRef,
+			"trans_date",
+			"Tanggal",
+			tableFiltered,
 			true,
-			sorted
+			tableSorted
 		),
 		searchColumn(
-			searchInput,
+			tableFilterInputRef,
+			"city_label",
+			"Kota",
+			tableFiltered,
+			true,
+			tableSorted
+		),
+		searchColumn(
+			tableFilterInputRef,
+			"account_object_label",
+			"Objek Rekening",
+			tableFiltered,
+			true,
+			tableSorted
+		),
+		searchColumn(
+			tableFilterInputRef,
 			"real_amount",
 			"Realisasi",
-			filtered,
+			tableFiltered,
 			true,
-			sorted,
+			tableSorted,
 			"int"
 		),
 	];
 
-	useEffect(() => {
-		reloadData();
-	}, [JSON.stringify(tableParams)]);
+	useEffect(() => getData(PAGINATION), []);
 
 	return (
 		<>
 			<div className="flex flex-col space-y-2 sm:space-y-0 sm:space-x-2 sm:flex-row md:space-y-0 md:space-x-2 md:flex-row">
 				<ReloadButton onClick={reloadTable} stateLoading={loading} />
-				{role_id === 2 && (
+				{!is_super_admin && (
 					<AddButton onClick={addData} stateLoading={loading} />
 				)}
 				{!!exports?.length && (
@@ -225,19 +232,20 @@ export default function Realisasi() {
 						x: "100%",
 					}}
 					bordered
+					size="small"
 					loading={loading}
 					dataSource={transactions}
 					columns={
-						role_id === 1
+						is_super_admin
 							? columns.concat(
-									activeColumn(filtered),
+									activeColumn(tableFiltered),
 									actionColumn(null, onActiveChange)
 							  )
 							: columns
 					}
 					rowKey={(record) => record?.id}
 					onChange={onTableChange}
-					pagination={tableParams.pagination}
+					pagination={tablePage.pagination}
 					tableLayout="auto"
 				/>
 			</div>
@@ -316,11 +324,7 @@ export default function Realisasi() {
 								},
 							]}
 						>
-							<Select
-								loading={loading}
-								options={cities}
-								disabled={role_id !== 1}
-							/>
+							<Select loading={loading} options={cities} disabled />
 						</Form.Item>
 						<Form.Item
 							label="Objek Rekening"

@@ -23,29 +23,27 @@ export default function PengaturanPenandaTangan() {
 	const { message, modal } = App.useApp();
 	const [form] = Form.useForm();
 
-	const searchInput = useRef(null);
+	const [signer, setSigner] = useState([]);
+	const [exports, setExports] = useState([]);
+	const [loading, setLoading] = useState(false);
 
-	const [filtered, setFiltered] = useState({});
-	const [sorted, setSorted] = useState({});
-	const [tableParams, setTableParams] = useState(PAGINATION);
+	const tableFilterInputRef = useRef(null);
+	const [tableFiltered, setTableFiltered] = useState({});
+	const [tableSorted, setTableSorted] = useState({});
+	const [tablePage, setTablePage] = useState(PAGINATION);
 
 	const [isShow, setShow] = useState(false);
 	const [isEdit, setEdit] = useState(false);
 	const [confirmLoading, setConfirmLoading] = useState(false);
 
-	const [signer, setSigner] = useState([]);
-	const [exports, setExports] = useState([]);
-	const [loading, setLoading] = useState(false);
-
-	const reloadData = () => {
+	const getData = (params) => {
 		setLoading(true);
-
 		axios
 			.all([
-				getSigner(tableParams),
+				getSigner(params),
 				getSigner({
-					...tableParams,
-					pagination: { ...tableParams.pagination, pageSize: 0 },
+					...params,
+					pagination: { ...params.pagination, pageSize: 0 },
 				}),
 			])
 			.then(
@@ -53,10 +51,9 @@ export default function PengaturanPenandaTangan() {
 					setLoading(false);
 					setSigner(responseGet(_data).data);
 					setExports(responseGet(_export).data);
-					setTableParams({
-						...tableParams,
+					setTablePage({
 						pagination: {
-							...tableParams.pagination,
+							...params.pagination,
 							total: responseGet(_data).total_count,
 						},
 					});
@@ -65,25 +62,20 @@ export default function PengaturanPenandaTangan() {
 	};
 
 	const onTableChange = (pagination, filters, sorter) => {
-		setFiltered(filters);
-		setSorted(sorter);
-
-		setTableParams({
-			pagination,
-			filters,
-			...sorter,
-		});
+		setTableFiltered(filters);
+		setTableSorted(sorter);
+		getData({ pagination, filters, ...sorter });
 
 		// `dataSource` is useless since `pageSize` changed
-		if (pagination.pageSize !== tableParams.pagination?.pageSize) {
+		if (pagination.pageSize !== tablePage.pagination?.pageSize) {
 			setSigner([]);
 		}
 	};
 
 	const reloadTable = () => {
-		setFiltered({});
-		setSorted({});
-		setTableParams(PAGINATION);
+		setTableFiltered({});
+		setTableSorted({});
+		getData(PAGINATION);
 	};
 
 	const addUpdateRow = (isEdit = false, value = null) => {
@@ -133,16 +125,35 @@ export default function PengaturanPenandaTangan() {
 	};
 
 	const columns = [
-		searchColumn(searchInput, "nip", "Nip", filtered, true, sorted),
-		searchColumn(searchInput, "fullname", "Nama", filtered, true, sorted),
-		searchColumn(searchInput, "title", "Jabatan", filtered, true, sorted),
-		activeColumn(filtered),
+		searchColumn(
+			tableFilterInputRef,
+			"nip",
+			"Nip",
+			tableFiltered,
+			true,
+			tableSorted
+		),
+		searchColumn(
+			tableFilterInputRef,
+			"fullname",
+			"Nama",
+			tableFiltered,
+			true,
+			tableSorted
+		),
+		searchColumn(
+			tableFilterInputRef,
+			"title",
+			"Jabatan",
+			tableFiltered,
+			true,
+			tableSorted
+		),
+		activeColumn(tableFiltered),
 		actionColumn(addUpdateRow, onActiveChange),
 	];
 
-	useEffect(() => {
-		reloadData();
-	}, [JSON.stringify(tableParams)]);
+	useEffect(() => getData(PAGINATION), []);
 
 	return (
 		<>
@@ -164,12 +175,13 @@ export default function PengaturanPenandaTangan() {
 						x: "100%",
 					}}
 					bordered
+					size="small"
 					loading={loading}
 					dataSource={signer}
 					columns={columns}
 					rowKey={(record) => record?.id}
 					onChange={onTableChange}
-					pagination={tableParams.pagination}
+					pagination={tablePage.pagination}
 					tableLayout="auto"
 				/>
 			</div>
