@@ -125,7 +125,14 @@ export default function AnggaranKota() {
 	const onTableChange = (pagination, filters, sorter) => {
 		setTableFiltered(filters);
 		setTableSorted(sorter);
-		getData({ pagination, filters, ...sorter });
+		getData({
+			pagination,
+			filters: {
+				trans_date: [[dbDate(dateRangeFilter[0]), dbDate(dateRangeFilter[1])]],
+				...(is_super_admin && { city_id: cityFilter ? [cityFilter] : null }),
+			},
+			...sorter,
+		});
 
 		// `dataSource` is useless since `pageSize` changed
 		if (pagination.pageSize !== tablePage.pagination?.pageSize) {
