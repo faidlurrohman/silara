@@ -27,7 +27,7 @@ export default function ExportButton({
 	date = null,
 	types = ["xlsx", "pdf"],
 }) {
-	const { role_id } = useRole();
+	const { is_super_admin } = useRole();
 	const [form] = Form.useForm();
 	const [signers, setSigners] = useState([]);
 	const [loading, setLoading] = useState(false);
@@ -730,7 +730,7 @@ export default function ExportButton({
 								key: "xlsx",
 								label: ".XLSX",
 								onClick: () => {
-									if (role_id === 1 && report) {
+									if (is_super_admin && report) {
 										onSignerModal(true);
 										setDoNext("xlsx");
 									} else {
@@ -742,7 +742,7 @@ export default function ExportButton({
 								key: "pdf",
 								label: ".PDF",
 								onClick: async () => {
-									if (role_id === 1 && report) {
+									if (is_super_admin && report) {
 										onSignerModal(true);
 										setDoNext("pdfx");
 									} else {
