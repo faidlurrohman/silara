@@ -1,167 +1,163 @@
-import React, { useEffect, useRef, useState } from "react";
 import { DatePicker, Select, Table } from "antd";
-import axios from "axios";
-import ReloadButton from "../../components/button/ReloadButton";
-import { getCityList } from "../../services/city";
+import React, { useEffect, useRef, useState } from "react";
 import { DATE_FORMAT_VIEW, PAGINATION } from "../../helpers/constants";
-import { convertDate, dbDate } from "../../helpers/date";
-import useRole from "../../hooks/useRole";
+import { searchColumn } from "../../helpers/table";
+import axios from "axios";
 import { getRealPlanCities } from "../../services/report";
 import { responseGet } from "../../helpers/response";
-import { searchColumn } from "../../helpers/table";
+import ReloadButton from "../../components/button/ReloadButton";
+import { convertDate, dbDate } from "../../helpers/date";
+import useRole from "../../hooks/useRole";
+import { getCityList } from "../../services/city";
+import _ from "lodash";
 import { formatterNumber } from "../../helpers/number";
 import { upper } from "../../helpers/typo";
-import _ from "lodash";
 import ExportButton from "../../components/button/ExportButton";
 
 const { RangePicker } = DatePicker;
 
 export default function AnggaranKota() {
-	const { role_id } = useRole();
+	const { is_super_admin } = useRole();
+	const [data, setData] = useState([]);
+	const [exports, setExports] = useState([]);
+	const [cities, setCities] = useState([]);
+	const [loading, setLoading] = useState(false);
 
-	const searchInput = useRef(null);
-	const [filtered, setFiltered] = useState({});
-	const [sorted, setSorted] = useState({});
+	const tableFilterInputRef = useRef(null);
+	const [tablePage, setTablePage] = useState(PAGINATION);
+	const [tableFiltered, setTableFiltered] = useState({});
+	const [tableSorted, setTableSorted] = useState({});
 	const [dateRangeFilter, setDateRangeFilter] = useState([
 		convertDate().startOf("year"),
 		convertDate(),
 	]);
 	const [cityFilter, setCityFilter] = useState(null);
-	const [tableParams, setTableParams] = useState({
-		...PAGINATION,
-		filters: {
-			city_id: null,
-			trans_date: [[dbDate(dateRangeFilter[0]), dbDate(dateRangeFilter[1])]],
-		},
-	});
 
-	const [data, setData] = useState([]);
-	const [cities, setCities] = useState([]);
-	const [exports, setExports] = useState([]);
-	const [loading, setLoading] = useState(false);
+	const columns = [
+		searchColumn(
+			tableFilterInputRef,
+			"trans_date",
+			"Tanggal",
+			null,
+			true,
+			tableSorted
+		),
+		searchColumn(
+			tableFilterInputRef,
+			"city_label",
+			"Nama Kota",
+			null,
+			true,
+			tableSorted
+		),
+		searchColumn(
+			tableFilterInputRef,
+			"account_object_label",
+			"Objek Rekening",
+			tableFiltered,
+			true,
+			tableSorted
+		),
+		searchColumn(
+			tableFilterInputRef,
+			"account_object_plan_amount",
+			"Anggaran",
+			tableFiltered,
+			true,
+			tableSorted,
+			"int"
+		),
+		searchColumn(
+			tableFilterInputRef,
+			"account_object_real_amount",
+			"Realisasi",
+			tableFiltered,
+			true,
+			tableSorted,
+			"int"
+		),
+	];
 
-	const reloadData = () => {
+	const getData = (params) => {
 		setLoading(true);
 		axios
 			.all([
-				getRealPlanCities(tableParams),
+				getRealPlanCities(params),
 				getRealPlanCities({
-					...tableParams,
-					pagination: { ...tableParams.pagination, pageSize: 0 },
+					...params,
+					pagination: { ...params.pagination, pageSize: 0 },
 				}),
 				getCityList(),
 			])
 			.then(
-				axios.spread((_data, _export, _cities, _signer) => {
+				axios.spread((_data, _export, _cities) => {
 					setLoading(false);
+					setCities(_cities?.data?.data);
 					setData(responseGet(_data).data);
 					setExports(setDataExport(responseGet(_export).data));
-					setTableParams({
-						...tableParams,
+
+					setTablePage({
 						pagination: {
-							...tableParams.pagination,
+							...params.pagination,
 							total: responseGet(_data).total_count,
 						},
 					});
-					setCities(_cities?.data?.data);
-
-					if (role_id !== 1) onCityFilterChange(_cities?.data?.data[0]?.id);
 				})
 			);
 	};
 
-	const onTableChange = (pagination, filters, sorter) => {
-		setFiltered(filters);
-		setSorted(sorter);
-
-		setTableParams({
-			pagination,
+	const reloadTable = () => {
+		setTableFiltered({});
+		setTableSorted({});
+		setDateRangeFilter([convertDate().startOf("year"), convertDate()]);
+		setCityFilter(null);
+		getData({
+			...PAGINATION,
 			filters: {
-				...filters,
-				city_id: cityFilter ? [cityFilter] : null,
-				trans_date: [[dbDate(dateRangeFilter[0]), dbDate(dateRangeFilter[1])]],
+				trans_date: [
+					[dbDate(convertDate().startOf("year")), dbDate(convertDate())],
+				],
+				...(is_super_admin && { city_id: null }),
 			},
-			...sorter,
 		});
+	};
+
+	const onTableChange = (pagination, filters, sorter) => {
+		setTableFiltered(filters);
+		setTableSorted(sorter);
+		getData({ pagination, filters, ...sorter });
 
 		// `dataSource` is useless since `pageSize` changed
-		if (pagination.pageSize !== tableParams.pagination?.pageSize) {
+		if (pagination.pageSize !== tablePage.pagination?.pageSize) {
 			setData([]);
 		}
 	};
 
-	const onDateRangeFilterChange = (values) => {
+	const onDateRangeChange = (values) => {
 		setDateRangeFilter(values);
-		setFiltered({});
-		setSorted({});
-		setTableParams({
+		setTableFiltered({});
+		setTableSorted({});
+		getData({
 			...PAGINATION,
 			filters: {
-				city_id: cityFilter ? [cityFilter] : null,
 				trans_date: [[dbDate(values[0]), dbDate(values[1])]],
+				...(is_super_admin && { city_id: cityFilter ? [cityFilter] : null }),
 			},
 		});
 	};
 
-	const onCityFilterChange = (value) => {
+	const onCityChange = (value) => {
 		setCityFilter(value);
-		setFiltered({});
-		setSorted({});
-		setTableParams({
+		setTableFiltered({});
+		setTableSorted({});
+		getData({
 			...PAGINATION,
 			filters: {
-				city_id: value ? [value] : null,
 				trans_date: [[dbDate(dateRangeFilter[0]), dbDate(dateRangeFilter[1])]],
+				...(is_super_admin && { city_id: value ? [value] : null }),
 			},
 		});
 	};
-
-	const reloadTable = () => {
-		setCityFilter(null);
-		setDateRangeFilter([convertDate().startOf("year"), convertDate()]);
-		setFiltered({});
-		setSorted({});
-		setTableParams({
-			...PAGINATION,
-			filters: {
-				city_id: null,
-				trans_date: [
-					[dbDate(convertDate().startOf("year")), dbDate(convertDate())],
-				],
-			},
-		});
-	};
-
-	const columns = [
-		searchColumn(searchInput, "trans_date", "Tanggal", null, true, sorted),
-		searchColumn(searchInput, "city_label", "Kota", null, true, sorted),
-		searchColumn(
-			searchInput,
-			"account_object_label",
-			"Objek Rekening",
-			filtered,
-			true,
-			sorted
-		),
-		searchColumn(
-			searchInput,
-			"account_object_plan_amount",
-			"Anggaran",
-			filtered,
-			true,
-			sorted,
-			"int"
-		),
-		searchColumn(
-			searchInput,
-			"account_object_real_amount",
-			"Realisasi",
-			filtered,
-			true,
-			sorted,
-			"int"
-		),
-	];
 
 	const setDataExport = (data) => {
 		let results = [];
@@ -308,9 +304,7 @@ export default function AnggaranKota() {
 		return results;
 	};
 
-	useEffect(() => {
-		reloadData();
-	}, [JSON.stringify(tableParams)]);
+	useEffect(() => getData(PAGINATION), []);
 
 	return (
 		<>
@@ -326,32 +320,33 @@ export default function AnggaranKota() {
 						format={DATE_FORMAT_VIEW}
 						defaultValue={dateRangeFilter}
 						placeholder={["Tanggal Awal", "Tanggal Akhir"]}
-						onChange={onDateRangeFilterChange}
+						onChange={onDateRangeChange}
 						value={dateRangeFilter}
 					/>
 				</div>
-				<div className="flex flex-row md:space-x-2">
-					<h2 className="text-xs font-normal text-right w-10 hidden md:inline">
-						Kota :
-					</h2>
-					<Select
-						allowClear
-						showSearch
-						className="w-full sm:w-60 md:w-60"
-						placeholder="Pilih Kota"
-						optionFilterProp="children"
-						filterOption={(input, option) =>
-							(option?.label ?? "").includes(input)
-						}
-						disabled={role_id !== 1}
-						loading={loading}
-						options={cities}
-						onChange={onCityFilterChange}
-						value={cityFilter}
-					/>
-				</div>
+				{is_super_admin && (
+					<div className="flex flex-row md:space-x-2">
+						<h2 className="text-xs font-normal text-right w-10 hidden md:inline">
+							Kota :
+						</h2>
+						<Select
+							allowClear
+							showSearch
+							className="w-full sm:w-60 md:w-60"
+							placeholder="Pilih Kota"
+							optionFilterProp="children"
+							filterOption={(input, option) =>
+								(option?.label ?? "").includes(input)
+							}
+							loading={loading}
+							options={cities}
+							onChange={onCityChange}
+							value={cityFilter}
+						/>
+					</div>
+				)}
 				<ReloadButton onClick={reloadTable} stateLoading={loading} />
-				{!!exports?.length && cityFilter && (
+				{!!exports?.length && (cityFilter || !is_super_admin) && (
 					<ExportButton
 						data={exports}
 						date={dateRangeFilter}
@@ -368,12 +363,13 @@ export default function AnggaranKota() {
 						x: "100%",
 					}}
 					bordered
+					size="small"
 					loading={loading}
 					dataSource={data}
 					columns={columns}
 					rowKey={(record) => `${record?.account_object_id}_${record?.city_id}`}
 					onChange={onTableChange}
-					pagination={tableParams.pagination}
+					pagination={tablePage.pagination}
 				/>
 			</div>
 		</>
