@@ -188,6 +188,7 @@ export default function PengaturanPengguna() {
 					rowKey={(record) => record?.id}
 					onChange={onTableChange}
 					pagination={tableParams.pagination}
+					tableLayout="auto"
 				/>
 			</div>
 			<Modal

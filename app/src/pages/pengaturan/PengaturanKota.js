@@ -179,6 +179,7 @@ export default function PengaturanKota() {
 					rowKey={(record) => record?.id}
 					onChange={onTableChange}
 					pagination={tableParams.pagination}
+					tableLayout="auto"
 				/>
 			</div>
 			<Modal
