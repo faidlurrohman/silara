@@ -109,23 +109,25 @@ export default function ExportButton({
 					editAs: "absolute",
 				});
 
-				const logoRight = await axiosInstance.get(
-					`/app/logo/${chooseCityLogo}`,
-					{
-						responseType: "arraybuffer",
-					}
-				);
+				if (chooseCityLogo !== "") {
+					const logoRight = await axiosInstance.get(
+						`/app/logo/${chooseCityLogo}`,
+						{
+							responseType: "arraybuffer",
+						}
+					);
 
-				const logo2 = workbook.addImage({
-					buffer: logoRight.data,
-					extension: "png",
-				});
+					const logo2 = workbook.addImage({
+						buffer: logoRight.data,
+						extension: "png",
+					});
 
-				sheet.addImage(logo2, {
-					tl: { col: 4.35, row: 0.35 },
-					ext: { width: 100, height: 120 },
-					editAs: "absolute",
-				});
+					sheet.addImage(logo2, {
+						tl: { col: 4.35, row: 0.35 },
+						ext: { width: 100, height: 120 },
+						editAs: "absolute",
+					});
+				}
 
 				sheet.mergeCells("A1", "A7");
 				sheet.mergeCells("E1", "E7");

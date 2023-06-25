@@ -44,10 +44,14 @@ export default function PDFFile({
 							{upper(`${viewDate(date[0])} Sampai ${viewDate(date[1])}`)}
 						</Text>
 					</View>
-					<Image
-						style={styles.logoCity}
-						src={`${process.env.REACT_APP_BASE_URL_API}/app/logo/${data[0]?.city_logo}`}
-					/>
+					{["", null, undefined].includes(data[0]?.city_logo) ? (
+						<Image style={styles.logoKemendagri} src={logoKemendagri} />
+					) : (
+						<Image
+							style={styles.logoCity}
+							src={`${process.env.REACT_APP_BASE_URL_API}/app/logo/${data[0]?.city_logo}`}
+						/>
+					)}
 				</View>
 			);
 		}
