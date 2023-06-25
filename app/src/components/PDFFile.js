@@ -20,7 +20,7 @@ export default function PDFFile({
 	data = [],
 	date = null,
 	orientation = "portrait",
-	signer = "",
+	signer = {},
 }) {
 	const createReportHeader = () => {
 		if (report === "kota") {
@@ -231,17 +231,27 @@ export default function PDFFile({
 		return (
 			<>
 				<View style={{ flex: 1, flexDirection: "row", paddingTop: 30 }}>
-					<View style={{ flex: 2 }}></View>
 					<View style={{ flex: 1 }}>
 						<Text style={{ textAlign: "center", fontSize: 10 }}>
-							{viewDate(convertDate())}
+							{`Mengetahui`}
+						</Text>
+					</View>
+					<View style={{ flex: 1 }}>
+						<Text style={{ textAlign: "center", fontSize: 10 }}>
+							{viewDate(signer?.export_date)}
 						</Text>
 					</View>
 				</View>
 				<View style={{ flex: 1, flexDirection: "row", paddingTop: 60 }}>
-					<View style={{ flex: 2 }}></View>
 					<View style={{ flex: 1 }}>
-						<Text style={{ textAlign: "center", fontSize: 10 }}>{signer}</Text>
+						<Text style={{ textAlign: "center", fontSize: 10 }}>
+							{signer?.know}
+						</Text>
+					</View>
+					<View style={{ flex: 1 }}>
+						<Text style={{ textAlign: "center", fontSize: 10 }}>
+							{signer?.signer}
+						</Text>
 					</View>
 				</View>
 			</>
@@ -258,7 +268,7 @@ export default function PDFFile({
 					{createTableHeader()}
 					{createTableRow()}
 				</View>
-				{report && signer !== "" && (
+				{report && signer?.signer && signer?.know && signer?.export_date && (
 					<View style={styles.tableSigner}>{createSign()}</View>
 				)}
 				<Text

@@ -1,8 +1,17 @@
-import { Button, Divider, Dropdown, Form, Modal, Select, Space } from "antd";
+import {
+	Button,
+	DatePicker,
+	Divider,
+	Dropdown,
+	Form,
+	Modal,
+	Select,
+	Space,
+} from "antd";
 import { DownOutlined, ExportOutlined } from "@ant-design/icons";
 import { convertDate, dbDate, viewDate } from "../../helpers/date";
 import { upper } from "../../helpers/typo";
-import { EXPORT_TARGET } from "../../helpers/constants";
+import { DATE_FORMAT_VIEW, EXPORT_TARGET } from "../../helpers/constants";
 import { pdf } from "@react-pdf/renderer";
 import PDFFile from "../PDFFile";
 import { saveAs } from "file-saver";
@@ -39,8 +48,11 @@ export default function ExportButton({
 	const xlsx = async (formValues = {}) => {
 		const workbook = new ExcelJS.Workbook();
 		const sheet = workbook.addWorksheet(master ? `MASTER` : sheetTitle);
-		const signerIs =
-			signers.find((d) => d?.id === formValues?.signer_id)?.label || "";
+		const dataSigner = {
+			export_date: viewDate(formValues?.export_date),
+			signer: signers.find((d) => d?.id === formValues?.signer_id)?.label,
+			know: signers.find((d) => d?.id === formValues?.know_id)?.label,
+		};
 
 		if (master) {
 			// filename
@@ -632,7 +644,35 @@ export default function ExportButton({
 				let firstCellSignerChar = firstCellSigner._address.charAt(0);
 				let lastCellSignerChar = lastCellSigner._address.charAt(0);
 
-				if (signerIs !== "") {
+				if (!["", null, undefined].includes(dataSigner.know)) {
+					// know
+					let knowCell = (last.number || 0) + 3;
+					let firstCellKnowTarget = `A${knowCell}`;
+					let lastCellKnowTarget = `B${knowCell}`;
+
+					sheet.mergeCells(firstCellKnowTarget, lastCellKnowTarget);
+					sheet.getCell(lastCellKnowTarget).value = "Mengetahui";
+					sheet.getCell(firstCellKnowTarget).style = {
+						alignment: { vertical: "middle", horizontal: "center" },
+						font: { bold: false },
+					};
+
+					let knowIsCell = (last.number || 0) + 8;
+					let firstCellKnowIsTarget = `A${knowIsCell}`;
+					let lastCellKnowIsTarget = `B${knowIsCell}`;
+
+					sheet.mergeCells(firstCellKnowIsTarget, lastCellKnowIsTarget);
+					sheet.getCell(firstCellKnowIsTarget).value = dataSigner.know;
+					sheet.getCell(firstCellKnowIsTarget).style = {
+						alignment: { vertical: "middle", horizontal: "center" },
+						font: { bold: false },
+					};
+				}
+
+				if (
+					!["", null, undefined].includes(dataSigner.export_date) &&
+					!["", null, undefined].includes(dataSigner.signer)
+				) {
 					// signer date
 					let signerDateCell = (last.number || 0) + 3;
 					let firstCellSignerDateTarget = `${firstCellSignerChar}${signerDateCell}`;
@@ -640,7 +680,7 @@ export default function ExportButton({
 
 					sheet.mergeCells(firstCellSignerDateTarget, lastCellDateSignerTarget);
 					sheet.getCell(firstCellSignerDateTarget).value = viewDate(
-						convertDate()
+						dataSigner.export_date
 					);
 					sheet.getCell(firstCellSignerDateTarget).style = {
 						alignment: { vertical: "middle", horizontal: "center" },
@@ -653,7 +693,7 @@ export default function ExportButton({
 					let lastCellSignerTarget = `${lastCellSignerChar}${signerCell}`;
 
 					sheet.mergeCells(firstCellSignerTarget, lastCellSignerTarget);
-					sheet.getCell(firstCellSignerTarget).value = signerIs;
+					sheet.getCell(firstCellSignerTarget).value = dataSigner.signer;
 					sheet.getCell(firstCellSignerTarget).style = {
 						alignment: { vertical: "middle", horizontal: "center" },
 						font: { bold: false },
@@ -680,8 +720,12 @@ export default function ExportButton({
 
 	// pdf
 	const pdfx = async (formValues = {}) => {
-		const signerIs =
-			signers.find((d) => d?.id === formValues?.signer_id)?.label || "";
+		const dataSigner = {
+			export_date: viewDate(formValues?.export_date),
+			signer: signers.find((d) => d?.id === formValues?.signer_id)?.label,
+			know: signers.find((d) => d?.id === formValues?.know_id)?.label,
+		};
+
 		const doc = (
 			<PDFFile
 				master={master}
@@ -689,7 +733,7 @@ export default function ExportButton({
 				data={data}
 				date={date}
 				orientation={pdfOrientation}
-				signer={signerIs}
+				signer={dataSigner}
 			/>
 		);
 		const asPdf = pdf([]); // {} or [] is important, throws without an argument
@@ -775,7 +819,6 @@ export default function ExportButton({
 				onCancel={() => onSignerModal(false)}
 				footer={null}
 			>
-				<Divider />
 				<Form
 					form={form}
 					name="basic"
@@ -785,8 +828,42 @@ export default function ExportButton({
 						doNext === "xlsx" ? xlsx(v) : doNext === "pdfx" ? pdfx(v) : null
 					}
 					autoComplete="off"
-					initialValues={{ signer_id: "" }}
+					initialValues={{
+						signer_id: "",
+						know_id: "",
+						export_date: convertDate(),
+					}}
 				>
+					<Divider orientation="left" plain>
+						Format Kiri
+					</Divider>
+					<Form.Item
+						label="Mengetaui"
+						name="know_id"
+						rules={[
+							{
+								required: true,
+								message: "Mengetahui tidak boleh kosong!",
+							},
+						]}
+					>
+						<Select disabled={loadingPdf} loading={loading} options={signers} />
+					</Form.Item>
+					<Divider orientation="left" plain>
+						Format Kanan
+					</Divider>
+					<Form.Item
+						label="Tanggal"
+						name="export_date"
+						rules={[
+							{
+								required: true,
+								message: "Tanggal tidak boleh kosong!",
+							},
+						]}
+					>
+						<DatePicker format={DATE_FORMAT_VIEW} className="w-full" />
+					</Form.Item>
 					<Form.Item
 						label="Penanda Tangan"
 						name="signer_id"
