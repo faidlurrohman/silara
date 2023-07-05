@@ -2,6 +2,7 @@ import { Form, Input, Button, Checkbox } from "antd";
 import { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "../../hooks/useRedux";
 import { loginAction } from "../../store/actions/session";
+import logoPortal from "../../assets/images/logo-portal-kepriprov.png";
 
 export default function Masuk() {
 	const dispatch = useAppDispatch();
@@ -43,7 +44,7 @@ export default function Masuk() {
 					<img
 						alt="Logo"
 						className="w-20 mb-2 md:w-40 rounded-full"
-						src={`${process.env.PUBLIC_URL}/img_tmp.jpg`}
+						src={logoPortal}
 					/>
 					<h1 className="font-bold text-xl md:text-3xl mt-2 text-white tracking-wider">
 						{process.env.REACT_APP_NAME}
