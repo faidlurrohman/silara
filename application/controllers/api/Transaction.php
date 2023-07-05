@@ -75,7 +75,8 @@ class Transaction extends REST_Controller {
         $user = $this->Auth_model->check_token();
 
         if($user){
-            $data = $this->Transaction_model->get_object_list($user);
+            $filter = !empty($this->get('filter')) ? $this->get('filter') : new stdClass();
+            $data = $this->Transaction_model->get_object_list($user, $filter);
         
             if ($data['code'] != 0) {
                 $this->response($data, REST_Controller::HTTP_INTERNAL_SERVER_ERROR);

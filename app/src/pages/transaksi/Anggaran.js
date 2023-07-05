@@ -2,9 +2,9 @@ import {
 	App,
 	Button,
 	Card,
-	DatePicker,
 	Divider,
 	Form,
+	Input,
 	InputNumber,
 	Modal,
 	Select,
@@ -13,8 +13,7 @@ import {
 	Table,
 } from "antd";
 import { useEffect, useRef, useState } from "react";
-import { getAccountList } from "../../services/account";
-import { DATE_FORMAT_VIEW, PAGINATION } from "../../helpers/constants";
+import { COLORS, PAGINATION } from "../../helpers/constants";
 import { actionColumn, activeColumn, searchColumn } from "../../helpers/table";
 import ReloadButton from "../../components/button/ReloadButton";
 import AddButton from "../../components/button/AddButton";
@@ -52,6 +51,7 @@ export default function Anggaran() {
 	const [tableSorted, setTableSorted] = useState({});
 	const [tablePage, setTablePage] = useState(PAGINATION);
 
+	const [isEdit, setEdit] = useState(false);
 	const [isShow, setShow] = useState(false);
 	const [confirmLoading, setConfirmLoading] = useState(false);
 
@@ -65,8 +65,7 @@ export default function Anggaran() {
 					pagination: { ...params.pagination, pageSize: 0 },
 				}),
 				getCityList(),
-				getAccountList("object"),
-				getTransactionObjectList(),
+				getTransactionObjectList("plan"),
 			])
 			.then(
 				axios.spread((_transactions, _export, _cities, _objects) => {
@@ -88,7 +87,11 @@ export default function Anggaran() {
 	const onTableChange = (pagination, filters, sorter) => {
 		setTableFiltered(filters);
 		setTableSorted(sorter);
-		getData({ pagination, filters, ...sorter });
+		getData({
+			pagination,
+			filters: { ...filters, use_mode: ["plan"] },
+			...sorter,
+		});
 
 		// `dataSource` is useless since `pageSize` changed
 		if (pagination.pageSize !== tablePage.pagination?.pageSize) {
@@ -99,17 +102,20 @@ export default function Anggaran() {
 	const reloadTable = () => {
 		setTableFiltered({});
 		setTableSorted({});
-		getData(PAGINATION);
+		getData({ ...PAGINATION, filters: { use_mode: ["plan"] } });
 	};
 
-	const addData = () => {
-		setShow(true);
+	const addUpdateRow = (isEdit = false, value = null) => {
+		setShow(!isShow);
 		setShowCard(false);
 		setLastTransaction({});
-		form.resetFields();
 
-		if (!is_super_admin && cities[0]?.id) {
-			form.setFieldsValue({ city_id: cities[0].id });
+		if (isEdit) {
+			setEdit(true);
+			form.setFieldsValue({ id: value?.id, plan_amount: value?.plan_amount });
+		} else {
+			form.resetFields();
+			setEdit(false);
 		}
 	};
 
@@ -136,21 +142,14 @@ export default function Anggaran() {
 	const handleAddUpdate = (values) => {
 		let cur = {
 			...values,
-			trans_date: dbDate(values?.trans_date),
+			trans_date: dbDate(convertDate().startOf("year")),
+			city_id: !!cities.length ? cities[0]?.id : 0,
 			real_amount: 0,
 		};
 
-		if (cur?.trans_date === lastTransaction?.trans_date) {
-			cur = {
-				id: lastTransaction?.id,
-				real_amount: lastTransaction?.real_amount,
-				...values,
-			};
-		}
-
 		setConfirmLoading(true);
 		addTransaction(cur).then(() => {
-			message.success(messageAction(true));
+			message.success(messageAction(isEdit));
 			setConfirmLoading(false);
 			setShow(false);
 			reloadTable();
@@ -159,7 +158,10 @@ export default function Anggaran() {
 
 	const handleObjectChange = (value) => {
 		setLastTransactionLoading(true);
-		getLastTransaction(value).then((response) => {
+		getLastTransaction({
+			account_object_id: value,
+			trans_date: dbDate(convertDate().startOf("year")),
+		}).then((response) => {
 			setLastTransactionLoading(false);
 
 			if (responseGet(response)?.total_count > 0) {
@@ -208,14 +210,17 @@ export default function Anggaran() {
 		),
 	];
 
-	useEffect(() => getData(PAGINATION), []);
+	useEffect(
+		() => getData({ ...PAGINATION, filters: { use_mode: ["plan"] } }),
+		[]
+	);
 
 	return (
 		<>
 			<div className="flex flex-col space-y-2 sm:space-y-0 sm:space-x-2 sm:flex-row md:space-y-0 md:space-x-2 md:flex-row">
 				<ReloadButton onClick={reloadTable} stateLoading={loading} />
 				{!is_super_admin && (
-					<AddButton onClick={addData} stateLoading={loading} />
+					<AddButton onClick={addUpdateRow} stateLoading={loading} />
 				)}
 				{!!exports?.length && (
 					<ExportButton
@@ -239,7 +244,7 @@ export default function Anggaran() {
 						is_super_admin
 							? columns.concat(
 									activeColumn(tableFiltered),
-									actionColumn(null, onActiveChange)
+									actionColumn(addUpdateRow, onActiveChange)
 							  )
 							: columns
 					}
@@ -253,7 +258,7 @@ export default function Anggaran() {
 				style={{ margin: 10 }}
 				centered
 				open={isShow}
-				title={`Tambah Data Transaksi`}
+				title={`${isEdit ? `Ubah` : `Tambah`} Data Transaksi`}
 				onCancel={() => setShow(false)}
 				footer={null}
 			>
@@ -298,47 +303,40 @@ export default function Anggaran() {
 						onFinish={handleAddUpdate}
 						autoComplete="off"
 						initialValues={{
-							trans_date: convertDate(),
+							id: "",
+							city_label: !!cities.length ? cities[0]?.label : ``,
 							plan_amount: 0,
 						}}
 					>
-						<Form.Item
-							label="Tanggal Transaksi"
-							name="trans_date"
-							rules={[
-								{
-									required: true,
-									message: "Tanggal Transaksi tidak boleh kosong!",
-								},
-							]}
-						>
-							<DatePicker
-								format={DATE_FORMAT_VIEW}
-								className="w-full"
-								disabled
-							/>
+						<Form.Item name="id" hidden>
+							<Input />
 						</Form.Item>
 						<Form.Item
 							label="Kota"
-							name="city_id"
+							name="city_label"
 							rules={[
 								{
-									required: true,
+									required: isEdit ? false : true,
 									message: "Kota tidak boleh kosong!",
 								},
 							]}
+							hidden={isEdit}
 						>
-							<Select loading={loading} options={cities} disabled />
+							<Input
+								disabled
+								style={{ background: COLORS.white, color: COLORS.black }}
+							/>
 						</Form.Item>
 						<Form.Item
 							label="Objek Rekening"
 							name="account_object_id"
 							rules={[
 								{
-									required: true,
+									required: isEdit ? false : true,
 									message: "Objek Rekening tidak boleh kosong!",
 								},
 							]}
+							hidden={isEdit}
 						>
 							<Select
 								showSearch

@@ -13,12 +13,12 @@ export const setActiveTransaction = (id) => {
 	return axios.delete(`/api/transaction/remove/${id}`);
 };
 
-export const getTransactionObjectList = () => {
-	return axios.get(`/api/transaction/object_list`);
+export const getTransactionObjectList = (use_mode) => {
+	return axios.get(`/api/transaction/object_list?filter[use_mode]=${use_mode}`);
 };
 
-export const getLastTransaction = (object_id) => {
+export const getLastTransaction = ({ trans_date, account_object_id }) => {
 	return axios.get(
-		`/api/transaction/last_transaction?filter[account_object_id]=${object_id}`
+		`/api/transaction/last_transaction?filter[trans_date]=${trans_date}&filter[account_object_id]=${account_object_id}`
 	);
 };

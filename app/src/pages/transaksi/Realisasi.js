@@ -5,6 +5,7 @@ import {
 	DatePicker,
 	Divider,
 	Form,
+	Input,
 	InputNumber,
 	Modal,
 	Select,
@@ -13,8 +14,7 @@ import {
 	Table,
 } from "antd";
 import { useEffect, useRef, useState } from "react";
-import { getAccountList } from "../../services/account";
-import { DATE_FORMAT_VIEW, PAGINATION } from "../../helpers/constants";
+import { COLORS, DATE_FORMAT_VIEW, PAGINATION } from "../../helpers/constants";
 import { actionColumn, activeColumn, searchColumn } from "../../helpers/table";
 import ReloadButton from "../../components/button/ReloadButton";
 import AddButton from "../../components/button/AddButton";
@@ -65,8 +65,7 @@ export default function Realisasi() {
 					pagination: { ...params.pagination, pageSize: 0 },
 				}),
 				getCityList(),
-				getAccountList("object"),
-				getTransactionObjectList(),
+				getTransactionObjectList("real"),
 			])
 			.then(
 				axios.spread((_transactions, _export, _cities, _objects) => {
@@ -88,7 +87,11 @@ export default function Realisasi() {
 	const onTableChange = (pagination, filters, sorter) => {
 		setTableFiltered(filters);
 		setTableSorted(sorter);
-		getData({ pagination, filters, ...sorter });
+		getData({
+			pagination,
+			filters: { ...filters, use_mode: ["real"] },
+			...sorter,
+		});
 
 		// `dataSource` is useless since `pageSize` changed
 		if (pagination.pageSize !== tablePage.pagination?.pageSize) {
@@ -99,7 +102,7 @@ export default function Realisasi() {
 	const reloadTable = () => {
 		setTableFiltered({});
 		setTableSorted({});
-		getData(PAGINATION);
+		getData({ ...PAGINATION, filters: { use_mode: ["real"] } });
 	};
 
 	const addData = () => {
@@ -107,10 +110,6 @@ export default function Realisasi() {
 		setShowCard(false);
 		setLastTransaction({});
 		form.resetFields();
-
-		if (!is_super_admin !== 1 && cities[0]?.id) {
-			form.setFieldsValue({ city_id: cities[0].id });
-		}
 	};
 
 	const onActiveChange = (value) => {
@@ -137,14 +136,14 @@ export default function Realisasi() {
 		let cur = {
 			...values,
 			trans_date: dbDate(values?.trans_date),
+			city_id: !!cities.length ? cities[0]?.id : 0,
 			plan_amount: 0,
 		};
 
 		if (cur?.trans_date === lastTransaction?.trans_date) {
 			cur = {
+				...cur,
 				id: lastTransaction?.id,
-				plan_amount: lastTransaction?.plan_amount,
-				...values,
 			};
 		}
 
@@ -157,19 +156,26 @@ export default function Realisasi() {
 		});
 	};
 
-	const handleObjectChange = (value) => {
-		setLastTransactionLoading(true);
-		getLastTransaction(value).then((response) => {
-			setLastTransactionLoading(false);
+	const handleObjectChange = () => {
+		let currValues = form.getFieldsValue();
 
-			if (responseGet(response)?.total_count > 0) {
-				setShowCard(true);
-				setLastTransaction(responseGet(response)?.data[0]);
-			} else {
-				setShowCard(false);
-				setLastTransaction({});
-			}
-		});
+		if (currValues?.trans_date && currValues?.account_object_id) {
+			setLastTransactionLoading(true);
+			getLastTransaction({
+				trans_date: dbDate(currValues?.trans_date),
+				account_object_id: currValues?.account_object_id,
+			}).then((response) => {
+				setLastTransactionLoading(false);
+
+				if (responseGet(response)?.total_count > 0) {
+					setShowCard(true);
+					setLastTransaction(responseGet(response)?.data[0]);
+				} else {
+					setShowCard(false);
+					setLastTransaction({});
+				}
+			});
+		}
 	};
 
 	const columns = [
@@ -208,7 +214,10 @@ export default function Realisasi() {
 		),
 	];
 
-	useEffect(() => getData(PAGINATION), []);
+	useEffect(
+		() => getData({ ...PAGINATION, filters: { use_mode: ["real"] } }),
+		[]
+	);
 
 	return (
 		<>
@@ -299,6 +308,7 @@ export default function Realisasi() {
 						autoComplete="off"
 						initialValues={{
 							trans_date: convertDate(),
+							city_label: !!cities.length ? cities[0]?.label : ``,
 							real_amount: 0,
 						}}
 					>
@@ -312,11 +322,25 @@ export default function Realisasi() {
 								},
 							]}
 						>
-							<DatePicker format={DATE_FORMAT_VIEW} className="w-full" />
+							<DatePicker
+								className="w-full"
+								format={DATE_FORMAT_VIEW}
+								allowClear={false}
+								onChange={handleObjectChange}
+								disabledDate={(curr) => {
+									const nextDay = curr && curr.valueOf() > convertDate();
+									const diffYear =
+										curr &&
+										convertDate(curr, "YYYY") !==
+											convertDate(convertDate(), "YYYY");
+
+									return nextDay || diffYear;
+								}}
+							/>
 						</Form.Item>
 						<Form.Item
 							label="Kota"
-							name="city_id"
+							name="city_label"
 							rules={[
 								{
 									required: true,
@@ -324,7 +348,10 @@ export default function Realisasi() {
 								},
 							]}
 						>
-							<Select loading={loading} options={cities} disabled />
+							<Input
+								disabled
+								style={{ background: COLORS.white, color: COLORS.black }}
+							/>
 						</Form.Item>
 						<Form.Item
 							label="Objek Rekening"

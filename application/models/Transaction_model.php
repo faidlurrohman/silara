@@ -30,11 +30,11 @@ class Transaction_model extends CI_Model {
         return model_response($query);
     }
     
-    function get_object_list($user)
+    function get_object_list($user, $filter)
     {
         $sql = "
             WITH r AS (
-                SELECT * FROM {$this->read}(0, 0, '".$user['username']."', '".$this->schema_object."', 'label', '[{}]'::jsonb)
+                SELECT * FROM {$this->read}(0, 0, '".$user['username']."', '".$this->schema_object."', 'label', '[".json_encode($filter)."]'::jsonb)
             ) SELECT 
                 (r.__res_data->>'id')::INT AS id,
                 (r.__res_data->>'id')::INT AS value, 
