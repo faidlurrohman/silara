@@ -116,9 +116,9 @@ const MENU_NAVIGATION = {
 	objek: "Rekening Objek",
 	"/transaksi/anggaran": "Transaksi Anggaran",
 	"/transaksi/realisasi": "Transaksi Realisasi",
-	"/laporan/realisasi-anggaran-kota": "Laporan Realaisasi Anggaran Kota",
+	"/laporan/realisasi-anggaran-kota": "Laporan Realisasi Anggaran Kota",
 	"/laporan/realisasi-anggaran-gabungan-kota":
-		"Laporan Realaisasi Anggaran Gabungan Kota",
+		"Laporan Realisasi Anggaran Gabungan Kota",
 	"/laporan/rekapitulasi-pendapatan-dan-belanja":
 		"Laporan Rekapitulasi Pendapatan & Belanja",
 	"/pengaturan/kota": "Pengaturan Kota",
