@@ -41,11 +41,7 @@ export default function Masuk() {
 		<section className="flex w-full h-screen place-items-center items-center flex-col">
 			<div className="relative mx-0 my-auto md:m-auto md:w-6/12 lg:w-3/12 rounded-md p-8 h-auto bg-main shadow-lg">
 				<div className="mb-10 flex flex-col items-center">
-					<img
-						alt="Logo"
-						className="w-20 mb-2 md:w-40 rounded-full"
-						src={logoPortal}
-					/>
+					<img alt="Logo" className="w-20 mb-2 md:w-40" src={logoPortal} />
 					<h1 className="font-bold text-xl md:text-3xl mt-2 text-white tracking-wider">
 						{process.env.REACT_APP_NAME}
 					</h1>
