@@ -151,66 +151,74 @@ export const actionColumn = (
 	key: "action",
 	align: "center",
 	width: 100,
-	render: (value) => (
-		<Space size="small">
-			{onNavigateDetail && (
-				<Button
-					size="small"
-					disabled={!value?.active}
-					icon={<EllipsisOutlined />}
-					style={{
-						color: value?.active ? COLORS.main : COLORS.disable,
-						borderColor: value?.active ? COLORS.main : COLORS.disable,
-					}}
-					onClick={() => onNavigateDetail(value)}
-				>
-					Rincian
+	render: (value) =>
+		!["", null, undefined].includes(value?.is_editable) &&
+		!value?.is_editable ? (
+			<Space size="small">
+				<Button type="text" disabled>
+					Data tidak bisa diubah
 				</Button>
-			)}
-			{onAddUpdate && (
-				<Button
-					size="small"
-					disabled={!value?.active}
-					icon={<EditOutlined />}
-					style={{
-						color: value?.active ? COLORS.info : COLORS.disable,
-						borderColor: value?.active ? COLORS.info : COLORS.disable,
-					}}
-					onClick={() => onAddUpdate(true, value)}
-				>
-					Ubah
-				</Button>
-			)}
-			{/* {value?.use_allocation_button && (
-				<Button
-					size="small"
-					disabled={!value?.active}
-					icon={<ClusterOutlined />}
-					style={{
-						color: value?.active ? COLORS.secondary : COLORS.disable,
-						borderColor: value?.active ? COLORS.secondary : COLORS.disable,
-					}}
-					onClick={() => onAllocationChange(true, value)}
-				>
-					Alokasi
-				</Button>
-			)} */}
-			{onActiveChange && value?.role_id !== 1 && (
-				<>
+			</Space>
+		) : (
+			<Space size="small">
+				{onNavigateDetail && (
 					<Button
 						size="small"
-						icon={value?.active ? <StopOutlined /> : <CheckCircleOutlined />}
-						danger={value?.active}
+						disabled={!value?.active}
+						icon={<EllipsisOutlined />}
 						style={{
-							color: value?.active ? COLORS.danger : COLORS.success,
-							borderColor: value?.active ? COLORS.danger : COLORS.success,
+							color: value?.active ? COLORS.main : COLORS.disable,
+							borderColor: value?.active ? COLORS.main : COLORS.disable,
 						}}
-						onClick={() => onActiveChange(value)}
+						onClick={() => onNavigateDetail(value)}
 					>
-						{value?.active ? `Nonaktifkan` : `Aktifkan`}
+						Rincian
 					</Button>
-				</>
-			)}
-		</Space>
-	),
+				)}
+				{onAddUpdate && (
+					<Button
+						size="small"
+						disabled={!value?.active}
+						icon={<EditOutlined />}
+						style={{
+							color: value?.active ? COLORS.info : COLORS.disable,
+							borderColor: value?.active ? COLORS.info : COLORS.disable,
+						}}
+						onClick={() => onAddUpdate(true, value)}
+					>
+						Ubah
+					</Button>
+				)}
+				{/* {value?.use_allocation_button && (
+					<Button
+						size="small"
+						disabled={!value?.active}
+						icon={<ClusterOutlined />}
+						style={{
+							color: value?.active ? COLORS.secondary : COLORS.disable,
+							borderColor: value?.active ? COLORS.secondary : COLORS.disable,
+						}}
+						onClick={() => onAllocationChange(true, value)}
+					>
+						Alokasi
+					</Button>
+				)} */}
+				{onActiveChange && value?.role_id !== 1 && (
+					<>
+						<Button
+							size="small"
+							icon={value?.active ? <StopOutlined /> : <CheckCircleOutlined />}
+							danger={value?.active}
+							style={{
+								color: value?.active ? COLORS.danger : COLORS.success,
+								borderColor: value?.active ? COLORS.danger : COLORS.success,
+							}}
+							onClick={() => onActiveChange(value)}
+						>
+							{value?.active ? `Nonaktifkan` : `Aktifkan`}
+						</Button>
+					</>
+				)}
+			</Space>
+		),
 });
