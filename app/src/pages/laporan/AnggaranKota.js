@@ -141,13 +141,24 @@ export default function AnggaranKota() {
 	};
 
 	const onDateRangeChange = (values) => {
-		setDateRangeFilter(values);
+		let useStart = values[0];
+		let useEnd = values[1];
+		let startYear = convertDate(useStart, "YYYY");
+		let endYear = convertDate(useEnd, "YYYY");
+
+		if (startYear !== endYear) {
+			useEnd = convertDate(useStart).endOf("year");
+			setDateRangeFilter([useStart, useEnd]);
+		} else {
+			setDateRangeFilter(values);
+		}
+
 		setTableFiltered({});
 		setTableSorted({});
 		getData({
 			...PAGINATION,
 			filters: {
-				trans_date: [[dbDate(values[0]), dbDate(values[1])]],
+				trans_date: [[dbDate(useStart), dbDate(useEnd)]],
 				...(is_super_admin && { city_id: cityFilter ? [cityFilter] : null }),
 			},
 		});
@@ -329,6 +340,13 @@ export default function AnggaranKota() {
 						placeholder={["Tanggal Awal", "Tanggal Akhir"]}
 						onChange={onDateRangeChange}
 						value={dateRangeFilter}
+						disabledDate={(curr) => {
+							const isNextYear =
+								curr &&
+								convertDate(curr, "YYYY") > convertDate(convertDate(), "YYYY");
+
+							return isNextYear;
+						}}
 					/>
 				</div>
 				{is_super_admin && (
