@@ -93,13 +93,24 @@ export default function PendapatanBelanja() {
 	};
 
 	const onDateRangeFilterChange = (values) => {
-		setDateRangeFilter(values);
+		let useStart = values[0];
+		let useEnd = values[1];
+		let startYear = convertDate(useStart, "YYYY");
+		let endYear = convertDate(useEnd, "YYYY");
+
+		if (startYear !== endYear) {
+			useEnd = convertDate(useStart).endOf("year");
+			setDateRangeFilter([useStart, useEnd]);
+		} else {
+			setDateRangeFilter(values);
+		}
+
 		setTableFiltered({});
 		setTableSorted({});
 		getData({
 			...PAGINATION,
 			filters: {
-				trans_date: [[dbDate(values[0]), dbDate(values[1])]],
+				trans_date: [[dbDate(useStart), dbDate(useEnd)]],
 				city_id: cityFilter ? [cityFilter] : null,
 			},
 		});
@@ -306,6 +317,13 @@ export default function PendapatanBelanja() {
 						placeholder={["Tanggal Awal", "Tanggal Akhir"]}
 						onChange={onDateRangeFilterChange}
 						value={dateRangeFilter}
+						disabledDate={(curr) => {
+							const isNextYear =
+								curr &&
+								convertDate(curr, "YYYY") > convertDate(convertDate(), "YYYY");
+
+							return isNextYear;
+						}}
 					/>
 				</div>
 				<div className="flex flex-row md:space-x-2">
