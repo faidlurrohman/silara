@@ -128,6 +128,7 @@ export default function AnggaranKota() {
 		getData({
 			pagination,
 			filters: {
+				...filters,
 				trans_date: [[dbDate(dateRangeFilter[0]), dbDate(dateRangeFilter[1])]],
 				...(is_super_admin && { city_id: cityFilter ? [cityFilter] : null }),
 			},
