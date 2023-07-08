@@ -140,7 +140,10 @@ export default function Realisasi() {
 			plan_amount: 0,
 		};
 
-		if (cur?.trans_date === lastTransaction?.trans_date) {
+		if (
+			cur?.trans_date === lastTransaction?.trans_date &&
+			cur?.trans_date !== dbDate(convertDate().startOf("year"))
+		) {
 			cur = {
 				...cur,
 				id: lastTransaction?.id,
