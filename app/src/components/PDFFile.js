@@ -12,7 +12,7 @@ import _ from "lodash";
 import { formatterNumber } from "../helpers/number";
 import logoKemendagri from "../assets/images/logo-kemendagri.png";
 import { upper } from "../helpers/typo";
-import { convertDate, viewDate } from "../helpers/date";
+import { viewDate } from "../helpers/date";
 
 export default function PDFFile({
 	master = null,
@@ -22,6 +22,8 @@ export default function PDFFile({
 	orientation = "portrait",
 	signer = {},
 }) {
+	let recapitulate_headers = [];
+
 	const createReportHeader = () => {
 		if (report === "kota") {
 			const chooseCity = data[0].city_label || "";
@@ -52,6 +54,30 @@ export default function PDFFile({
 							src={`${process.env.REACT_APP_BASE_URL_API}/app/logo/${data[0]?.city_logo}`}
 						/>
 					)}
+				</View>
+			);
+		}
+
+		if (report === "rekapitulasi") {
+			return (
+				<View style={styles.reportHeader}>
+					<View style={styles.reportHeaderTitle}>
+						<Text style={styles.reportTitle}>
+							REKAPITULASI PENDAPATAN DAN BELANJA
+						</Text>
+						<Text style={styles.reportTitle}>
+							{upper(
+								`apbd kabupaten/kota se-provinsi kepulauan riau tahun anggaran ${viewDate(
+									date[1]
+								)
+									.split(" ")
+									.pop()}`
+							)}
+						</Text>
+						<Text style={styles.reportTitle}>
+							{upper(`per ${viewDate(date[1])}`)}
+						</Text>
+					</View>
 				</View>
 			);
 		}
@@ -127,6 +153,185 @@ export default function PDFFile({
 							{`% ${viewDate(date[1]).split(" ").pop()}`}
 						</Text>
 					</View>
+				</View>
+			);
+		}
+
+		if (report === "rekapitulasi") {
+			if (data?.bases && data?.bases.length) {
+				recapitulate_headers = _.sortBy(data?.bases, ["base"]).reverse();
+			}
+
+			return (
+				<View style={{ margin: "auto", flexDirection: "row" }}>
+					<View style={{ width: "4%", borderStyle: "solid", borderWidth: 1 }}>
+						<Text
+							style={{
+								margin: "auto",
+								paddingHorizontal: 2,
+								fontSize: 10,
+								fontWeight: "bold",
+							}}
+						>
+							No
+						</Text>
+					</View>
+					<View
+						style={{
+							width: "20%",
+							borderStyle: "solid",
+							borderWidth: 1,
+							borderLeftWidth: 0,
+						}}
+					>
+						<Text
+							style={{
+								margin: "auto",
+								paddingHorizontal: 2,
+								fontSize: 10,
+								fontWeight: "bold",
+								textTransform: "uppercase",
+							}}
+						>
+							Kabupaten / Kota
+						</Text>
+					</View>
+					{!!recapitulate_headers.length &&
+						_.map(recapitulate_headers, (item) => (
+							<View
+								key={String(item?.base_id)}
+								style={{
+									width: "36%",
+									borderStyle: "solid",
+									borderWidth: 1,
+									borderLeftWidth: 0,
+									flexDirection: "row",
+								}}
+							>
+								<View style={{ flexDirection: "column" }}>
+									<View
+										style={{
+											borderStyle: "solid",
+											borderWidth: 1,
+											borderLeftWidth: 0,
+											borderRightWidth: 0,
+											borderTopWidth: 0,
+										}}
+									>
+										<Text
+											style={{
+												margin: "auto",
+												paddingHorizontal: 2,
+												fontSize: 10,
+												fontWeight: "bold",
+											}}
+										>
+											{upper(item?.base)}
+										</Text>
+									</View>
+									<View style={{ margin: "auto", flexDirection: "row" }}>
+										<View
+											style={{
+												width: "50%",
+												borderStyle: "solid",
+												borderWidth: 1,
+												borderLeftWidth: 0,
+												borderTopWidth: 0,
+											}}
+										>
+											<Text
+												style={{
+													margin: "auto",
+													paddingHorizontal: 2,
+													fontSize: 10,
+													fontWeight: "bold",
+												}}
+											>
+												TARGET
+											</Text>
+										</View>
+										<View
+											style={{
+												width: "50%",
+												borderStyle: "solid",
+												borderWidth: 1,
+												borderLeftWidth: 0,
+												borderRightWidth: 0,
+												borderTopWidth: 0,
+											}}
+										>
+											<Text
+												style={{
+													margin: "auto",
+													paddingHorizontal: 2,
+													fontSize: 10,
+													fontWeight: "bold",
+												}}
+											>
+												REALISASI
+											</Text>
+										</View>
+									</View>
+									<View style={{ margin: "auto", flexDirection: "row" }}>
+										<View
+											style={{
+												width: "50%",
+												borderStyle: "solid",
+												borderWidth: 1,
+												borderLeftWidth: 0,
+												borderTopWidth: 0,
+												borderBottomWidth: 0,
+											}}
+										>
+											<Text
+												style={{
+													margin: "auto",
+													paddingHorizontal: 2,
+													fontSize: 10,
+													fontWeight: "bold",
+												}}
+											>
+												(Rp)
+											</Text>
+										</View>
+										<View style={{ width: "50%" }}>
+											<Text
+												style={{
+													margin: "auto",
+													paddingHorizontal: 2,
+													fontSize: 10,
+													fontWeight: "bold",
+												}}
+											>
+												(Rp)
+											</Text>
+										</View>
+									</View>
+								</View>
+								<View
+									style={{
+										width: "30%",
+										borderStyle: "solid",
+										borderWidth: 1,
+										borderLeftWidth: 1,
+										borderRightWidth: 0,
+										borderTopWidth: 0,
+										borderBottomWidth: 0,
+									}}
+								>
+									<Text
+										style={{
+											margin: "auto",
+											paddingHorizontal: 2,
+											fontSize: 10,
+											fontWeight: "bold",
+										}}
+									>
+										%
+									</Text>
+								</View>
+							</View>
+						))}
 				</View>
 			);
 		}
@@ -222,6 +427,133 @@ export default function PDFFile({
 							{parent?.percentage}
 						</Text>
 					</View>
+				</View>
+			));
+		}
+
+		if (report === "rekapitulasi") {
+			let total = { label: "TOTAL" };
+
+			_.map(data?.bases, (base) => {
+				total[`${base?.base_id}_plan_amount`] = _.sumBy(
+					base?.children,
+					`account_base_plan_amount`
+				);
+				total[`${base?.base_id}_real_amount`] = _.sumBy(
+					base?.children,
+					`account_base_real_amount`
+				);
+				total[`${base?.base_id}_percentage`] = parseFloat(
+					(total[`${base?.base_id}_plan_amount`] /
+						total[`${base?.base_id}_real_amount`]) *
+						100
+				).toFixed(2);
+			});
+			data?.data.push(total);
+
+			return _.map(data?.data, (parent, indexParent) => (
+				<View key={indexParent} style={styles.tableRowReport}>
+					{parent?.label === "TOTAL" ? (
+						<View
+							style={{
+								...styles.tableMasterRowIndex,
+								width: "24%",
+							}}
+						>
+							<Text style={{ ...styles.tableCellReport, textAlign: "center" }}>
+								{parent?.label}
+							</Text>
+						</View>
+					) : (
+						<>
+							<View
+								style={{
+									...styles.tableMasterRowIndex,
+									width: "4%",
+								}}
+							>
+								<Text
+									style={{ ...styles.tableCellReport, textAlign: "center" }}
+								>
+									{parent?.no}
+								</Text>
+							</View>
+
+							<View
+								style={{
+									...styles.tableMasterRowInherit,
+									width: "20%",
+								}}
+							>
+								<Text style={{ ...styles.tableCellReport, textAlign: "left" }}>
+									{parent?.label}
+								</Text>
+							</View>
+						</>
+					)}
+					{!!recapitulate_headers.length &&
+						_.map(recapitulate_headers, (item) => (
+							<View
+								key={String(`${item?.base_id}_row`)}
+								style={{
+									...styles.tableMasterRowInherit,
+									flexDirection: "row",
+									width: "36%",
+								}}
+							>
+								<View
+									style={{
+										margin: "auto",
+										flexDirection: "row",
+										marginLeft: -2,
+									}}
+								>
+									<View
+										style={{
+											width: "50%",
+										}}
+									>
+										<Text
+											style={{ ...styles.tableCellReport, textAlign: "right" }}
+										>
+											{parent?.label === "TOTAL"
+												? formatterNumber(
+														parent[`${item?.base_id}_plan_amount`]
+												  )
+												: parent[`${item?.base_id}_plan_amount`]}
+										</Text>
+									</View>
+									<View
+										style={{
+											borderLeftWidth: 1,
+											width: "50%",
+										}}
+									>
+										<Text
+											style={{ ...styles.tableCellReport, textAlign: "right" }}
+										>
+											{parent?.label === "TOTAL"
+												? formatterNumber(
+														parent[`${item?.base_id}_real_amount`]
+												  )
+												: parent[`${item?.base_id}_real_amount`]}
+										</Text>
+									</View>
+								</View>
+								<View
+									style={{
+										borderLeftWidth: 1,
+										width: "30%",
+									}}
+								>
+									<Text
+										style={{ ...styles.tableCellReport, textAlign: "center" }}
+									>
+										{parent[`${item?.base_id}_percentage`]}
+									</Text>
+								</View>
+							</View>
+						))}
 				</View>
 			));
 		}

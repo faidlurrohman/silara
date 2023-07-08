@@ -376,7 +376,7 @@ export default function AnggaranGabunganKota() {
 
 		results = parseFloat((value1 / value2) * 100).toFixed(2);
 
-		if (isNaN(results)) return 0;
+		if (isNaN(results) || !isFinite(Number(results))) return 0;
 
 		return results;
 	};

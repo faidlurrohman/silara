@@ -294,7 +294,7 @@ export default function PendapatanBelanja() {
 
 		results = parseFloat((value1 / value2) * 100).toFixed(2);
 
-		if (isNaN(results)) return 0;
+		if (isNaN(results) || !isFinite(Number(results))) return 0;
 
 		return results;
 	};
@@ -355,7 +355,6 @@ export default function PendapatanBelanja() {
 						report={`rekapitulasi`}
 						pdfOrientation="landscape"
 						fileName="LAPORAN-REALISASI-ANGGARAN-GABUNGAN-KOTA"
-						types={["xlsx"]}
 					/>
 				)}
 			</div>
