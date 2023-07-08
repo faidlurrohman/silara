@@ -51,6 +51,8 @@ export default function PengaturanKota() {
 				axios.spread((_data, _export) => {
 					setLoading(false);
 					setCities(responseGet(_data).data);
+
+					console.log("cities", cities);
 					setExports(responseGet(_export).data);
 					setTablePage({
 						pagination: {
@@ -147,6 +149,14 @@ export default function PengaturanKota() {
 			tableFilterInputRef,
 			"label",
 			"Nama Kota",
+			tableFiltered,
+			true,
+			tableSorted
+		),
+		searchColumn(
+			tableFilterInputRef,
+			"logo",
+			"Logo",
 			tableFiltered,
 			true,
 			tableSorted
