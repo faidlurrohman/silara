@@ -5,7 +5,7 @@
 -- Dumped from database version 14.7
 -- Dumped by pg_dump version 14.7
 
--- Started on 2023-07-13 19:09:48 WIB
+-- Started on 2023-07-13 20:50:13 WIB
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -1650,7 +1650,7 @@ BEGIN
 		   _main_query := '
 			   WITH st AS (
 				SELECT 
-					DISTINCT ON (st.trans_date,st.account_object_id,st.city_id) 
+					DISTINCT ON (EXTRACT(YEAR FROM st.trans_date),st.account_object_id,st.city_id) 
 					st.*, c.label AS city_label, CONCAT(''('', CONCAT_WS(''.'', ab.label, ag.label, at.label, ao.label), '') '', ao.remark) AS account_object_label,
 					EXTRACT(YEAR FROM st.trans_date) = EXTRACT(YEAR FROM CURRENT_DATE) AS is_editable
 				FROM silarakab.transaction st
@@ -1660,18 +1660,31 @@ BEGIN
 				JOIN silarakab.account_group ag ON ag.id=at.account_group_id AND ag.active
 				JOIN silarakab.account_base ab ON ab.id=ag.account_base_id AND ab.active
 				WHERE st.plan_amount >= 0 AND st.real_amount = 0
-				ORDER BY st.trans_date,st.account_object_id,st.city_id,st.active DESC,
-					CASE WHEN not st.active THEN st.id END ASC,
-					CASE WHEN st.active THEN st.id END DESC
+				ORDER BY EXTRACT(YEAR FROM st.trans_date),st.account_object_id,st.city_id,st.id ASC
 			  ) SELECT st.*, COUNT(st.*) OVER() AS total_count FROM st 
 			  WHERE TRUE
 		  ' || _user_clause;
 	  ELSIF COALESCE(_rec.use_mode,'')='real' THEN
 	  	  _main_query := '
-			   WITH st AS (
+			  WITH tpa AS ( -- AMBIL DATA TRANSAKSI ANGGARAN DAN KOTA YANG AKTIF
+				SELECT DISTINCT ON (st.account_object_id, st.city_id, EXTRACT(YEAR FROM st.trans_date))
+					st.id AS tpa_id,
+					st.account_object_id,
+					st.city_id,
+					sc.label AS city_label,
+					sc.logo AS city_logo,
+					st.plan_amount,
+					st.trans_date
+				FROM silarakab.transaction st
+				JOIN silarakab.city sc ON sc.id=st.city_id 
+					AND sc.active
+				WHERE st.active
+					AND st.plan_amount>=0 AND st.real_amount=0
+				ORDER BY st.account_object_id, st.city_id, EXTRACT(YEAR FROM st.trans_date), st.id ASC
+			), st AS (
 				SELECT 
 					DISTINCT ON (st.trans_date,st.account_object_id,st.city_id) 
-					st.*, c.label AS city_label, CONCAT(''('', CONCAT_WS(''.'', ab.label, ag.label, at.label, ao.label), '') '', ao.remark) AS account_object_label,
+			 		st.*, c.label AS city_label, CONCAT(''('', CONCAT_WS(''.'', ab.label, ag.label, at.label, ao.label), '') '', ao.remark) AS account_object_label,
 					EXTRACT(YEAR FROM st.trans_date) = EXTRACT(YEAR FROM CURRENT_DATE) AS is_editable
 				FROM silarakab.transaction st
 				JOIN silarakab.city c ON c.id=st.city_id AND c.active
@@ -1679,12 +1692,10 @@ BEGIN
 				JOIN silarakab.account_type at ON at.id=ao.account_type_id AND at.active
 				JOIN silarakab.account_group ag ON ag.id=at.account_group_id AND ag.active
 				JOIN silarakab.account_base ab ON ab.id=ag.account_base_id AND ab.active
-				WHERE st.real_amount > 0 AND st.plan_amount = 0
-				ORDER BY st.trans_date,st.account_object_id,st.city_id,st.active DESC,
-					CASE WHEN not st.active THEN st.id END ASC,
-					CASE WHEN st.active THEN st.id END DESC
-			  ) SELECT st.*, COUNT(st.*) OVER() AS total_count FROM st 
-			  WHERE TRUE
+				WHERE st.id NOT IN(SELECT tpa_id FROM tpa)
+				ORDER BY st.trans_date,st.account_object_id,st.city_id,st.id DESC
+			) SELECT st.*, COUNT(st.*) OVER() AS total_count FROM st 
+			WHERE TRUE
 		  ' || _user_clause;
 	  ELSE 
 	      _main_query := '
@@ -1886,7 +1897,7 @@ BEGIN
                 AND sao.active
             WHERE sab.active
         ), tpa AS ( -- AMBIL DATA TRANSAKSI ANGGARAN DAN KOTA YANG AKTIF
-            SELECT 
+            SELECT DISTINCT ON (st.account_object_id, st.city_id, EXTRACT(YEAR FROM st.trans_date))
                 st.id AS tpa_id,
                 st.account_object_id,
                 st.city_id,
@@ -1899,6 +1910,7 @@ BEGIN
                 AND sc.active
             WHERE st.active
                 AND st.plan_amount>=0 AND st.real_amount=0
+			ORDER BY st.account_object_id, st.city_id, EXTRACT(YEAR FROM st.trans_date), st.id ASC
         ), tra AS ( -- AMBIL DATA TRANSAKSI REALISASI DAN KOTA YANG AKTIF
             SELECT DISTINCT ON (st.account_object_id, st.city_id)
                 st.id AS tra_id,
@@ -1925,7 +1937,7 @@ BEGIN
                 tra.real_amount,
                 tra.trans_date
             FROM tpa
-            JOIN tra ON tra.account_object_id=tpa.account_object_id 
+            LEFT JOIN tra ON tra.account_object_id=tpa.account_object_id 
                 AND tra.city_id=tpa.city_id
                 AND EXTRACT(YEAR FROM tpa.trans_date)=EXTRACT(YEAR FROM tra.trans_date)
         ), sab AS ( -- HITUNG TOTAL AKUN REKENING
@@ -2048,7 +2060,7 @@ BEGIN
             WHERE sab.active
                 AND LOWER(sab.remark) IN(LOWER(''PENDAPATAN DAERAH''), LOWER(''BELANJA DAERAH''))
         ), tpa AS ( -- AMBIL DATA TRANSAKSI ANGGARAN DAN KOTA YANG AKTIF
-            SELECT 
+            SELECT DISTINCT ON (st.account_object_id, st.city_id, EXTRACT(YEAR FROM st.trans_date))
                 st.id AS tpa_id,
                 st.account_object_id,
                 st.city_id,
@@ -2061,6 +2073,7 @@ BEGIN
                 AND sc.active
             WHERE st.active
                 AND st.plan_amount>=0 AND st.real_amount=0
+			ORDER BY st.account_object_id, st.city_id, EXTRACT(YEAR FROM st.trans_date), st.id ASC
         ), tra AS ( -- AMBIL DATA TRANSAKSI REALISASI DAN KOTA YANG AKTIF
             SELECT DISTINCT ON (st.account_object_id, st.city_id)
                 st.id AS tra_id,
@@ -2087,7 +2100,7 @@ BEGIN
                 tra.real_amount,
                 tra.trans_date
             FROM tpa
-            JOIN tra ON tra.account_object_id=tpa.account_object_id 
+            LEFT JOIN tra ON tra.account_object_id=tpa.account_object_id 
                 AND tra.city_id=tpa.city_id
                 AND EXTRACT(YEAR FROM tpa.trans_date)=EXTRACT(YEAR FROM tra.trans_date)
         ), st AS ( -- HASIL
@@ -3524,6 +3537,19 @@ COPY silarakab.log (id, "table", mode, start_value, end_value, created_at, creat
 629	silarakab.transaction	C	\N	[{"id": "0", "city_id": 21, "trans_date": "2023-01-01", "plan_amount": 0, "real_amount": 200000, "account_object_id": 33}]	2023-07-08 17:46:10	adminbatam
 630	silarakab.transaction	C	\N	[{"id": "0", "city_id": 21, "trans_date": "2023-07-08", "plan_amount": 0, "real_amount": 50000000, "account_object_id": 33}]	2023-07-08 17:46:22	adminbatam
 631	silarakab.transaction	U	\N	[{"id": 498, "city_id": 21, "trans_date": "2023-01-01", "plan_amount": 800000, "real_amount": 0, "account_object_id": null}]	2023-07-08 17:56:49	superadmin
+632	silarakab."user"	C	\N	[{"id": "0", "title": "Admin Kota", "city_id": 28, "role_id": 2, "fullname": "Admin Natuna", "password": "adminnatuna123", "username": "adminnatuna"}]	2023-07-13 19:35:19	superadmin
+633	silarakab.transaction	C	\N	[{"id": "0", "city_id": 28, "trans_date": "2023-01-01", "plan_amount": 150000, "real_amount": 0, "account_object_id": 3}]	2023-07-13 19:36:00	adminnatuna
+634	silarakab.transaction	C	\N	[{"id": "0", "city_id": 28, "trans_date": "2023-07-13", "plan_amount": 0, "real_amount": 0, "account_object_id": 3}]	2023-07-13 19:36:10	adminnatuna
+635	silarakab.transaction	C	\N	[{"id": "0", "city_id": 28, "trans_date": "2023-07-13", "plan_amount": 0, "real_amount": 0, "account_object_id": 3}]	2023-07-13 19:46:09	adminnatuna
+636	silarakab.transaction	U	\N	[{"id": 502, "city_id": 21, "trans_date": "2023-01-01", "plan_amount": 1509999, "real_amount": 0, "account_object_id": null}]	2023-07-13 19:49:23	superadmin
+637	silarakab.transaction	C	\N	[{"id": "0", "city_id": 28, "trans_date": "2023-01-01", "plan_amount": 0, "real_amount": 0, "account_object_id": 9}]	2023-07-13 20:27:40	adminnatuna
+638	silarakab.transaction	C	\N	[{"id": "0", "city_id": 28, "trans_date": "2023-07-13", "plan_amount": 0, "real_amount": 0, "account_object_id": 3}]	2023-07-13 20:39:26	adminnatuna
+639	silarakab.transaction	U	\N	[{"id": 506, "city_id": 28, "trans_date": "2023-07-13", "plan_amount": 0, "real_amount": 90000, "account_object_id": 3}]	2023-07-13 20:39:44	adminnatuna
+640	silarakab.transaction	U	\N	[{"id": 506, "city_id": 28, "trans_date": "2023-07-13", "plan_amount": 0, "real_amount": 0, "account_object_id": 3}]	2023-07-13 20:40:40	adminnatuna
+641	silarakab.transaction	U	\N	[{"id": 506, "city_id": 28, "trans_date": "2023-07-13", "plan_amount": 0, "real_amount": 100000, "account_object_id": 3}]	2023-07-13 20:41:05	adminnatuna
+642	silarakab.transaction	C	\N	[{"id": "0", "city_id": 28, "trans_date": "2023-07-12", "plan_amount": 0, "real_amount": 8000000, "account_object_id": 3}]	2023-07-13 20:41:30	adminnatuna
+643	silarakab.transaction	D	[{"id": "506"}]	\N	2023-07-13 20:45:02	superadmin
+644	silarakab.transaction	D	[{"id": "506"}]	\N	2023-07-13 20:45:27	superadmin
 \.
 
 
@@ -3569,17 +3595,10 @@ COPY silarakab.signer (id, nip, fullname, title, active) FROM stdin;
 --
 
 COPY silarakab.transaction (id, account_object_id, city_id, plan_amount, real_amount, trans_date, active) FROM stdin;
-490	3	21	100000	0	2022-01-01	t
-491	4	21	700000	0	2023-01-01	t
-493	4	21	0	80000000	2023-07-03	t
-492	3	21	9000000	0	2023-01-01	t
-495	9	30	50000000	0	2023-01-01	t
-496	9	30	0	1200000	2023-07-05	t
-494	4	21	0	500000	2023-07-05	t
-497	3	21	0	2000000000	2023-07-04	t
-500	33	21	0	200000	2023-01-01	t
-501	33	21	0	50000000	2023-07-08	t
-498	33	21	0	0	2023-01-01	t
+502	3	28	0	0	2023-01-01	t
+505	9	28	0	0	2023-01-01	t
+507	3	28	0	8000000	2023-07-12	t
+506	3	28	0	100000	2023-07-13	t
 \.
 
 
@@ -3591,8 +3610,9 @@ COPY silarakab.transaction (id, account_object_id, city_id, plan_amount, real_am
 
 COPY silarakab."user" (id, username, password, role_id, city_id, fullname, title, active, token) FROM stdin;
 9	adminbintan	363764e87df1fb44649540050924bce5	2	30	Admin Kota Bintan	Admin Kota Bintan	t	b1a630139922dad8c7da1c776b2d9a0a45c48cce2e2d7fbdea1afc51c7c6ad267fef1f06708516e78661cb86505965052
-7	superadmin	91838196f1d33e5bfb739adf3fdd254d	1	21	Super Admin	Super Admin	t	864f4ed88aa9edb7f162339783a850a88f14e45fceea167a5a36dedd4bea254317c4520f6cfd1ab53d8745e84681eb491
 8	adminbatam	50193f28a760e2d044b5822e508b643f	2	21	Admin Kota Batam	Admin Kota Batam	t	766bb2702e9728f463752ce8a49d25f7c9f0f895fb98ab9159f51fd0297e236de3bf705011f8bf81cd8e164ce39fdd252
+7	superadmin	91838196f1d33e5bfb739adf3fdd254d	1	21	Super Admin	Super Admin	t	0fdbd796059441ea859c10a03ed3e2e98f14e45fceea167a5a36dedd4bea254317c4520f6cfd1ab53d8745e84681eb491
+10	adminnatuna	086f11d93ed4197ea55e53ecc4cecbfc	2	28	Admin Natuna	Admin Kota	t	5f6fa350cbe964e6e41033b740a0a46ad3d9446802a44259755d38e6d163e820a530625693a278c2e34229bcf21377cc2
 \.
 
 
@@ -3647,7 +3667,7 @@ SELECT pg_catalog.setval('silarakab.city_id_seq', 44, true);
 -- Name: log_id_seq; Type: SEQUENCE SET; Schema: silarakab; Owner: postgres
 --
 
-SELECT pg_catalog.setval('silarakab.log_id_seq', 631, true);
+SELECT pg_catalog.setval('silarakab.log_id_seq', 644, true);
 
 
 --
@@ -3683,7 +3703,7 @@ SELECT pg_catalog.setval('silarakab.signer_id_seq', 9, true);
 -- Name: transaction_id_seq; Type: SEQUENCE SET; Schema: silarakab; Owner: postgres
 --
 
-SELECT pg_catalog.setval('silarakab.transaction_id_seq', 501, true);
+SELECT pg_catalog.setval('silarakab.transaction_id_seq', 507, true);
 
 
 --
@@ -3692,7 +3712,7 @@ SELECT pg_catalog.setval('silarakab.transaction_id_seq', 501, true);
 -- Name: user_id_seq; Type: SEQUENCE SET; Schema: silarakab; Owner: postgres
 --
 
-SELECT pg_catalog.setval('silarakab.user_id_seq', 9, true);
+SELECT pg_catalog.setval('silarakab.user_id_seq', 10, true);
 
 
 --
@@ -4018,7 +4038,7 @@ ALTER TABLE ONLY silarakab."user"
     ADD CONSTRAINT user_role_id_fkey FOREIGN KEY (role_id) REFERENCES silarakab.role(id) ON DELETE CASCADE;
 
 
--- Completed on 2023-07-13 19:09:49 WIB
+-- Completed on 2023-07-13 20:50:14 WIB
 
 --
 -- PostgreSQL database dump complete
