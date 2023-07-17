@@ -48,11 +48,6 @@ export default function ExportButton({
 	const xlsx = async (formValues = {}) => {
 		const workbook = new ExcelJS.Workbook();
 		const sheet = workbook.addWorksheet(master ? `MASTER` : sheetTitle);
-		const dataSigner = {
-			export_date: viewDate(formValues?.export_date),
-			signer: signers.find((d) => d?.id === formValues?.signer_id)?.label,
-			know: signers.find((d) => d?.id === formValues?.know_id)?.label,
-		};
 
 		if (master) {
 			// filename
@@ -635,69 +630,76 @@ export default function ExportButton({
 				}
 			}
 
-			// make signer and sipd
+			// make know and signer
 			const last = sheet.lastRow;
 
-			if (last) {
-				let firstCellSigner = last._cells[last._cells.length - 3];
-				let lastCellSigner = last._cells[last._cells.length - 1];
-				let firstCellSignerChar = firstCellSigner._address.charAt(0);
-				let lastCellSignerChar = lastCellSigner._address.charAt(0);
+			if (last && !!signers.length) {
+				// know part
+				const knowIs = signers.find((d) => d?.id === formValues?.know_id);
 
-				if (!["", null, undefined].includes(dataSigner.know)) {
-					// know
-					let knowCell = (last.number || 0) + 3;
-					let firstCellKnowTarget = `A${knowCell}`;
-					let lastCellKnowTarget = `B${knowCell}`;
+				if (knowIs) {
+					let initKnow = (last.number || 0) + 4;
 
-					sheet.mergeCells(firstCellKnowTarget, lastCellKnowTarget);
-					sheet.getCell(lastCellKnowTarget).value = "Mengetahui";
-					sheet.getCell(firstCellKnowTarget).style = {
-						alignment: { vertical: "middle", horizontal: "center" },
-						font: { bold: false },
-					};
-
-					let knowIsCell = (last.number || 0) + 8;
-					let firstCellKnowIsTarget = `A${knowIsCell}`;
-					let lastCellKnowIsTarget = `B${knowIsCell}`;
-
-					sheet.mergeCells(firstCellKnowIsTarget, lastCellKnowIsTarget);
-					sheet.getCell(firstCellKnowIsTarget).value = dataSigner.know;
-					sheet.getCell(firstCellKnowIsTarget).style = {
-						alignment: { vertical: "middle", horizontal: "center" },
-						font: { bold: false },
-					};
+					sheet.getCell(`B${initKnow}`).value = "Menyetujui,";
+					sheet.getCell(`B${initKnow + 1}`).value = knowIs?.position;
+					sheet.getCell(`B${initKnow + 5}`).value = knowIs?.label;
+					sheet.getCell(`B${initKnow + 6}`).value = knowIs?.title;
+					sheet.getCell(`B${initKnow + 7}`).value = `NIP. ${knowIs?.nip}`;
 				}
 
-				if (
-					!["", null, undefined].includes(dataSigner.export_date) &&
-					!["", null, undefined].includes(dataSigner.signer)
-				) {
-					// signer date
-					let signerDateCell = (last.number || 0) + 3;
-					let firstCellSignerDateTarget = `${firstCellSignerChar}${signerDateCell}`;
-					let lastCellDateSignerTarget = `${lastCellSignerChar}${signerDateCell}`;
+				// signer part
+				const signerIs = signers.find((d) => d?.id === formValues?.signer_id);
 
-					sheet.mergeCells(firstCellSignerDateTarget, lastCellDateSignerTarget);
-					sheet.getCell(firstCellSignerDateTarget).value = viewDate(
-						dataSigner.export_date
+				if (signerIs) {
+					let initSigner = (last.number || 0) + 3;
+					let firstSignerCell = last._cells[last._cells.length - 3];
+					let lastSignerCell = last._cells[last._cells.length - 1];
+					let initSignerCellChar = firstSignerCell._address.charAt(0);
+					let lastSignerCellChar = lastSignerCell._address.charAt(0);
+
+					sheet.mergeCells(
+						initSignerCellChar + initSigner,
+						lastSignerCellChar + initSigner
 					);
-					sheet.getCell(firstCellSignerDateTarget).style = {
-						alignment: { vertical: "middle", horizontal: "center" },
-						font: { bold: false },
-					};
+					sheet.getCell(
+						initSignerCellChar + initSigner
+					).value = `_________________, ${viewDate(formValues?.export_date)}`;
 
-					// signer
-					let signerCell = (last.number || 0) + 8;
-					let firstCellSignerTarget = `${firstCellSignerChar}${signerCell}`;
-					let lastCellSignerTarget = `${lastCellSignerChar}${signerCell}`;
+					sheet.mergeCells(
+						initSignerCellChar + (initSigner + 1),
+						lastSignerCellChar + (initSigner + 1)
+					);
+					sheet.getCell(initSignerCellChar + (initSigner + 1)).value =
+						"Dibuat oleh,";
 
-					sheet.mergeCells(firstCellSignerTarget, lastCellSignerTarget);
-					sheet.getCell(firstCellSignerTarget).value = dataSigner.signer;
-					sheet.getCell(firstCellSignerTarget).style = {
-						alignment: { vertical: "middle", horizontal: "center" },
-						font: { bold: false },
-					};
+					sheet.mergeCells(
+						initSignerCellChar + (initSigner + 2),
+						lastSignerCellChar + (initSigner + 2)
+					);
+					sheet.getCell(initSignerCellChar + (initSigner + 2)).value =
+						signerIs?.position;
+
+					sheet.mergeCells(
+						initSignerCellChar + (initSigner + 6),
+						lastSignerCellChar + (initSigner + 6)
+					);
+					sheet.getCell(initSignerCellChar + (initSigner + 6)).value =
+						signerIs?.label;
+
+					sheet.mergeCells(
+						initSignerCellChar + (initSigner + 7),
+						lastSignerCellChar + (initSigner + 7)
+					);
+					sheet.getCell(initSignerCellChar + (initSigner + 7)).value =
+						signerIs?.title;
+
+					sheet.mergeCells(
+						initSignerCellChar + (initSigner + 8),
+						lastSignerCellChar + (initSigner + 8)
+					);
+					sheet.getCell(
+						initSignerCellChar + (initSigner + 8)
+					).value = `NIP. ${signerIs?.nip}`;
 				}
 			}
 		}
@@ -722,8 +724,8 @@ export default function ExportButton({
 	const pdfx = async (formValues = {}) => {
 		const dataSigner = {
 			export_date: viewDate(formValues?.export_date),
-			signer: signers.find((d) => d?.id === formValues?.signer_id)?.label,
-			know: signers.find((d) => d?.id === formValues?.know_id)?.label,
+			signerIs: signers.find((d) => d?.id === formValues?.signer_id),
+			knowIs: signers.find((d) => d?.id === formValues?.know_id),
 		};
 
 		const doc = (
@@ -761,7 +763,6 @@ export default function ExportButton({
 		setLoading(true);
 		getSignerList().then((response) => {
 			setLoading(false);
-
 			setSigners(response?.data?.data);
 		});
 	}, []);
@@ -838,7 +839,7 @@ export default function ExportButton({
 						Format Kiri
 					</Divider>
 					<Form.Item
-						label="Mengetaui"
+						label="Mengetahui"
 						name="know_id"
 						rules={[
 							{
@@ -847,7 +848,17 @@ export default function ExportButton({
 							},
 						]}
 					>
-						<Select disabled={loadingPdf} loading={loading} options={signers} />
+						<Select disabled={loadingPdf} loading={loading}>
+							{!!signers.length &&
+								_.map(signers, (item) => (
+									<Select.Option key={String(item?.id)} value={item?.id}>
+										<Space direction="vertical">
+											{item?.nip}
+											{item?.title}
+										</Space>
+									</Select.Option>
+								))}
+						</Select>
 					</Form.Item>
 					<Divider orientation="left" plain>
 						Format Kanan
@@ -874,7 +885,17 @@ export default function ExportButton({
 							},
 						]}
 					>
-						<Select disabled={loadingPdf} loading={loading} options={signers} />
+						<Select disabled={loadingPdf} loading={loading}>
+							{!!signers.length &&
+								_.map(signers, (item) => (
+									<Select.Option key={String(item?.id)} value={item?.id}>
+										<Space direction="vertical">
+											{item?.nip}
+											{item?.title}
+										</Space>
+									</Select.Option>
+								))}
+						</Select>
 					</Form.Item>
 					<Divider />
 					<Form.Item className="text-right mb-0">

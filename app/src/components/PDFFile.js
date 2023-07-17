@@ -561,32 +561,76 @@ export default function PDFFile({
 
 	const createSign = () => {
 		return (
-			<>
-				<View style={{ flex: 1, flexDirection: "row", paddingTop: 30 }}>
+			<View style={{ flexDirection: "column", paddingHorizontal: 20 }}>
+				<View style={{ flex: 1, flexDirection: "row", paddingTop: 20 }}>
+					<View style={{ flex: 1 }}></View>
 					<View style={{ flex: 1 }}>
-						<Text style={{ textAlign: "center", fontSize: 10 }}>
-							{`Mengetahui`}
+						<Text style={{ fontSize: 10, paddingHorizontal: 60 }}>
+							{`_________________, ${viewDate(signer?.export_date)}`}
+						</Text>
+					</View>
+				</View>
+				<View style={{ flex: 1, flexDirection: "row", paddingTop: 16 }}>
+					<View style={{ flex: 1 }}>
+						<Text
+							style={{ fontSize: 10, paddingHorizontal: 80 }}
+						>{`Menyetujui,`}</Text>
+					</View>
+					<View style={{ flex: 1 }}>
+						<Text
+							style={{ fontSize: 10, paddingHorizontal: 60 }}
+						>{`Dibuat oleh,`}</Text>
+					</View>
+				</View>
+				<View style={{ flex: 1, flexDirection: "row", paddingTop: 16 }}>
+					<View style={{ flex: 1 }}>
+						<Text style={{ fontSize: 10, paddingHorizontal: 80 }}>
+							{signer.knowIs?.position}
 						</Text>
 					</View>
 					<View style={{ flex: 1 }}>
-						<Text style={{ textAlign: "center", fontSize: 10 }}>
-							{viewDate(signer?.export_date)}
+						<Text style={{ fontSize: 10, paddingHorizontal: 60 }}>
+							{signer.signerIs?.position}
 						</Text>
 					</View>
 				</View>
 				<View style={{ flex: 1, flexDirection: "row", paddingTop: 60 }}>
 					<View style={{ flex: 1 }}>
-						<Text style={{ textAlign: "center", fontSize: 10 }}>
-							{signer?.know}
+						<Text style={{ fontSize: 10, paddingHorizontal: 80 }}>
+							{signer.knowIs?.label}
 						</Text>
 					</View>
 					<View style={{ flex: 1 }}>
-						<Text style={{ textAlign: "center", fontSize: 10 }}>
-							{signer?.signer}
+						<Text style={{ fontSize: 10, paddingHorizontal: 60 }}>
+							{signer.signerIs?.label}
 						</Text>
 					</View>
 				</View>
-			</>
+				<View style={{ flex: 1, flexDirection: "row", paddingTop: 16 }}>
+					<View style={{ flex: 1 }}>
+						<Text style={{ fontSize: 10, paddingHorizontal: 80 }}>
+							{signer.knowIs?.title}
+						</Text>
+					</View>
+					<View style={{ flex: 1 }}>
+						<Text style={{ fontSize: 10, paddingHorizontal: 60 }}>
+							{signer.signerIs?.title}
+						</Text>
+					</View>
+				</View>
+				<View style={{ flex: 1, flexDirection: "row", paddingTop: 16 }}>
+					<View style={{ flex: 1 }}>
+						<Text style={{ fontSize: 10, paddingHorizontal: 80 }}>
+							{`NIP. ${signer.knowIs?.nip}`}
+						</Text>
+					</View>
+					<View style={{ flex: 1 }}>
+						<Text style={{ fontSize: 10, paddingHorizontal: 60 }}>
+							{`NIP. ${signer.signerIs?.nip}`}
+						</Text>
+					</View>
+				</View>
+			</View>
 		);
 	};
 
@@ -600,9 +644,11 @@ export default function PDFFile({
 					{createTableHeader()}
 					{createTableRow()}
 				</View>
-				{report && signer?.signer && signer?.know && signer?.export_date && (
-					<View style={styles.tableSigner}>{createSign()}</View>
-				)}
+				{report &&
+					signer?.signerIs &&
+					signer?.knowIs &&
+					signer?.export_date &&
+					createSign()}
 				<Text
 					style={styles.pageNumber}
 					render={({ pageNumber, totalPages }) =>
@@ -631,11 +677,11 @@ const styles = StyleSheet.create({
 		display: "table",
 		width: "auto",
 	},
-	tableSigner: {
-		display: "table",
-		width: "auto",
-		paddingTop: 10,
-	},
+	// tableSigner: {
+	// 	display: "table",
+	// 	width: "auto",
+	// 	paddingTop: 10,
+	// },
 	tableRowHeader: {
 		margin: "auto",
 		flexDirection: "row",
