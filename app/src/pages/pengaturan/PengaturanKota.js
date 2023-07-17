@@ -52,7 +52,6 @@ export default function PengaturanKota() {
 					setLoading(false);
 					setCities(responseGet(_data).data);
 
-					console.log("cities", cities);
 					setExports(responseGet(_export).data);
 					setTablePage({
 						pagination: {
