@@ -5,7 +5,7 @@
 -- Dumped from database version 14.7
 -- Dumped by pg_dump version 14.7
 
--- Started on 2023-07-13 20:50:13 WIB
+-- Started on 2023-07-18 01:47:40 WIB
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -418,7 +418,7 @@ BEGIN
     ELSIF(LOWER(_table)='silarakab.signer') THEN 
       FOR _rec IN
         SELECT * FROM jsonb_populate_recordset(null::record, _data) 
-          AS t (id integer, nip text, fullname text, title text)
+          AS t (id integer, nip text, fullname text, title text, position text)
         --   WHERE NULLIF(TRIM(t.ops_item_code), '') IS NOT NULL AND COALESCE(t.qty, 0) > 0
         -- ORDER BY t.item_no ASC
       LOOP
@@ -430,8 +430,8 @@ BEGIN
             __res_notice := __res_notice || 'Duplicated found  ==> Signer Data : ' || _rec.nip || __res_break;
           ELSE 
             -- TARGET
-            INSERT INTO silarakab.signer (nip, fullname, title) 
-            VALUES (_rec.nip, _rec.fullname, _rec.title) RETURNING id INTO __new_id;
+            INSERT INTO silarakab.signer (nip, fullname, title, position) 
+            VALUES (_rec.nip, _rec.fullname, _rec.title, _rec.position) RETURNING id INTO __new_id;
 
             -- LOGING
             INSERT INTO silarakab.log("table", mode, start_value, end_value, 
@@ -449,7 +449,7 @@ BEGIN
             __res_notice := __res_notice || 'Data Not found  ==> Signer ID : ' || _rec.id || __res_break;
           ELSE 
             -- TARGET
-            UPDATE silarakab.signer SET nip = _rec.nip, fullname = _rec.fullname, title = _rec.title
+            UPDATE silarakab.signer SET nip = _rec.nip, fullname = _rec.fullname, title = _rec.title, position = _rec.position
             WHERE id = _rec.id RETURNING id INTO __new_id;
 
             -- LOGING
@@ -2550,7 +2550,8 @@ CREATE TABLE silarakab.signer (
     nip text NOT NULL,
     fullname text NOT NULL,
     title text,
-    active boolean DEFAULT true
+    active boolean DEFAULT true,
+    "position" text
 );
 
 
@@ -3550,6 +3551,13 @@ COPY silarakab.log (id, "table", mode, start_value, end_value, created_at, creat
 642	silarakab.transaction	C	\N	[{"id": "0", "city_id": 28, "trans_date": "2023-07-12", "plan_amount": 0, "real_amount": 8000000, "account_object_id": 3}]	2023-07-13 20:41:30	adminnatuna
 643	silarakab.transaction	D	[{"id": "506"}]	\N	2023-07-13 20:45:02	superadmin
 644	silarakab.transaction	D	[{"id": "506"}]	\N	2023-07-13 20:45:27	superadmin
+645	silarakab.transaction	C	\N	[{"id": "0", "city_id": 21, "trans_date": "2023-01-01", "plan_amount": 0, "real_amount": 0, "account_object_id": 3}]	2023-07-13 21:32:56	adminbatam
+646	silarakab.signer	D	[{"id": "9"}]	\N	2023-07-18 00:14:48	superadmin
+647	silarakab.signer	D	[{"id": "9"}]	\N	2023-07-18 00:14:59	superadmin
+648	silarakab.signer	U	\N	[{"id": 9, "nip": 1977111620060402000, "title": "Kepala Bidang Anggaran", "fullname": "Penanda Tangan", "position": "Pembina Tk.I"}]	2023-07-18 00:27:43	superadmin
+649	silarakab.signer	C	\N	[{"id": "0", "nip": 199110052015031000, "title": "Kepala Sub Bidang Bina dan Evaluasi Daerah", "fullname": "Penanda Tangan", "position": "Penata"}]	2023-07-18 00:29:22	superadmin
+650	silarakab.signer	U	\N	[{"id": 10, "nip": "199110052015031000", "title": "Penata", "fullname": "Penanda Tangan", "position": "Kepala Sub Bidang Bina dan Evaluasi Daerah"}]	2023-07-18 00:58:16	superadmin
+651	silarakab.signer	U	\N	[{"id": 9, "nip": "1977111620060402000", "title": "Pembina Tk.I", "fullname": "Penanda Tangan", "position": "Kepala Bidang Anggaran"}]	2023-07-18 00:58:27	superadmin
 \.
 
 
@@ -3583,8 +3591,9 @@ COPY silarakab.setting (id, name, value) FROM stdin;
 -- Data for Name: signer; Type: TABLE DATA; Schema: silarakab; Owner: postgres
 --
 
-COPY silarakab.signer (id, nip, fullname, title, active) FROM stdin;
-9	12345	Someone Else	Signer	t
+COPY silarakab.signer (id, nip, fullname, title, active, "position") FROM stdin;
+10	199110052015031000	Penanda Tangan	Penata	t	Kepala Sub Bidang Bina dan Evaluasi Daerah
+9	1977111620060402000	Penanda Tangan	Pembina Tk.I	t	Kepala Bidang Anggaran
 \.
 
 
@@ -3599,6 +3608,7 @@ COPY silarakab.transaction (id, account_object_id, city_id, plan_amount, real_am
 505	9	28	0	0	2023-01-01	t
 507	3	28	0	8000000	2023-07-12	t
 506	3	28	0	100000	2023-07-13	t
+508	3	21	0	0	2023-01-01	t
 \.
 
 
@@ -3609,9 +3619,9 @@ COPY silarakab.transaction (id, account_object_id, city_id, plan_amount, real_am
 --
 
 COPY silarakab."user" (id, username, password, role_id, city_id, fullname, title, active, token) FROM stdin;
+8	adminbatam	50193f28a760e2d044b5822e508b643f	2	21	Admin Kota Batam	Admin Kota Batam	t	bef8c3c46ce5476da12afd081e207795c9f0f895fb98ab9159f51fd0297e236de3bf705011f8bf81cd8e164ce39fdd252
+7	superadmin	91838196f1d33e5bfb739adf3fdd254d	1	21	Super Admin	Super Admin	t	88ed80e70a71c1097821dbb2a17340028f14e45fceea167a5a36dedd4bea254317c4520f6cfd1ab53d8745e84681eb491
 9	adminbintan	363764e87df1fb44649540050924bce5	2	30	Admin Kota Bintan	Admin Kota Bintan	t	b1a630139922dad8c7da1c776b2d9a0a45c48cce2e2d7fbdea1afc51c7c6ad267fef1f06708516e78661cb86505965052
-8	adminbatam	50193f28a760e2d044b5822e508b643f	2	21	Admin Kota Batam	Admin Kota Batam	t	766bb2702e9728f463752ce8a49d25f7c9f0f895fb98ab9159f51fd0297e236de3bf705011f8bf81cd8e164ce39fdd252
-7	superadmin	91838196f1d33e5bfb739adf3fdd254d	1	21	Super Admin	Super Admin	t	0fdbd796059441ea859c10a03ed3e2e98f14e45fceea167a5a36dedd4bea254317c4520f6cfd1ab53d8745e84681eb491
 10	adminnatuna	086f11d93ed4197ea55e53ecc4cecbfc	2	28	Admin Natuna	Admin Kota	t	5f6fa350cbe964e6e41033b740a0a46ad3d9446802a44259755d38e6d163e820a530625693a278c2e34229bcf21377cc2
 \.
 
@@ -3667,7 +3677,7 @@ SELECT pg_catalog.setval('silarakab.city_id_seq', 44, true);
 -- Name: log_id_seq; Type: SEQUENCE SET; Schema: silarakab; Owner: postgres
 --
 
-SELECT pg_catalog.setval('silarakab.log_id_seq', 644, true);
+SELECT pg_catalog.setval('silarakab.log_id_seq', 651, true);
 
 
 --
@@ -3694,7 +3704,7 @@ SELECT pg_catalog.setval('silarakab.setting_id_seq', 1, false);
 -- Name: signer_id_seq; Type: SEQUENCE SET; Schema: silarakab; Owner: postgres
 --
 
-SELECT pg_catalog.setval('silarakab.signer_id_seq', 9, true);
+SELECT pg_catalog.setval('silarakab.signer_id_seq', 10, true);
 
 
 --
@@ -3703,7 +3713,7 @@ SELECT pg_catalog.setval('silarakab.signer_id_seq', 9, true);
 -- Name: transaction_id_seq; Type: SEQUENCE SET; Schema: silarakab; Owner: postgres
 --
 
-SELECT pg_catalog.setval('silarakab.transaction_id_seq', 507, true);
+SELECT pg_catalog.setval('silarakab.transaction_id_seq', 508, true);
 
 
 --
@@ -4038,7 +4048,7 @@ ALTER TABLE ONLY silarakab."user"
     ADD CONSTRAINT user_role_id_fkey FOREIGN KEY (role_id) REFERENCES silarakab.role(id) ON DELETE CASCADE;
 
 
--- Completed on 2023-07-13 20:50:14 WIB
+-- Completed on 2023-07-18 01:47:40 WIB
 
 --
 -- PostgreSQL database dump complete
