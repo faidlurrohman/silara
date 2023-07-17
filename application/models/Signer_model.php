@@ -31,6 +31,9 @@ class Signer_model extends CI_Model {
                 (r.__res_data->>'id')::INT AS id,
                 (r.__res_data->>'id')::INT AS value, 
                 r.__res_data->>'fullname' AS label, 
+                r.__res_data->>'nip' AS nip, 
+                r.__res_data->>'title' AS title, 
+                r.__res_data->>'position' AS position, 
                 r.__code, 
                 r.__res_msg, 
                 COALESCE(r.__res_count,0)::INT AS __res_count

@@ -88,6 +88,7 @@ export default function PengaturanPenandaTangan() {
 				nip: value?.nip,
 				fullname: value?.fullname,
 				title: value?.title,
+				position: value?.position,
 			});
 		} else {
 			form.resetFields();
@@ -145,6 +146,14 @@ export default function PengaturanPenandaTangan() {
 			tableFilterInputRef,
 			"title",
 			"Jabatan",
+			tableFiltered,
+			true,
+			tableSorted
+		),
+		searchColumn(
+			tableFilterInputRef,
+			"position",
+			"Posisi",
 			tableFiltered,
 			true,
 			tableSorted
@@ -237,6 +246,18 @@ export default function PengaturanPenandaTangan() {
 							{
 								required: true,
 								message: "Jabatan tidak boleh kosong!",
+							},
+						]}
+					>
+						<Input disabled={confirmLoading} />
+					</Form.Item>
+					<Form.Item
+						label="Posisi"
+						name="position"
+						rules={[
+							{
+								required: true,
+								message: "Posisi tidak boleh kosong!",
 							},
 						]}
 					>
