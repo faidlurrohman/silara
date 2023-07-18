@@ -1,3 +1,5 @@
+import { convertDate, viewDate } from "../helpers/date";
+
 export default function Copyright() {
 	return (
 		<div className="text-center text-xs font-light">
@@ -6,7 +8,7 @@ export default function Copyright() {
 				href="#"
 				className="text-secondary"
 			>{` ${process.env.REACT_APP_NAME} `}</a>
-			{new Date().getFullYear()}
+			{convertDate(viewDate(), "YYYY")}
 		</div>
 	);
 }

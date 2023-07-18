@@ -72,8 +72,8 @@ export default function Realisasi() {
 					setLoading(false);
 					setTransactions(responseGet(_transactions).data);
 					setExports(responseGet(_export).data);
-					setCities(_cities?.data?.data);
-					setAccountObject(_objects?.data?.data);
+					setCities(_cities?.data?.data || []);
+					setAccountObject(_objects?.data?.data || []);
 					setTablePage({
 						pagination: {
 							...params.pagination,

@@ -1,7 +1,14 @@
 import { ArrowLeftOutlined } from "@ant-design/icons";
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
+import { useAppSelector } from "../hooks/useRedux";
 
 export default function NotFound({ useNav = true }) {
+	const session = useAppSelector((state) => state.session.user);
+
+	if (!session) {
+		return <Navigate to={"/auth/masuk"} replace />;
+	}
+
 	return (
 		<div className="flex justify-center items-center w-full h-screen flex-col">
 			<img

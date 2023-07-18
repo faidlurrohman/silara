@@ -59,7 +59,7 @@ export default function Jenis() {
 					setLoading(false);
 					setAccountType(responseGet(_types).data);
 					setExports(responseGet(_export).data);
-					setAccountGroup(_groups?.data?.data);
+					setAccountGroup(_groups?.data?.data || []);
 					setTablePage({
 						pagination: {
 							...params.pagination,

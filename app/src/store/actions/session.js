@@ -15,7 +15,11 @@ export const loginAction = (user) => (dispatch) => {
 			Cookies.set(
 				process.env.REACT_APP_ACCESS_TOKEN,
 				response?.data?.data?.token,
-				{ expires: 1, sameSite: "Strict" }
+				// { expires: 1, sameSite: "Strict" }
+				{
+					expires: new Date(new Date().getTime() + 15 * 1000),
+					// sameSite: "Strict",
+				}
 			);
 			dispatch({
 				type: LOGIN_USER_SUCCESS,

@@ -51,7 +51,6 @@ export default function PengaturanKota() {
 				axios.spread((_data, _export) => {
 					setLoading(false);
 					setCities(responseGet(_data).data);
-
 					setExports(responseGet(_export).data);
 					setTablePage({
 						pagination: {

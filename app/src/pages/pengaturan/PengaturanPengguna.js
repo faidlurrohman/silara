@@ -57,8 +57,8 @@ export default function PengaturanPengguna() {
 					setLoading(false);
 					setUsers(responseGet(_users).data);
 					setExports(responseGet(_export).data);
-					setCities(_cities?.data?.data);
-					setRoles(_roles?.data?.data);
+					setCities(_cities?.data?.data || []);
+					setRoles(_roles?.data?.data || []);
 					setTablePage({
 						pagination: {
 							...params.pagination,

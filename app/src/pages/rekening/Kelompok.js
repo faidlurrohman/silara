@@ -59,7 +59,7 @@ export default function Kelompok() {
 					setLoading(false);
 					setAccountGroup(responseGet(_groups).data);
 					setExports(responseGet(_export).data);
-					setAccountBase(_bases?.data?.data);
+					setAccountBase(_bases?.data?.data || []);
 					setTablePage({
 						pagination: {
 							...params.pagination,

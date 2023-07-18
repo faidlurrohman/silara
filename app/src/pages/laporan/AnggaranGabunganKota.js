@@ -47,7 +47,7 @@ export default function AnggaranGabunganKota() {
 					setLoading(false);
 					setData(responseGet(_data).data);
 					setExports(setDataExport(responseGet(_export).data));
-					setCities(_cities?.data?.data);
+					setCities(_cities?.data?.data || []);
 					setTablePage({
 						pagination: {
 							...params.pagination,

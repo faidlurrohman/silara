@@ -65,8 +65,8 @@ export default function Objek() {
 					setLoading(false);
 					setAccountObject(responseGet(_objects).data);
 					setExports(responseGet(_export).data);
-					setAccountType(_types?.data?.data);
-					setCities(_cities?.data?.data);
+					setAccountType(_types?.data?.data || []);
+					setCities(_cities?.data?.data || []);
 					setTablePage({
 						pagination: {
 							...params.pagination,

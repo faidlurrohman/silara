@@ -45,7 +45,7 @@ export default function PendapatanBelanja() {
 				axios.spread((_data, _export, _cities) => {
 					setLoading(false);
 					setData(responseGet(_data).data);
-					setCities(_cities?.data?.data);
+					setCities(_cities?.data?.data || []);
 					setExports(setDataExport(responseGet(_export).data));
 					setTablePage({
 						pagination: {

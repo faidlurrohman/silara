@@ -849,7 +849,8 @@ export default function ExportButton({
 						]}
 					>
 						<Select disabled={loadingPdf} loading={loading}>
-							{!!signers.length &&
+							{signers &&
+								!!signers.length &&
 								_.map(signers, (item) => (
 									<Select.Option key={String(item?.id)} value={item?.id}>
 										<Space direction="vertical">
@@ -886,7 +887,8 @@ export default function ExportButton({
 						]}
 					>
 						<Select disabled={loadingPdf} loading={loading}>
-							{!!signers.length &&
+							{signers &&
+								!!signers.length &&
 								_.map(signers, (item) => (
 									<Select.Option key={String(item?.id)} value={item?.id}>
 										<Space direction="vertical">

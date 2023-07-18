@@ -118,7 +118,7 @@ export default function AnggaranKota() {
 			.then(
 				axios.spread((_data, _export, _cities) => {
 					setLoading(false);
-					setCities(_cities?.data?.data);
+					setCities(_cities?.data?.data || []);
 					setData(responseGet(_data).data);
 					setExports(setDataExport(responseGet(_export).data));
 					setTablePage({
