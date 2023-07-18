@@ -13,12 +13,38 @@ import _ from "lodash";
 import { formatterNumber } from "../../helpers/number";
 import { upper } from "../../helpers/typo";
 import ExportButton from "../../components/button/ExportButton";
+import { Pie } from "@ant-design/plots";
 
 const { RangePicker } = DatePicker;
+
+const pieConfig = {
+	appendPadding: 10,
+	style: { height: 250 },
+	angleField: "value",
+	colorField: "type",
+	radius: 0.75,
+	label: {
+		type: "spider",
+		labelHeight: 20,
+		content: "{name}\n{percentage}",
+		style: { fontSize: 12 },
+	},
+	legend: false,
+	tooltip: false,
+	interactions: [
+		{
+			type: "element-selected",
+		},
+		{
+			type: "element-active",
+		},
+	],
+};
 
 export default function AnggaranKota() {
 	const { is_super_admin } = useRole();
 	const [data, setData] = useState([]);
+	const [pieData, setPieData] = useState([]);
 	const [exports, setExports] = useState([]);
 	const [cities, setCities] = useState([]);
 	const [loading, setLoading] = useState(false);
@@ -95,15 +121,45 @@ export default function AnggaranKota() {
 					setCities(_cities?.data?.data);
 					setData(responseGet(_data).data);
 					setExports(setDataExport(responseGet(_export).data));
-
 					setTablePage({
 						pagination: {
 							...params.pagination,
 							total: responseGet(_data).total_count,
 						},
 					});
+
+					if (!!responseGet(_export).data?.length) {
+						makeChartData(responseGet(_export).data);
+					}
 				})
 			);
+	};
+
+	const makeChartData = (values) => {
+		let _plan = 0,
+			_real = 0,
+			_planPercent = 0,
+			_realPercent = 0;
+
+		_.map(values, (item) => {
+			_plan += parseFloat(item?.account_object_plan_amount || 0);
+			_real += parseFloat(item?.account_object_real_amount || 0);
+		});
+
+		_planPercent = (_plan / (_plan + _real)) * 100;
+		_realPercent = (_real / (_plan + _real)) * 100;
+
+		// jumlah real atau plan / jumlah keseluruhan * 100
+		setPieData([
+			{
+				type: "Anggaran",
+				value: isNaN(_planPercent) ? 0 : _planPercent,
+			},
+			{
+				type: "Realisasi",
+				value: isNaN(_realPercent) ? 0 : _realPercent,
+			},
+		]);
 	};
 
 	const reloadTable = () => {
@@ -327,7 +383,7 @@ export default function AnggaranKota() {
 
 	return (
 		<>
-			<div className="flex flex-col space-y-2 sm:space-y-0 sm:space-x-2 sm:flex-row md:space-y-0 md:space-x-2 md:flex-row">
+			<div className="flex flex-col mb-1 space-y-2 sm:space-y-0 sm:space-x-2 sm:flex-row md:space-y-0 md:space-x-2 md:flex-row">
 				<div className="flex flex-row md:space-x-2">
 					<h2 className="text-xs font-normal text-right w-14 hidden md:inline">
 						Tanggal :
@@ -382,22 +438,22 @@ export default function AnggaranKota() {
 					/>
 				)}
 			</div>
-			<div className="mt-4">
-				<Table
-					scroll={{
-						scrollToFirstRowOnChange: true,
-						x: "100%",
-					}}
-					bordered
-					size="small"
-					loading={loading}
-					dataSource={data}
-					columns={columns}
-					rowKey={(record) => `${record?.account_object_id}_${record?.city_id}`}
-					onChange={onTableChange}
-					pagination={tablePage.pagination}
-				/>
-			</div>
+			{!!pieData?.length && <Pie {...pieConfig} data={pieData} />}
+			<Table
+				scroll={{
+					scrollToFirstRowOnChange: true,
+					x: "100%",
+				}}
+				bordered
+				size="small"
+				loading={loading}
+				dataSource={data}
+				columns={columns}
+				rowKey={(record) => `${record?.account_object_id}_${record?.city_id}`}
+				onChange={onTableChange}
+				pagination={tablePage.pagination}
+				tableLayout="auto"
+			/>
 		</>
 	);
 }
