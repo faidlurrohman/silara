@@ -11,6 +11,7 @@ import { searchColumn } from "../../helpers/table";
 import { formatterNumber } from "../../helpers/number";
 import _ from "lodash";
 import ExportButton from "../../components/button/ExportButton";
+import { lower } from "../../helpers/typo";
 
 const { RangePicker } = DatePicker;
 
@@ -339,7 +340,7 @@ export default function PendapatanBelanja() {
 						placeholder="Pilih Kota"
 						optionFilterProp="children"
 						filterOption={(input, option) =>
-							(option?.label ?? "").includes(input)
+							(lower(option?.label) ?? "").includes(lower(input))
 						}
 						loading={loading}
 						options={cities}

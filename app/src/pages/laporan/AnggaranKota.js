@@ -11,7 +11,7 @@ import useRole from "../../hooks/useRole";
 import { getCityList } from "../../services/city";
 import _ from "lodash";
 import { formatterNumber } from "../../helpers/number";
-import { upper } from "../../helpers/typo";
+import { lower, upper } from "../../helpers/typo";
 import ExportButton from "../../components/button/ExportButton";
 import { Pie } from "@ant-design/plots";
 
@@ -418,7 +418,7 @@ export default function AnggaranKota() {
 							placeholder="Pilih Kota"
 							optionFilterProp="children"
 							filterOption={(input, option) =>
-								(option?.label ?? "").includes(input)
+								(lower(option?.label) ?? "").includes(lower(input))
 							}
 							loading={loading}
 							options={cities}

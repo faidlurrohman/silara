@@ -10,7 +10,7 @@ import {
 } from "antd";
 import { DownOutlined, ExportOutlined } from "@ant-design/icons";
 import { convertDate, dbDate, viewDate } from "../../helpers/date";
-import { upper } from "../../helpers/typo";
+import { lower, upper } from "../../helpers/typo";
 import { DATE_FORMAT_VIEW, EXPORT_TARGET } from "../../helpers/constants";
 import { pdf } from "@react-pdf/renderer";
 import PDFFile from "../PDFFile";
@@ -848,15 +848,19 @@ export default function ExportButton({
 							},
 						]}
 					>
-						<Select disabled={loadingPdf} loading={loading}>
+						<Select
+							disabled={loadingPdf}
+							loading={loading}
+							optionFilterProp="children"
+							filterOption={(input, option) =>
+								(lower(option?.children) ?? "").includes(lower(input))
+							}
+						>
 							{signers &&
 								!!signers.length &&
 								_.map(signers, (item) => (
 									<Select.Option key={String(item?.id)} value={item?.id}>
-										<Space direction="vertical">
-											{item?.nip}
-											{item?.title}
-										</Space>
+										{`NIP. ${item?.nip} ${item?.label}`}
 									</Select.Option>
 								))}
 						</Select>
@@ -886,15 +890,21 @@ export default function ExportButton({
 							},
 						]}
 					>
-						<Select disabled={loadingPdf} loading={loading}>
+						<Select
+							allowClear
+							showSearch
+							disabled={loadingPdf}
+							loading={loading}
+							optionFilterProp="children"
+							filterOption={(input, option) =>
+								(lower(option?.children) ?? "").includes(lower(input))
+							}
+						>
 							{signers &&
 								!!signers.length &&
 								_.map(signers, (item) => (
 									<Select.Option key={String(item?.id)} value={item?.id}>
-										<Space direction="vertical">
-											{item?.nip}
-											{item?.title}
-										</Space>
+										{`NIP. ${item?.nip} ${item?.label}`}
 									</Select.Option>
 								))}
 						</Select>

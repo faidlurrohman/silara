@@ -31,6 +31,7 @@ import { convertDate, dbDate, viewDate } from "../../helpers/date";
 import axios from "axios";
 import useRole from "../../hooks/useRole";
 import { formatterNumber, parserNumber } from "../../helpers/number";
+import { lower } from "../../helpers/typo";
 
 export default function Anggaran() {
 	const { message, modal } = App.useApp();
@@ -342,9 +343,7 @@ export default function Anggaran() {
 								showSearch
 								optionFilterProp="children"
 								filterOption={(input, option) =>
-									(option?.label ?? "")
-										.toLowerCase()
-										.includes(input.toLowerCase())
+									(lower(option?.label) ?? "").includes(lower(input))
 								}
 								disabled={confirmLoading}
 								loading={loading}

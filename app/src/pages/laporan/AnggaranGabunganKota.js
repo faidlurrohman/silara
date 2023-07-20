@@ -9,7 +9,7 @@ import { getRealPlanCities } from "../../services/report";
 import { responseGet } from "../../helpers/response";
 import { searchColumn } from "../../helpers/table";
 import { formatterNumber } from "../../helpers/number";
-import { upper } from "../../helpers/typo";
+import { lower, upper } from "../../helpers/typo";
 import _ from "lodash";
 import ExportButton from "../../components/button/ExportButton";
 
@@ -421,7 +421,7 @@ export default function AnggaranGabunganKota() {
 						placeholder="Pilih Kota"
 						optionFilterProp="children"
 						filterOption={(input, option) =>
-							(option?.label ?? "").includes(input)
+							(lower(option?.label) ?? "").includes(lower(input))
 						}
 						loading={loading}
 						options={cities}

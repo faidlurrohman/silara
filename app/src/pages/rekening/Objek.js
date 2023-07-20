@@ -27,6 +27,7 @@ import ExportButton from "../../components/button/ExportButton";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 import { checkParams } from "../../helpers/url";
+import { lower } from "../../helpers/typo";
 
 export default function Objek() {
 	const { message, modal } = App.useApp();
@@ -271,9 +272,7 @@ export default function Objek() {
 							showSearch
 							optionFilterProp="children"
 							filterOption={(input, option) =>
-								(option?.label ?? "")
-									.toLowerCase()
-									.includes(input.toLowerCase())
+								(lower(option?.label) ?? "").includes(lower(input))
 							}
 							disabled={confirmLoading}
 							loading={loading}
@@ -348,9 +347,7 @@ export default function Objek() {
 							showSearch
 							optionFilterProp="children"
 							filterOption={(input, option) =>
-								(option?.label ?? "")
-									.toLowerCase()
-									.includes(input.toLowerCase())
+								(lower(option?.label) ?? "").includes(lower(input))
 							}
 							disabled={confirmLoading}
 							loading={loading}

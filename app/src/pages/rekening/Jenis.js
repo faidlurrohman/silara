@@ -25,6 +25,7 @@ import { messageAction, responseGet } from "../../helpers/response";
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
 import { checkParams } from "../../helpers/url";
+import { lower } from "../../helpers/typo";
 
 export default function Jenis() {
 	const { message, modal } = App.useApp();
@@ -241,9 +242,7 @@ export default function Jenis() {
 							showSearch
 							optionFilterProp="children"
 							filterOption={(input, option) =>
-								(option?.label ?? "")
-									.toLowerCase()
-									.includes(input.toLowerCase())
+								(lower(option?.label) ?? "").includes(lower(input))
 							}
 							disabled={confirmLoading}
 							loading={loading}
