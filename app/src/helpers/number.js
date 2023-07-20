@@ -11,3 +11,7 @@ export const parserNumber = (val) => {
 		val.replace(/\$\s?|(\.*)/g, "").replace(/(\,{1})/g, ".")
 	).toFixed(2);
 };
+
+export const parseNaN = (value) => {
+	return isNaN(value) ? 0 : value;
+};
