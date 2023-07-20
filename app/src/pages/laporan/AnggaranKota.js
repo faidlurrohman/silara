@@ -1,4 +1,4 @@
-import { DatePicker, Select, Table } from "antd";
+import { Card, DatePicker, Select, Table } from "antd";
 import React, { useEffect, useRef, useState } from "react";
 import { DATE_FORMAT_VIEW, PAGINATION } from "../../helpers/constants";
 import { searchColumn } from "../../helpers/table";
@@ -10,10 +10,11 @@ import { convertDate, dbDate } from "../../helpers/date";
 import useRole from "../../hooks/useRole";
 import { getCityList } from "../../services/city";
 import _ from "lodash";
-import { formatterNumber } from "../../helpers/number";
+import { formatterNumber, parseNaN } from "../../helpers/number";
 import { lower, upper } from "../../helpers/typo";
 import ExportButton from "../../components/button/ExportButton";
 import { Pie } from "@ant-design/plots";
+import { getAccountList } from "../../services/account";
 
 const { RangePicker } = DatePicker;
 
@@ -25,27 +26,22 @@ const pieConfig = {
 	radius: 0.75,
 	label: {
 		type: "spider",
-		labelHeight: 20,
+		labelHeight: 28,
 		content: "{name}\n{percentage}",
 		style: { fontSize: 12 },
 	},
 	legend: false,
 	tooltip: false,
-	interactions: [
-		{
-			type: "element-selected",
-		},
-		{
-			type: "element-active",
-		},
-	],
+	interactions: [{ type: "element-selected" }],
 };
 
 export default function AnggaranKota() {
 	const { is_super_admin } = useRole();
 	const [data, setData] = useState([]);
-	const [pieData, setPieData] = useState([]);
+	const [piePlan, setPiePlan] = useState([]);
+	const [pieReal, setPieReal] = useState([]);
 	const [exports, setExports] = useState([]);
+	const [accountBase, setAccountBase] = useState([]);
 	const [cities, setCities] = useState([]);
 	const [loading, setLoading] = useState(false);
 
@@ -114,13 +110,15 @@ export default function AnggaranKota() {
 					pagination: { ...params.pagination, pageSize: 0 },
 				}),
 				getCityList(),
+				getAccountList("base"),
 			])
 			.then(
-				axios.spread((_data, _export, _cities) => {
+				axios.spread((_data, _export, _cities, _bases) => {
 					setLoading(false);
 					setCities(_cities?.data?.data || []);
 					setData(responseGet(_data).data);
 					setExports(setDataExport(responseGet(_export).data));
+					setAccountBase(_bases?.data?.data || []);
 					setTablePage({
 						pagination: {
 							...params.pagination,
@@ -128,38 +126,56 @@ export default function AnggaranKota() {
 						},
 					});
 
-					if (!!responseGet(_export).data?.length) {
-						makeChartData(responseGet(_export).data);
+					if (!!(_bases?.data?.data || []).length) {
+						makeChartData(_bases?.data?.data || [], responseGet(_export).data);
 					}
 				})
 			);
 	};
 
-	const makeChartData = (values) => {
-		let _plan = 0,
-			_real = 0,
-			_planPercent = 0,
-			_realPercent = 0;
+	const makeChartData = (bases, values, percent = 100) => {
+		// init array untung menampung data pie masing-masing plan atau real
+		let _piePlan = [],
+			_pieReal = [];
 
-		_.map(values, (item) => {
-			_plan += parseFloat(item?.account_object_plan_amount || 0);
-			_real += parseFloat(item?.account_object_real_amount || 0);
+		// loop akun base
+		_.map(bases, (base, index) => {
+			// cari akun base[index] yang ada didata list
+			const cb = _.filter(values, (v) => v?.account_base_id === base?.id);
+
+			// push init ke array pie masing-masing
+			_piePlan.push({ type: normalizeLabel(base?.label).label, value: 0 });
+			_pieReal.push({ type: normalizeLabel(base?.label).label, value: 0 });
+
+			// kalau ada dari akun base yang ada di list
+			if (cb && !!cb.length) {
+				// loop hitung masing-masing plan atau real
+				_.map(cb, (cur) => {
+					// pakai float karena nilai ada pakai koma
+					_piePlan[index].value += parseFloat(
+						cur?.account_object_plan_amount || 0
+					);
+					_pieReal[index].value += parseFloat(
+						cur?.account_object_real_amount || 0
+					);
+				});
+			}
 		});
 
-		_planPercent = (_plan / (_plan + _real)) * 100;
-		_realPercent = (_real / (_plan + _real)) * 100;
+		// set ke state dan hitung persen masing-masing plan atau real
+		setPiePlan(
+			_.map(_piePlan, (item) => ({
+				...item,
+				value: parseNaN((item?.value / _.sumBy(_piePlan, "value")) * percent),
+			}))
+		);
 
-		// jumlah real atau plan / jumlah keseluruhan * 100
-		setPieData([
-			{
-				type: "Anggaran",
-				value: isNaN(_planPercent) ? 0 : _planPercent,
-			},
-			{
-				type: "Realisasi",
-				value: isNaN(_realPercent) ? 0 : _realPercent,
-			},
-		]);
+		setPieReal(
+			_.map(_pieReal, (item) => ({
+				...item,
+				value: parseNaN((item?.value / _.sumBy(_pieReal, "value")) * percent),
+			}))
+		);
 	};
 
 	const reloadTable = () => {
@@ -438,7 +454,25 @@ export default function AnggaranKota() {
 					/>
 				)}
 			</div>
-			{!!pieData?.length && <Pie {...pieConfig} data={pieData} />}
+			{/* {!!pieData?.length && <Pie {...pieConfig} data={pieData} />} */}
+			{!!accountBase.length && (
+				<div className="flex flex-col mx-0.5 pb-2 space-x-0 space-y-2 md:space-x-2 md:space-y-0 md:flex-row">
+					<Card
+						title={<span className="text-xs">Anggaran</span>}
+						bodyStyle={{ padding: 0, margin: 0 }}
+						className="text-center w-full md:w-1/2"
+					>
+						<Pie {...pieConfig} data={piePlan} />
+					</Card>
+					<Card
+						title={<span className="text-xs">Realisasi</span>}
+						bodyStyle={{ padding: 0, margin: 0 }}
+						className="text-center w-full md:w-1/2"
+					>
+						<Pie {...pieConfig} data={pieReal} />
+					</Card>
+				</div>
+			)}
 			<Table
 				scroll={{
 					scrollToFirstRowOnChange: true,
