@@ -32,6 +32,7 @@ const pieConfig = {
 	},
 	legend: false,
 	tooltip: false,
+	color: ["#1ca9e6", "#f88c24", "#63daab"],
 	interactions: [{ type: "element-selected" }],
 };
 
