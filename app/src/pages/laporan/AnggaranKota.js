@@ -148,7 +148,7 @@ export default function AnggaranKota() {
 			_piePlan.push({ type: normalizeLabel(base?.label).label, value: 0 });
 			_pieReal.push({ type: normalizeLabel(base?.label).label, value: 0 });
 
-			// kalau ada dari akun base yang ada di list
+			// kalau ada data dari akun base yang ada di list
 			if (cb && !!cb.length) {
 				// loop hitung masing-masing plan atau real
 				_.map(cb, (cur) => {
@@ -171,6 +171,7 @@ export default function AnggaranKota() {
 			}))
 		);
 
+		// set ke state dan hitung persen masing-masing plan atau real
 		setPieReal(
 			_.map(_pieReal, (item) => ({
 				...item,
@@ -463,14 +464,14 @@ export default function AnggaranKota() {
 						bodyStyle={{ padding: 0, margin: 0 }}
 						className="text-center w-full md:w-1/2"
 					>
-						<Pie {...pieConfig} data={piePlan} />
+						<Pie {...pieConfig} data={piePlan} loading={loading} />
 					</Card>
 					<Card
 						title={<span className="text-xs">Realisasi</span>}
 						bodyStyle={{ padding: 0, margin: 0 }}
 						className="text-center w-full md:w-1/2"
 					>
-						<Pie {...pieConfig} data={pieReal} />
+						<Pie {...pieConfig} data={pieReal} loading={loading} />
 					</Card>
 				</div>
 			)}
