@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { DatePicker, Select, Table } from "antd";
+import { Card, DatePicker, Select, Table } from "antd";
 import axios from "axios";
 import ReloadButton from "../../components/button/ReloadButton";
 import { getCityList } from "../../services/city";
@@ -12,13 +12,28 @@ import { formatterNumber } from "../../helpers/number";
 import { lower, upper } from "../../helpers/typo";
 import _ from "lodash";
 import ExportButton from "../../components/button/ExportButton";
+import { Column } from "@ant-design/plots";
 
 const { RangePicker } = DatePicker;
+
+const columnConfig = {
+	appendPadding: 20,
+	style: { height: 300 },
+	isGroup: true,
+	xField: "city",
+	yField: "value",
+	seriesField: "name",
+	legend: false,
+	color: ["#1ca9e6", "#f88c24"],
+	xAxis: { label: { autoRotate: true } },
+	scrollbar: { type: "horizontal" },
+};
 
 export default function AnggaranGabunganKota() {
 	const [data, setData] = useState([]);
 	const [cities, setCities] = useState([]);
 	const [exports, setExports] = useState([]);
+	const [charts, setCharts] = useState([]);
 	const [loading, setLoading] = useState(false);
 
 	const tableFilterInputRef = useRef(null);
@@ -54,8 +69,57 @@ export default function AnggaranGabunganKota() {
 							total: responseGet(_data).total_count,
 						},
 					});
+
+					if (!!(_cities?.data?.data || []).length) {
+						makeChartData(
+							_cities?.data?.data || [],
+							params?.filters,
+							responseGet(_export).data
+						);
+					}
 				})
 			);
+	};
+
+	const makeChartData = (cities, filter, values) => {
+		// tampung semua kota
+		let _sl = cities;
+
+		// cek filter kotanya
+		if (filter && filter?.city_id && !!filter?.city_id[0].length) {
+			// ambil kota yang hanya difilter sebagai default tampilan
+			_sl = _.filter(cities, (v) => filter?.city_id[0].includes(v?.id));
+		}
+
+		// init array untung menampung data chart
+		let _chart = [];
+
+		// loop kota
+		_.map(_sl, (city) => {
+			// cari kota[index] yang ada didata list
+			const cb = _.filter(values, (v) => v?.city_id === city?.id);
+
+			// init default chart plan atau real
+			let _ip = { name: "Anggaran", value: 0, city: city?.label };
+			let _ir = { name: "Relisasi", value: 0, city: city?.label };
+
+			// kalau ada data dari city yang ada dilist
+			if (cb && !!cb.length) {
+				// loop hitung masing-masing plan atau real
+				_.map(cb, (cur) => {
+					// pakai float karena nilai ada pakai koma
+					_ip.value += parseFloat(cur?.account_object_plan_amount || 0);
+					_ir.value += parseFloat(cur?.account_object_real_amount || 0);
+				});
+			}
+
+			// push init masing-masing plan atau real
+			_chart.push(_ip);
+			_chart.push(_ir);
+		});
+
+		// set ke state
+		setCharts(_chart);
 	};
 
 	const reloadTable = () => {
@@ -385,7 +449,7 @@ export default function AnggaranGabunganKota() {
 
 	return (
 		<>
-			<div className="flex flex-col space-y-2 sm:space-y-0 sm:space-x-2 sm:flex-row md:space-y-0 md:space-x-2 md:flex-row">
+			<div className="flex flex-col mb-1 space-y-2 sm:space-y-0 sm:space-x-2 sm:flex-row md:space-y-0 md:space-x-2 md:flex-row">
 				<div className="flex flex-row md:space-x-2">
 					<h2 className="text-xs font-normal text-right w-14 hidden md:inline">
 						Tanggal :
@@ -441,23 +505,32 @@ export default function AnggaranGabunganKota() {
 					/>
 				)}
 			</div>
-			<div className="mt-4">
-				<Table
-					scroll={{
-						scrollToFirstRowOnChange: true,
-						x: "100%",
-					}}
-					bordered
-					size="small"
-					loading={loading}
-					dataSource={data}
-					columns={columns}
-					rowKey={(record) => `${record?.account_object_id}_${record?.city_id}`}
-					onChange={onTableChange}
-					pagination={tablePage.pagination}
-					tableLayout="auto"
-				/>
-			</div>
+			{!!cities.length && (
+				<div className="flex mx-0.5 pb-2 space-x-0 space-y-2 md:space-x-2 md:space-y-0">
+					<Card
+						title={<span className="text-xs">Anggaran & Realisasi</span>}
+						bodyStyle={{ padding: 0, margin: 0 }}
+						className="text-center w-full"
+					>
+						<Column {...columnConfig} data={charts} loading={loading} />
+					</Card>
+				</div>
+			)}
+			<Table
+				scroll={{
+					scrollToFirstRowOnChange: true,
+					x: "100%",
+				}}
+				bordered
+				size="small"
+				loading={loading}
+				dataSource={data}
+				columns={columns}
+				rowKey={(record) => `${record?.account_object_id}_${record?.city_id}`}
+				onChange={onTableChange}
+				pagination={tablePage.pagination}
+				tableLayout="auto"
+			/>
 		</>
 	);
 }
