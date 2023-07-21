@@ -218,7 +218,7 @@ export default function Anggaran() {
 
 	return (
 		<>
-			<div className="flex flex-col space-y-2 sm:space-y-0 sm:space-x-2 sm:flex-row md:space-y-0 md:space-x-2 md:flex-row">
+			<div className="flex flex-col mb-2 space-y-2 sm:space-y-0 sm:space-x-2 sm:flex-row md:space-y-0 md:space-x-2 md:flex-row">
 				<ReloadButton onClick={reloadTable} stateLoading={loading} />
 				{!is_super_admin && (
 					<AddButton onClick={addUpdateRow} stateLoading={loading} />
@@ -231,30 +231,28 @@ export default function Anggaran() {
 					/>
 				)}
 			</div>
-			<div className="mt-4">
-				<Table
-					scroll={{
-						scrollToFirstRowOnChange: true,
-						x: "100%",
-					}}
-					bordered
-					size="small"
-					loading={loading}
-					dataSource={transactions}
-					columns={
-						is_super_admin
-							? columns.concat(
-									activeColumn(tableFiltered),
-									actionColumn(addUpdateRow, onActiveChange)
-							  )
-							: columns
-					}
-					rowKey={(record) => record?.id}
-					onChange={onTableChange}
-					pagination={tablePage.pagination}
-					tableLayout="auto"
-				/>
-			</div>
+			<Table
+				scroll={{
+					scrollToFirstRowOnChange: true,
+					x: "100%",
+				}}
+				bordered
+				size="small"
+				loading={loading}
+				dataSource={transactions}
+				columns={
+					is_super_admin
+						? columns.concat(
+								activeColumn(tableFiltered),
+								actionColumn(addUpdateRow, onActiveChange)
+						  )
+						: columns
+				}
+				rowKey={(record) => record?.id}
+				onChange={onTableChange}
+				pagination={tablePage.pagination}
+				tableLayout="auto"
+			/>
 			<Modal
 				style={{ margin: 10 }}
 				centered

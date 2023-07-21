@@ -179,7 +179,7 @@ export default function Kelompok() {
 
 	return (
 		<>
-			<div className="flex flex-col space-y-2 sm:space-y-0 sm:space-x-2 sm:flex-row md:space-y-0 md:space-x-2 md:flex-row">
+			<div className="flex flex-col mb-2 space-y-2 sm:space-y-0 sm:space-x-2 sm:flex-row md:space-y-0 md:space-x-2 md:flex-row">
 				<ReloadButton onClick={reloadTable} stateLoading={loading} />
 				<AddButton onClick={addUpdateRow} stateLoading={loading} />
 				{!!exports?.length && (
@@ -190,23 +190,21 @@ export default function Kelompok() {
 					/>
 				)}
 			</div>
-			<div className="mt-4">
-				<Table
-					scroll={{
-						scrollToFirstRowOnChange: true,
-						x: "100%",
-					}}
-					bordered
-					size="small"
-					loading={loading}
-					dataSource={accountGroup}
-					columns={columns}
-					rowKey={(record) => record?.id}
-					onChange={onTableChange}
-					pagination={tablePage.pagination}
-					tableLayout="auto"
-				/>
-			</div>
+			<Table
+				scroll={{
+					scrollToFirstRowOnChange: true,
+					x: "100%",
+				}}
+				bordered
+				size="small"
+				loading={loading}
+				dataSource={accountGroup}
+				columns={columns}
+				rowKey={(record) => record?.id}
+				onChange={onTableChange}
+				pagination={tablePage.pagination}
+				tableLayout="auto"
+			/>
 			<Modal
 				style={{ margin: 10 }}
 				centered
