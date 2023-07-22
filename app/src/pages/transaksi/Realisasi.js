@@ -35,7 +35,7 @@ import { formatterNumber, parserNumber } from "../../helpers/number";
 import { lower } from "../../helpers/typo";
 
 export default function Realisasi() {
-	const { message, modal } = App.useApp();
+	const { modal } = App.useApp();
 	const { is_super_admin } = useRole();
 	const [form] = Form.useForm();
 
@@ -126,7 +126,7 @@ export default function Realisasi() {
 			centered: true,
 			onOk() {
 				setActiveTransaction(value?.id).then(() => {
-					message.success(messageAction(true));
+					messageAction(true);
 					reloadTable();
 				});
 			},
@@ -153,7 +153,7 @@ export default function Realisasi() {
 
 		setConfirmLoading(true);
 		addTransaction(cur).then(() => {
-			message.success(messageAction(true));
+			messageAction(true);
 			setConfirmLoading(false);
 			setShow(false);
 			reloadTable();

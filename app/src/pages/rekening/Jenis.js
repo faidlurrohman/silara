@@ -28,7 +28,7 @@ import { checkParams } from "../../helpers/url";
 import { lower } from "../../helpers/typo";
 
 export default function Jenis() {
-	const { message, modal } = App.useApp();
+	const { modal } = App.useApp();
 	const [form] = Form.useForm();
 	const navigate = useNavigate();
 	const { id } = useParams();
@@ -122,7 +122,7 @@ export default function Jenis() {
 			centered: true,
 			onOk() {
 				setActiveAccount("type", value?.id).then(() => {
-					message.success(messageAction(true));
+					messageAction(true);
 					reloadTable();
 				});
 			},
@@ -135,7 +135,7 @@ export default function Jenis() {
 			setConfirmLoading(false);
 
 			if (response?.data?.code === 0) {
-				message.success(messageAction(isEdit));
+				messageAction(isEdit);
 				addUpdateRow();
 				reloadTable();
 			}

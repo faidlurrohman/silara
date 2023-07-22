@@ -1,9 +1,9 @@
-import { message } from "antd";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { store } from "../store";
 import { logoutAction } from "../store/actions/session";
 import { ping } from "./ping";
+import { swal } from "../helpers/swal";
 
 const axiosInstance = axios.create({
 	baseURL: process.env.REACT_APP_BASE_URL_API,
@@ -33,37 +33,37 @@ axiosInstance.interceptors.response.use(
 	async (error) => {
 		// due internet connection
 		if (!navigator.onLine) {
-			message.error("Tidak ada koneksi internet");
+			swal("Tidak ada koneksi internet", "warning");
 		} else {
 			// check connection db
 			ping().then((p) => {
 				if (p?.data?.status) {
-					// check token authotrization
+					// kalau cookies expire langsung tendang ke login
 					if (error?.response?.status === 401) {
-						store.dispatch(logoutAction());
-						message.error(
-							error?.response?.data?.message ||
-								error.message ||
-								"Data pengguna tidak terdaftar"
-						);
-					} else if (
-						Cookies.get(process.env.REACT_APP_ACCESS_TOKEN) === undefined
-					) {
-						store.dispatch(logoutAction());
-						message.error("Sesi anda berakhir");
-					} else if (
-						// any error was handled
-						error?.code === "ERR_BAD_RESPONSE" &&
-						error?.response?.data !== ""
-					) {
-						message.error(error?.response?.data?.message || error.message);
+						let msg = error?.response?.data?.message;
+
+						if (msg) {
+							swal(`${msg}.`, "warning");
+						} else {
+							swal("Sesi anda berakhir, silahkan masuk kembali.", "warning");
+							store.dispatch(logoutAction());
+						}
 					} else {
-						// any error here
-						console.log("error?.code", error?.code);
+						// any error was handled
+						if (
+							error?.code === "ERR_BAD_RESPONSE" &&
+							error?.response?.data !== ""
+						) {
+							swal(`${error?.response?.data?.message || error.message}.`);
+						} else {
+							// any error here or not handle
+							swal("Opps!!!");
+							console.log("error?.code", error?.code);
+						}
 					}
 				} else {
 					// due db connection
-					message.error("Tidak ada koneksi database");
+					swal("Tidak ada koneksi database");
 					return error;
 				}
 			});

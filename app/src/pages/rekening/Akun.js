@@ -15,7 +15,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 export default function Akun() {
-	const { message, modal } = App.useApp();
+	const { modal } = App.useApp();
 	const [form] = Form.useForm();
 	const navigate = useNavigate();
 
@@ -103,7 +103,7 @@ export default function Akun() {
 			centered: true,
 			onOk() {
 				setActiveAccount("base", value?.id).then(() => {
-					message.success(messageAction(true));
+					messageAction(true);
 					reloadTable();
 				});
 			},
@@ -116,7 +116,7 @@ export default function Akun() {
 			setConfirmLoading(false);
 
 			if (response?.data?.code === 0) {
-				message.success(messageAction(isEdit));
+				messageAction(isEdit);
 				addUpdateRow();
 				reloadTable();
 			}

@@ -21,7 +21,7 @@ import { UploadOutlined } from "@ant-design/icons";
 import axios from "axios";
 
 export default function PengaturanKota() {
-	const { message, modal } = App.useApp();
+	const { modal } = App.useApp();
 	const [form] = Form.useForm();
 
 	const [cities, setCities] = useState([]);
@@ -111,7 +111,7 @@ export default function PengaturanKota() {
 			centered: true,
 			onOk() {
 				setActiveCity(value?.id).then(() => {
-					message.success(messageAction(true));
+					messageAction(true);
 					reloadTable();
 				});
 			},
@@ -135,7 +135,7 @@ export default function PengaturanKota() {
 			setConfirmLoading(false);
 
 			if (response?.data?.code === 0) {
-				message.success(messageAction(isEdit));
+				messageAction(isEdit);
 				addUpdateRow();
 				reloadTable();
 			}

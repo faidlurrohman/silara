@@ -25,7 +25,7 @@ export default function Header({ onDrawer }) {
 	const session = useAppSelector((state) => state.session.user);
 	const { role_id } = useRole();
 	const dispatch = useAppDispatch();
-	const { message, modal } = App.useApp();
+	const { modal } = App.useApp();
 	const [form] = Form.useForm();
 	const [isShow, setShow] = useState(false);
 	const [confirmLoading, setConfirmLoading] = useState(false);
@@ -46,7 +46,7 @@ export default function Header({ onDrawer }) {
 		updatePasswordUser(values).then((response) => {
 			setConfirmLoading(false);
 			if (response?.data?.code === 0) {
-				message.success(messageAction(true));
+				messageAction(true);
 				showChangePassword(false);
 			}
 		});

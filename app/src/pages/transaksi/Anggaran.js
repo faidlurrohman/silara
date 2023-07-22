@@ -34,7 +34,7 @@ import { formatterNumber, parserNumber } from "../../helpers/number";
 import { lower } from "../../helpers/typo";
 
 export default function Anggaran() {
-	const { message, modal } = App.useApp();
+	const { modal } = App.useApp();
 	const { is_super_admin } = useRole();
 	const [form] = Form.useForm();
 
@@ -133,7 +133,7 @@ export default function Anggaran() {
 			centered: true,
 			onOk() {
 				setActiveTransaction(value?.id).then(() => {
-					message.success(messageAction(true));
+					messageAction(true);
 					reloadTable();
 				});
 			},
@@ -150,7 +150,7 @@ export default function Anggaran() {
 
 		setConfirmLoading(true);
 		addTransaction(cur).then(() => {
-			message.success(messageAction(isEdit));
+			messageAction(isEdit);
 			setConfirmLoading(false);
 			setShow(false);
 			reloadTable();

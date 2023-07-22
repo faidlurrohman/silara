@@ -22,7 +22,7 @@ import { messageAction, responseGet } from "../../helpers/response";
 import axios from "axios";
 
 export default function PengaturanPengguna() {
-	const { message, modal } = App.useApp();
+	const { modal } = App.useApp();
 	const [form] = Form.useForm();
 
 	const [users, setUsers] = useState([]);
@@ -116,7 +116,7 @@ export default function PengaturanPengguna() {
 			centered: true,
 			onOk() {
 				setActiveUser(value?.id).then(() => {
-					message.success(messageAction(true));
+					messageAction(true);
 					reloadTable();
 				});
 			},
@@ -129,7 +129,7 @@ export default function PengaturanPengguna() {
 			setConfirmLoading(false);
 
 			if (response?.data?.code === 0) {
-				message.success(messageAction(isEdit));
+				messageAction(isEdit);
 				addUpdateRow();
 				reloadTable();
 			}

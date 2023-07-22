@@ -1,4 +1,5 @@
 import { MESSAGE } from "./constants";
+import { swal } from "./swal";
 
 export const responseGet = (response) => {
 	let _fix = {
@@ -18,7 +19,5 @@ export const responseGet = (response) => {
 };
 
 export const messageAction = (isEdit = false) => {
-	if (isEdit) return MESSAGE?.edit;
-
-	return MESSAGE?.add;
+	swal(`${isEdit ? MESSAGE?.edit : MESSAGE?.add}.`, "success");
 };

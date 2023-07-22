@@ -20,7 +20,7 @@ import { messageAction, responseGet } from "../../helpers/response";
 import axios from "axios";
 
 export default function PengaturanPenandaTangan() {
-	const { message, modal } = App.useApp();
+	const { modal } = App.useApp();
 	const [form] = Form.useForm();
 
 	const [signer, setSigner] = useState([]);
@@ -105,7 +105,7 @@ export default function PengaturanPenandaTangan() {
 			centered: true,
 			onOk() {
 				setActiveSigner(value?.id).then(() => {
-					message.success(messageAction(true));
+					messageAction(true);
 					reloadTable();
 				});
 			},
@@ -118,7 +118,7 @@ export default function PengaturanPenandaTangan() {
 			setConfirmLoading(false);
 
 			if (response?.data?.code === 0) {
-				message.success(messageAction(isEdit));
+				messageAction(isEdit);
 				addUpdateRow();
 				reloadTable();
 			}

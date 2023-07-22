@@ -30,7 +30,7 @@ import { checkParams } from "../../helpers/url";
 import { lower } from "../../helpers/typo";
 
 export default function Objek() {
-	const { message, modal } = App.useApp();
+	const { modal } = App.useApp();
 	const [form] = Form.useForm();
 	const { id } = useParams();
 
@@ -129,7 +129,7 @@ export default function Objek() {
 			centered: true,
 			onOk() {
 				setActiveAccount("object", value?.id).then(() => {
-					message.success(messageAction(true));
+					messageAction(true);
 					reloadTable();
 				});
 			},
@@ -156,7 +156,7 @@ export default function Objek() {
 		setAllocationAccount("object", values).then((response) => {
 			setConfirmLoading(false);
 			if (response?.data?.code === 0) {
-				message.success(messageAction(true));
+				messageAction(true);
 				onAllocationChange();
 				reloadTable();
 			}
@@ -169,7 +169,7 @@ export default function Objek() {
 			setConfirmLoading(false);
 
 			if (response?.data?.code === 0) {
-				message.success(messageAction(isEdit));
+				messageAction(isEdit);
 				addUpdateRow();
 				reloadTable();
 			}
