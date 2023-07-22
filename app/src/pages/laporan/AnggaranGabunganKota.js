@@ -508,6 +508,7 @@ export default function AnggaranGabunganKota() {
 			{!!cities.length && (
 				<div className="flex mx-0.5 pb-2 space-x-0 space-y-2 md:space-x-2 md:space-y-0">
 					<Card
+						size="small"
 						title={<span className="text-xs">Anggaran & Realisasi</span>}
 						bodyStyle={{ padding: 0, margin: 0 }}
 						className="text-center w-full"

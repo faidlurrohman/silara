@@ -460,6 +460,7 @@ export default function AnggaranKota() {
 			{!!accountBase.length && (
 				<div className="flex flex-col mx-0.5 pb-2 space-x-0 space-y-2 md:space-x-2 md:space-y-0 md:flex-row">
 					<Card
+						size="small"
 						title={<span className="text-xs">Anggaran</span>}
 						bodyStyle={{ padding: 0, margin: 0 }}
 						className="text-center w-full md:w-1/2"
@@ -467,6 +468,7 @@ export default function AnggaranKota() {
 						<Pie {...pieConfig} data={piePlan} loading={loading} />
 					</Card>
 					<Card
+						size="small"
 						title={<span className="text-xs">Realisasi</span>}
 						bodyStyle={{ padding: 0, margin: 0 }}
 						className="text-center w-full md:w-1/2"

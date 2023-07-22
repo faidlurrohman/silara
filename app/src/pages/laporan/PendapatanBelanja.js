@@ -482,6 +482,7 @@ export default function PendapatanBelanja() {
 			{!!chartP.length && !!chartB.length && (
 				<div className="flex mx-0.5 pb-2 space-x-0 space-y-2 md:space-x-2 md:space-y-0">
 					<Card
+						size="small"
 						title={
 							<span className="text-xs">Anggaran & Realisasi Pendapatan</span>
 						}
@@ -495,6 +496,7 @@ export default function PendapatanBelanja() {
 			{!!chartB.length && (
 				<div className="flex mx-0.5 pb-2 space-x-0 space-y-2 md:space-x-2 md:space-y-0">
 					<Card
+						size="small"
 						title={
 							<span className="text-xs">Anggaran & Realisasi Belanja</span>
 						}
