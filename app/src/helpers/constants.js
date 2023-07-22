@@ -9,6 +9,9 @@ const COLORS = {
 	disable: "#64748B",
 	white: "#FFFFFF",
 	black: "#000000",
+	infoPastel: "#95BDFF",
+	successPastel: "#B5F1CC",
+	dangerPastel: "#F7A4A4",
 };
 /* 
   Usernames can only have: 
