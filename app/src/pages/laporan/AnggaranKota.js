@@ -456,7 +456,6 @@ export default function AnggaranKota() {
 					/>
 				)}
 			</div>
-			{/* {!!pieData?.length && <Pie {...pieConfig} data={pieData} />} */}
 			{!!accountBase.length && (
 				<div className="flex flex-col mx-0.5 pb-2 space-x-0 space-y-2 md:space-x-2 md:space-y-0 md:flex-row">
 					<Card
