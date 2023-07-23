@@ -5,7 +5,7 @@
 -- Dumped from database version 14.7
 -- Dumped by pg_dump version 14.7
 
--- Started on 2023-07-18 14:09:05 WIB
+-- Started on 2023-07-23 17:51:00 WIB
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -1133,7 +1133,7 @@ DECLARE
   _que_filter text := ''; 
   _jsonb_val jsonb := NULL::jsonb; -- ????
   -- _list_function text[];
-  _list_function text[] := ARRAY['get_city','get_signer','get_user','get_role','get_account_base','get_account_group','get_account_type','get_account_object','get_transaction', 'get_account_object_transaction_list', 'get_last_transaction', 'get_real_plan_cities', 'get_recapitulation_cities']; -- (setiap fungsi harus didaftarin di logic ini)
+  _list_function text[] := ARRAY['get_city','get_signer','get_user','get_role','get_account_base','get_account_group','get_account_type','get_account_object','get_transaction', 'get_account_object_transaction_list', 'get_last_transaction', 'get_real_plan_cities', 'get_recapitulation_cities', 'get_dashboard', 'get_dashboard_recap_years']; -- (setiap fungsi harus didaftarin di logic ini)
   -- SELECT UPPER('cc') = ANY(array['aa', 'bb', 'cc']) -- CEK LOGIC
 
   -- untuk menentukan error message duplicate, data tidak ada, atau kebutuhan lainnya
@@ -1150,6 +1150,8 @@ DECLARE
   _rec_user record;
   _user_clause text:='';
   _trans_date_clause text:='';
+  _first_day_recap date;
+  _last_day_recap date;
 BEGIN
 
   -- ==========================
@@ -1869,7 +1871,7 @@ BEGIN
       END IF;
 	  
 	  IF(COALESCE(_rec.trans_date_start::text, '')!='' AND COALESCE(_rec.trans_date_end::text, '')!='') THEN 
-		  _trans_date_clause := 'AND st.trans_date >=' || QUOTE_LITERAL(''||_rec.trans_date_start||'') || ' AND st.trans_date <=' || QUOTE_LITERAL(''||_rec.trans_date_end||'');
+		  _trans_date_clause := 'WHERE mt.trans_date >=' || QUOTE_LITERAL(''||_rec.trans_date_start||'') || ' AND mt.trans_date <=' || QUOTE_LITERAL(''||_rec.trans_date_end||'');
     END IF; -- kolom trans_date_start and trans_date_end
 
       -- process query (menyesuaikan sesuai function)
@@ -1924,7 +1926,6 @@ BEGIN
             WHERE st.active
                 AND st.real_amount>=0 
                 AND st.plan_amount=0
-		          ' || _trans_date_clause || '
             ORDER BY st.account_object_id, st.city_id, st.trans_date DESC
         ), mt AS ( -- GABUNGIN DATA ANGGARAN DAN TRANSAKSI
             SELECT 
@@ -1987,6 +1988,7 @@ BEGIN
             JOIN sab ON sab.account_base_id=aol.account_base_id AND sab.city_id=mt.city_id
             JOIN sag ON sag.account_group_id=aol.account_group_id AND sag.city_id=mt.city_id
             JOIN sat ON sat.account_type_id=aol.account_type_id AND sat.city_id=mt.city_id
+            ' || _trans_date_clause || '
         ) SELECT st.*, COUNT(st.*) OVER() AS total_count FROM st WHERE TRUE
       ' || _user_clause;
 
@@ -2034,7 +2036,7 @@ BEGIN
       END IF;
 	  
 	  IF(COALESCE(_rec.trans_date_start::text, '')!='' AND COALESCE(_rec.trans_date_end::text, '')!='') THEN 
-		_trans_date_clause := 'AND st.trans_date >=' || QUOTE_LITERAL(''||_rec.trans_date_start||'') || ' AND st.trans_date <=' || QUOTE_LITERAL(''||_rec.trans_date_end||'');
+		_trans_date_clause := 'AND mt.trans_date >=' || QUOTE_LITERAL(''||_rec.trans_date_start||'') || ' AND mt.trans_date <=' || QUOTE_LITERAL(''||_rec.trans_date_end||'');
       END IF; -- kolom trans_date_start and trans_date_end
 
       -- process query (menyesuaikan sesuai function)
@@ -2087,7 +2089,6 @@ BEGIN
             WHERE st.active
                 AND st.real_amount>=0 
                 AND st.plan_amount=0
-                    ' || _trans_date_clause || '
             ORDER BY st.account_object_id, st.city_id, st.trans_date DESC
         ), mt AS ( -- GABUNGIN DATA ANGGARAN DAN TRANSAKSI
             SELECT 
@@ -2114,6 +2115,7 @@ BEGIN
                 MAX(mt.trans_date) trans_date
             FROM aol
             JOIN mt ON mt.account_object_id=aol.account_object_id
+            ' || _trans_date_clause || '
             GROUP BY aol.account_base_id, aol.account_base_label, mt.city_id, mt.city_label
         ) SELECT st.*, COUNT(st.*) OVER() AS total_count FROM st 
         WHERE TRUE
@@ -2122,6 +2124,230 @@ BEGIN
     ---------------------------
     -- END OF (12) Function : get_recapitulation_cities 
     ---------------------------
+
+    --------------------
+    -- (13) Function : get_dashboard 
+    --------------------
+    ELSIF (LOWER(_function)='get_dashboard') THEN 
+      FOR _rec IN
+        SELECT * FROM jsonb_populate_recordset(null::record, _filter) 
+          AS t (trans_date_start date, trans_date_end date, city_id text) 
+        LIMIT 1
+      LOOP
+        -- kolom city_id
+        IF(COALESCE(_rec.city_id, '')!='') THEN 
+          _que_filter := _que_filter || ' AND st.city_id in(' || _rec.city_id ||')';
+        END IF; -- kolom city_id
+        
+      END LOOP; -- pembentukan filter
+
+      -- GET DATA USER
+      SELECT * FROM silarakab.user WHERE username = _user INTO _rec_user;
+
+      -- CEK ROLE
+      IF _rec_user.role_id != ALL('{1,3}'::integer[]) THEN
+        _user_clause := 'AND st.city_id = ' || _rec_user.city_id;
+      END IF;
+	  
+	  IF(COALESCE(_rec.trans_date_start::text, '')!='' AND COALESCE(_rec.trans_date_end::text, '')!='') THEN 
+		_trans_date_clause := 'AND mt.trans_date >=' || QUOTE_LITERAL(''||_rec.trans_date_start||'') || ' AND mt.trans_date <=' || QUOTE_LITERAL(''||_rec.trans_date_end||'');
+      END IF; -- kolom trans_date_start and trans_date_end
+
+      -- process query (menyesuaikan sesuai function)
+      _main_query := '    
+        WITH aol AS ( -- AMBIL DATA AKUN OBJEK YANG AKTIF
+            SELECT  
+                -- account base
+                sab.id AS account_base_id, 
+                sab.remark AS account_base_label,
+                -- account group
+                sag.id AS account_group_id, 
+                -- account type
+                sat.id AS account_type_id, 
+                -- account object
+                sao.id AS account_object_id
+            FROM silarakab.account_base sab
+            JOIN silarakab.account_group sag ON sag.account_base_id=sab.id 
+                AND sag.active
+            JOIN silarakab.account_type sat ON sat.account_group_id=sag.id 
+                AND sat.active
+            JOIN silarakab.account_object sao ON sao.account_type_id=sat.id 
+                AND sao.active
+            WHERE sab.active
+                AND LOWER(sab.remark) IN(LOWER(''PENDAPATAN DAERAH''), LOWER(''BELANJA DAERAH''), LOWER(''PEMBIAYAAN DAERAH''))
+        ), tpa AS ( -- AMBIL DATA TRANSAKSI ANGGARAN DAN KOTA YANG AKTIF
+            SELECT DISTINCT ON (st.account_object_id, st.city_id, EXTRACT(YEAR FROM st.trans_date))
+                st.id AS tpa_id,
+                st.account_object_id,
+                st.city_id,
+                sc.label AS city_label,
+                sc.logo AS city_logo,
+                st.plan_amount,
+                st.trans_date
+            FROM silarakab.transaction st
+            JOIN silarakab.city sc ON sc.id=st.city_id 
+                AND sc.active
+            WHERE st.active
+                AND st.plan_amount>=0 AND st.real_amount=0
+			ORDER BY st.account_object_id, st.city_id, EXTRACT(YEAR FROM st.trans_date), st.id ASC
+        ), tra AS ( -- AMBIL DATA TRANSAKSI REALISASI DAN KOTA YANG AKTIF
+            SELECT DISTINCT ON (st.account_object_id, st.city_id)
+                st.id AS tra_id,
+                st.account_object_id,
+                st.city_id,
+                st.real_amount,
+                st.trans_date
+            FROM silarakab.transaction st
+            JOIN silarakab.city sc ON sc.id=st.city_id 
+                AND sc.active
+            WHERE st.active
+                AND st.real_amount>=0 
+                AND st.plan_amount=0
+            ORDER BY st.account_object_id, st.city_id, st.trans_date DESC
+        ), mt AS ( -- GABUNGIN DATA ANGGARAN DAN TRANSAKSI
+            SELECT 
+                tpa.tpa_id,
+                tpa.account_object_id,
+                tpa.city_id,
+                tpa.city_label,
+                tpa.city_logo,
+                tpa.plan_amount,
+                tra.real_amount,
+                COALESCE(tra.trans_date, tpa.trans_date) as trans_date
+            FROM tpa
+            LEFT JOIN tra ON tra.account_object_id=tpa.account_object_id 
+                AND tra.city_id=tpa.city_id
+                AND EXTRACT(YEAR FROM tpa.trans_date)=EXTRACT(YEAR FROM tra.trans_date)
+        ), st AS ( -- HASIL
+            SELECT 
+                aol.account_base_id,
+                aol.account_base_label,
+                mt.city_id, 
+                mt.city_label,
+                COALESCE(SUM(mt.plan_amount), 0) as account_base_plan_amount,
+                COALESCE(SUM(mt.real_amount), 0) as account_base_real_amount,
+                MAX(mt.trans_date) trans_date
+            FROM aol
+            JOIN mt ON mt.account_object_id=aol.account_object_id
+            ' || _trans_date_clause || '
+            GROUP BY aol.account_base_id, aol.account_base_label, mt.city_id, mt.city_label
+        ) SELECT st.*, COUNT(st.*) OVER() AS total_count FROM st 
+        WHERE TRUE
+      ' || _user_clause;
+
+    ---------------------------
+    -- END OF (13) Function : get_dashboard 
+    ---------------------------
+
+    --------------------
+    -- (14) Function : get_dashboard_recap_years 
+    --------------------
+    ELSIF (LOWER(_function)='get_dashboard_recap_years') THEN 
+      
+      -- GET DATA USER
+      SELECT * FROM silarakab.user WHERE username = _user INTO _rec_user;
+
+      -- CEK ROLE
+      IF _rec_user.role_id != ALL('{1,3}'::integer[]) THEN
+        _user_clause := 'AND st.city_id = ' || _rec_user.city_id;
+      END IF;
+
+      -- GET FIRST DAY
+      SELECT DATE(DATE_TRUNC('year', NOW() - INTERVAL '2 year')) INTO _first_day_recap;
+
+      -- GET LAST DAY
+      SELECT DATE(DATE_TRUNC('year', NOW() + INTERVAL '1 year') - INTERVAL '1 day') INTO _last_day_recap; -- last day
+	  
+      RAISE NOTICE 'USER ::: %',_rec_user;
+      RAISE NOTICE 'FIRST DAY ::: %',_first_day_recap;
+      RAISE NOTICE 'LAST DAY ::: %',_last_day_recap;
+
+      -- process query (menyesuaikan sesuai function)
+      _main_query := '    
+        WITH aol AS ( -- AMBIL DATA AKUN OBJEK YANG AKTIF
+            SELECT  
+                -- account base
+                sab.id AS account_base_id, 
+                sab.remark AS account_base_label,
+                -- account group
+                sag.id AS account_group_id, 
+                -- account type
+                sat.id AS account_type_id, 
+                -- account object
+                sao.id AS account_object_id
+            FROM silarakab.account_base sab
+            JOIN silarakab.account_group sag ON sag.account_base_id=sab.id 
+                AND sag.active
+            JOIN silarakab.account_type sat ON sat.account_group_id=sag.id 
+                AND sat.active
+            JOIN silarakab.account_object sao ON sao.account_type_id=sat.id 
+                AND sao.active
+            WHERE sab.active
+                AND LOWER(sab.remark) IN(LOWER(''PENDAPATAN DAERAH''), LOWER(''BELANJA DAERAH''), LOWER(''PEMBIAYAAN DAERAH''))
+        ), tpa AS ( -- AMBIL DATA TRANSAKSI ANGGARAN DAN KOTA YANG AKTIF
+            SELECT DISTINCT ON (st.account_object_id, st.city_id, EXTRACT(YEAR FROM st.trans_date))
+                st.id AS tpa_id,
+                st.account_object_id,
+                st.city_id,
+                sc.label AS city_label,
+                sc.logo AS city_logo,
+                st.plan_amount,
+                st.trans_date
+            FROM silarakab.transaction st
+            JOIN silarakab.city sc ON sc.id=st.city_id 
+                AND sc.active
+            WHERE st.active
+                AND st.plan_amount>=0 AND st.real_amount=0
+			ORDER BY st.account_object_id, st.city_id, EXTRACT(YEAR FROM st.trans_date), st.id ASC
+        ), tra AS ( -- AMBIL DATA TRANSAKSI REALISASI DAN KOTA YANG AKTIF
+            SELECT DISTINCT ON (st.account_object_id, st.city_id)
+                st.id AS tra_id,
+                st.account_object_id,
+                st.city_id,
+                st.real_amount,
+                st.trans_date
+            FROM silarakab.transaction st
+            JOIN silarakab.city sc ON sc.id=st.city_id 
+                AND sc.active
+            WHERE st.active
+                AND st.real_amount>=0 
+                AND st.plan_amount=0
+            ORDER BY st.account_object_id, st.city_id, st.trans_date DESC
+        ), mt AS ( -- GABUNGIN DATA ANGGARAN DAN TRANSAKSI
+            SELECT 
+                tpa.tpa_id,
+                tpa.account_object_id,
+                tpa.city_id,
+                tpa.city_label,
+                tpa.city_logo,
+                tpa.plan_amount,
+                tra.real_amount,
+                COALESCE(tra.trans_date, tpa.trans_date) as trans_date
+            FROM tpa
+            LEFT JOIN tra ON tra.account_object_id=tpa.account_object_id 
+                AND tra.city_id=tpa.city_id
+                AND EXTRACT(YEAR FROM tpa.trans_date)=EXTRACT(YEAR FROM tra.trans_date)
+        ), st AS ( -- HASIL
+            SELECT 
+                aol.account_base_id,
+                aol.account_base_label,
+                mt.city_id, 
+                mt.city_label,
+                COALESCE(SUM(mt.plan_amount), 0) as account_base_plan_amount,
+                COALESCE(SUM(mt.real_amount), 0) as account_base_real_amount,
+                MAX(mt.trans_date) trans_date
+            FROM aol
+            JOIN mt ON mt.account_object_id=aol.account_object_id
+              AND mt.trans_date >=' || QUOTE_LITERAL(''||_first_day_recap||'') || ' AND mt.trans_date <=' || QUOTE_LITERAL(''||_last_day_recap||'') ||
+            'GROUP BY aol.account_base_id, aol.account_base_label, mt.city_id, mt.city_label
+        ) SELECT st.*, COUNT(st.*) OVER() AS total_count FROM st 
+        WHERE TRUE
+      ' || _user_clause;
+
+    ---------------------------
+    -- END OF (14) Function : get_dashboard_recap_years 
+    ---------------------------
+
     ELSE --(LOWER(_function)
       __code := 104;
       __res_notice := __res_notice || 'Function not found  ==> Please check the latest logic for : ' || _function || __res_break;
@@ -2892,11 +3118,11 @@ COPY silarakab.account_type (id, account_group_id, label, remark, active) FROM s
 COPY silarakab.city (id, label, active, logo) FROM stdin;
 27	Tanjung Pinang	t	\N
 29	Kabupaten Lingga	t	\N
-31	Kabupaten Anambas	t	\N
 26	Kabupaten Karimun	t	\N
 28	Natuna	t	\N
-21	Batam	t	e491eac3de248dbe3c6fbb3295bc2a23.png
 30	Kabupaten Bintan	t	c153bd256868ee4dccba4b2df65542d3.png
+21	Batam	t	e491eac3de248dbe3c6fbb3295bc2a23.png
+31	Kabupaten Anambas	t	
 \.
 
 
@@ -3559,6 +3785,52 @@ COPY silarakab.log (id, "table", mode, start_value, end_value, created_at, creat
 650	silarakab.signer	U	\N	[{"id": 10, "nip": "199110052015031000", "title": "Penata", "fullname": "Penanda Tangan", "position": "Kepala Sub Bidang Bina dan Evaluasi Daerah"}]	2023-07-18 00:58:16	superadmin
 651	silarakab.signer	U	\N	[{"id": 9, "nip": "1977111620060402000", "title": "Pembina Tk.I", "fullname": "Penanda Tangan", "position": "Kepala Bidang Anggaran"}]	2023-07-18 00:58:27	superadmin
 652	silarakab.transaction	C	\N	[{"id": "0", "city_id": 30, "trans_date": "2023-01-01", "plan_amount": 500000, "real_amount": 0, "account_object_id": 3}]	2023-07-18 10:29:30	adminbintan
+653	silarakab."user"	D	[{"id": "8"}]	\N	2023-07-18 16:07:45	superadmin
+654	silarakab."user"	D	[{"id": "8"}]	\N	2023-07-18 16:07:53	superadmin
+655	silarakab."user"	D	[{"id": "8"}]	\N	2023-07-18 16:08:10	superadmin
+656	silarakab."user"	D	[{"id": "8"}]	\N	2023-07-18 16:08:15	superadmin
+657	silarakab."user"	D	[{"id": "9"}]	\N	2023-07-18 16:09:33	superadmin
+658	silarakab."user"	D	[{"id": "9"}]	\N	2023-07-18 16:11:09	superadmin
+659	silarakab."user"	D	[{"id": "9"}]	\N	2023-07-18 16:13:01	superadmin
+660	silarakab."user"	D	[{"id": "9"}]	\N	2023-07-18 16:13:37	superadmin
+661	silarakab."user"	D	[{"id": "9"}]	\N	2023-07-18 16:14:44	superadmin
+662	silarakab."user"	D	[{"id": "9"}]	\N	2023-07-18 16:15:35	superadmin
+663	silarakab."user"	D	[{"id": "8"}]	\N	2023-07-18 16:16:16	superadmin
+664	silarakab."user"	D	[{"id": "8"}]	\N	2023-07-18 16:17:00	superadmin
+665	silarakab."user"	D	[{"id": "8"}]	\N	2023-07-18 16:18:22	superadmin
+666	silarakab."user"	D	[{"id": "8"}]	\N	2023-07-18 16:18:29	superadmin
+667	silarakab."user"	D	[{"id": "8"}]	\N	2023-07-18 16:19:38	superadmin
+668	silarakab."user"	D	[{"id": "8"}]	\N	2023-07-18 16:20:07	superadmin
+669	silarakab."user"	D	[{"id": "8"}]	\N	2023-07-18 16:22:33	superadmin
+670	silarakab."user"	D	[{"id": "8"}]	\N	2023-07-18 16:23:08	superadmin
+671	silarakab."user"	D	[{"id": "8"}]	\N	2023-07-18 16:23:23	superadmin
+672	silarakab."user"	D	[{"id": "8"}]	\N	2023-07-18 16:23:26	superadmin
+673	silarakab."user"	D	[{"id": "8"}]	\N	2023-07-18 16:23:36	superadmin
+674	silarakab."user"	D	[{"id": "8"}]	\N	2023-07-18 16:23:40	superadmin
+675	silarakab."user"	U	\N	[{"id": 9, "title": "Admin Kota Bintan", "city_id": 30, "role_id": 2, "fullname": "Admin Kota Binta", "password": "", "username": "adminbintan"}]	2023-07-18 16:23:58	superadmin
+676	silarakab."user"	U	\N	[{"id": 9, "title": "Admin Kota Bintan", "city_id": 30, "role_id": 2, "fullname": "Admin Kota Bintaa", "password": "", "username": "adminbintan"}]	2023-07-18 16:24:07	superadmin
+677	silarakab.transaction	C	\N	[{"id": "0", "city_id": 21, "trans_date": "2023-01-01", "plan_amount": 0, "real_amount": 0, "account_object_id": 33}]	2023-07-19 17:25:07	adminbatam
+678	silarakab.transaction	C	\N	[{"id": "0", "city_id": 21, "trans_date": "2023-07-19", "plan_amount": 0, "real_amount": 9000000, "account_object_id": 33}]	2023-07-19 17:25:17	adminbatam
+679	silarakab.transaction	C	\N	[{"id": "0", "city_id": 21, "trans_date": "2023-01-01", "plan_amount": 6000000, "real_amount": 0, "account_object_id": 60}]	2023-07-19 17:25:42	adminbatam
+680	silarakab.transaction	C	\N	[{"id": "0", "city_id": 21, "trans_date": "2023-07-19", "plan_amount": 0, "real_amount": 899999, "account_object_id": 60}]	2023-07-19 17:25:51	adminbatam
+681	silarakab.transaction	U	\N	[{"id": 510, "city_id": 21, "trans_date": "2023-01-01", "plan_amount": 9000000, "real_amount": 0, "account_object_id": null}]	2023-07-19 17:35:48	superadmin
+682	silarakab.transaction	U	\N	[{"id": 513, "city_id": 21, "trans_date": "2023-07-19", "plan_amount": 0, "real_amount": 6000000, "account_object_id": 60}]	2023-07-19 17:45:47	adminbatam
+683	silarakab.transaction	U	\N	[{"id": 513, "city_id": 21, "trans_date": "2023-07-19", "plan_amount": 0, "real_amount": 9000000, "account_object_id": 60}]	2023-07-19 17:47:53	adminbatam
+684	silarakab.signer	U	\N	[{"id": 10, "nip": "199110052015031000", "title": "Penata", "fullname": "Suhaimi", "position": "Kepala Sub Bidang Bina dan Evaluasi Daerah"}]	2023-07-19 18:21:42	superadmin
+685	silarakab.signer	U	\N	[{"id": 9, "nip": "1977111620060402000", "title": "Pembina Tk.I", "fullname": "Om Ifin", "position": "Kepala Bidang Anggaran"}]	2023-07-19 18:21:49	superadmin
+686	silarakab.signer	U	\N	[{"id": 10, "nip": "199110052015031000", "title": "Penata", "fullname": "Muhammad Eka Putra Galus, ST", "position": "Kepala Sub Bidang Bina dan Evaluasi Daerah"}]	2023-07-19 18:25:42	superadmin
+687	silarakab.signer	U	\N	[{"id": 9, "nip": "1977111620060402000", "title": "Pembina Tk.I", "fullname": "Heri Samuel Kurniawan, MT, MM, Spd.i, SA.g", "position": "Kepala Bidang Anggaran"}]	2023-07-19 18:26:25	superadmin
+688	silarakab.city	C	\N	[{"id": "0", "blob": "null", "logo": "", "label": "berak"}]	2023-07-19 18:31:59	superadmin
+689	silarakab.city	D	[{"id": "21"}]	\N	2023-07-19 18:33:02	superadmin
+690	silarakab.transaction	D	[{"id": "511"}]	\N	2023-07-22 01:54:02	superadmin
+691	silarakab.transaction	D	[{"id": "513"}]	\N	2023-07-22 01:54:26	superadmin
+692	silarakab.transaction	D	[{"id": "510"}]	\N	2023-07-22 01:55:14	superadmin
+693	silarakab.transaction	D	[{"id": "510"}]	\N	2023-07-22 01:55:44	superadmin
+694	silarakab.transaction	D	[{"id": "511"}]	\N	2023-07-22 01:55:46	superadmin
+695	silarakab.transaction	D	[{"id": "513"}]	\N	2023-07-22 01:55:48	superadmin
+696	silarakab.city	U	\N	[{"id": "31", "blob": "null", "logo": "", "label": "Kabupaten Anambasd"}]	2023-07-22 16:11:30	superadmin
+697	silarakab.city	U	\N	[{"id": "31", "blob": "null", "logo": "", "label": "Kabupaten Anambas"}]	2023-07-22 16:11:42	superadmin
+698	silarakab."user"	C	\N	[{"id": "0", "title": "Admin  Kota Tanjung Pinang", "city_id": 27, "role_id": 2, "fullname": "Admin Tanjung Pinang", "password": "admintanjungpinang123", "username": "admintanjungpinang"}]	2023-07-22 16:12:35	superadmin
 \.
 
 
@@ -3593,8 +3865,8 @@ COPY silarakab.setting (id, name, value) FROM stdin;
 --
 
 COPY silarakab.signer (id, nip, fullname, title, active, "position") FROM stdin;
-10	199110052015031000	Penanda Tangan	Penata	t	Kepala Sub Bidang Bina dan Evaluasi Daerah
-9	1977111620060402000	Penanda Tangan	Pembina Tk.I	t	Kepala Bidang Anggaran
+10	199110052015031000	Muhammad Eka Putra Galus, ST	Penata	t	Kepala Sub Bidang Bina dan Evaluasi Daerah
+9	1977111620060402000	Heri Samuel Kurniawan, MT, MM, Spd.i, SA.g	Pembina Tk.I	t	Kepala Bidang Anggaran
 \.
 
 
@@ -3611,6 +3883,10 @@ COPY silarakab.transaction (id, account_object_id, city_id, plan_amount, real_am
 506	3	28	0	100000	2023-07-13	t
 508	3	21	0	0	2023-01-01	t
 509	3	30	500000	0	2023-01-01	t
+512	60	21	6000000	0	2023-01-01	t
+510	33	21	9000000	0	2023-01-01	t
+511	33	21	0	9000000	2023-07-19	t
+513	60	21	0	9000000	2023-07-19	t
 \.
 
 
@@ -3621,9 +3897,10 @@ COPY silarakab.transaction (id, account_object_id, city_id, plan_amount, real_am
 --
 
 COPY silarakab."user" (id, username, password, role_id, city_id, fullname, title, active, token) FROM stdin;
-8	adminbatam	50193f28a760e2d044b5822e508b643f	2	21	Admin Kota Batam	Admin Kota Batam	t	bef8c3c46ce5476da12afd081e207795c9f0f895fb98ab9159f51fd0297e236de3bf705011f8bf81cd8e164ce39fdd252
-9	adminbintan	363764e87df1fb44649540050924bce5	2	30	Admin Kota Bintan	Admin Kota Bintan	t	7628a86e20c9701b8c9221b553574e2145c48cce2e2d7fbdea1afc51c7c6ad267fef1f06708516e78661cb86505965052
-7	superadmin	91838196f1d33e5bfb739adf3fdd254d	1	21	Super Admin	Super Admin	t	931078a59688d513d07bcb8eb2b61d878f14e45fceea167a5a36dedd4bea254317c4520f6cfd1ab53d8745e84681eb491
+9	adminbintan	363764e87df1fb44649540050924bce5	2	30	Admin Kota Bintaa	Admin Kota Bintan	t	7628a86e20c9701b8c9221b553574e2145c48cce2e2d7fbdea1afc51c7c6ad267fef1f06708516e78661cb86505965052
+11	admintanjungpinang	513a62311a0fc137fa1de5d5110eeee2	2	27	Admin Tanjung Pinang	Admin  Kota Tanjung Pinang	t	\N
+8	adminbatam	50193f28a760e2d044b5822e508b643f	2	21	Admin Kota Batam	Admin Kota Batam	t	cf60f91918470d9e1b6527e6f412ae9cc9f0f895fb98ab9159f51fd0297e236de3bf705011f8bf81cd8e164ce39fdd252
+7	superadmin	91838196f1d33e5bfb739adf3fdd254d	1	21	Super Admin	Super Admin	t	e98563e816acb5bd55dc10b4c6be2fe68f14e45fceea167a5a36dedd4bea254317c4520f6cfd1ab53d8745e84681eb491
 10	adminnatuna	086f11d93ed4197ea55e53ecc4cecbfc	2	28	Admin Natuna	Admin Kota	t	5f6fa350cbe964e6e41033b740a0a46ad3d9446802a44259755d38e6d163e820a530625693a278c2e34229bcf21377cc2
 \.
 
@@ -3670,7 +3947,7 @@ SELECT pg_catalog.setval('silarakab.account_type_id_seq', 23, true);
 -- Name: city_id_seq; Type: SEQUENCE SET; Schema: silarakab; Owner: postgres
 --
 
-SELECT pg_catalog.setval('silarakab.city_id_seq', 44, true);
+SELECT pg_catalog.setval('silarakab.city_id_seq', 45, true);
 
 
 --
@@ -3679,7 +3956,7 @@ SELECT pg_catalog.setval('silarakab.city_id_seq', 44, true);
 -- Name: log_id_seq; Type: SEQUENCE SET; Schema: silarakab; Owner: postgres
 --
 
-SELECT pg_catalog.setval('silarakab.log_id_seq', 652, true);
+SELECT pg_catalog.setval('silarakab.log_id_seq', 698, true);
 
 
 --
@@ -3715,7 +3992,7 @@ SELECT pg_catalog.setval('silarakab.signer_id_seq', 10, true);
 -- Name: transaction_id_seq; Type: SEQUENCE SET; Schema: silarakab; Owner: postgres
 --
 
-SELECT pg_catalog.setval('silarakab.transaction_id_seq', 509, true);
+SELECT pg_catalog.setval('silarakab.transaction_id_seq', 513, true);
 
 
 --
@@ -3724,7 +4001,7 @@ SELECT pg_catalog.setval('silarakab.transaction_id_seq', 509, true);
 -- Name: user_id_seq; Type: SEQUENCE SET; Schema: silarakab; Owner: postgres
 --
 
-SELECT pg_catalog.setval('silarakab.user_id_seq', 10, true);
+SELECT pg_catalog.setval('silarakab.user_id_seq', 11, true);
 
 
 --
@@ -4050,7 +4327,7 @@ ALTER TABLE ONLY silarakab."user"
     ADD CONSTRAINT user_role_id_fkey FOREIGN KEY (role_id) REFERENCES silarakab.role(id) ON DELETE CASCADE;
 
 
--- Completed on 2023-07-18 14:09:05 WIB
+-- Completed on 2023-07-23 17:51:00 WIB
 
 --
 -- PostgreSQL database dump complete
