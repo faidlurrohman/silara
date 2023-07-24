@@ -39,10 +39,10 @@ export default function Masuk() {
 
 	return (
 		<section className="flex w-full h-screen place-items-center items-center flex-col">
-			<div className="relative mx-0 my-auto md:m-auto md:w-6/12 lg:w-3/12 rounded-md p-8 h-auto bg-main shadow-lg">
-				<div className="mb-10 flex flex-col items-center">
-					<img alt="Logo" className="w-20 mb-2 md:w-40" src={logoPortal} />
-					<h1 className="font-bold text-xl md:text-3xl mt-2 text-white tracking-wider">
+			<div className="relative mx-0 my-auto rounded-md p-8 h-auto bg-main shadow-lg md:m-auto md:w-6/12 lg:w-3/12">
+				<div className="flex flex-col items-center">
+					<img alt="Logo" className="w-20 mb-2 md:w-28" src={logoPortal} />
+					<h1 className="font-bold text-xl mt-2 text-white tracking-wider md:text-2xl">
 						{process.env.REACT_APP_NAME}
 					</h1>
 				</div>
@@ -59,7 +59,7 @@ export default function Masuk() {
 							{ required: true, message: "Nama Pengguna tidak boleh kosong" },
 						]}
 					>
-						<Input size="large" allowClear />
+						<Input allowClear />
 					</Form.Item>
 
 					<Form.Item
@@ -69,7 +69,7 @@ export default function Masuk() {
 							{ required: true, message: "Kata Sandi tidak boleh kosong" },
 						]}
 					>
-						<Input.Password size="large" allowClear />
+						<Input.Password allowClear />
 					</Form.Item>
 					<Form.Item name="remember" valuePropName="checked">
 						<Checkbox className="checkbox-login">Pengingat Saya</Checkbox>
@@ -79,7 +79,6 @@ export default function Masuk() {
 							loading={loading}
 							block
 							shape="round"
-							size="large"
 							type="primary"
 							htmlType="submit"
 						>
