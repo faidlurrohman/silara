@@ -9,7 +9,12 @@ import {
 	Modal,
 	Space,
 } from "antd";
-import { MenuOutlined, UserOutlined } from "@ant-design/icons";
+import {
+	LockOutlined,
+	LoginOutlined,
+	MenuOutlined,
+	UserOutlined,
+} from "@ant-design/icons";
 import { Layout } from "antd";
 import { useAppDispatch, useAppSelector } from "../hooks/useRedux";
 import { logoutAction } from "../store/actions/session";
@@ -84,14 +89,22 @@ export default function Header({ onDrawer }) {
 						placement="bottomLeft"
 						menu={{
 							items: [
+								{
+									label: `Hi, ${session?.username}!`,
+									key: "0",
+									icon: <UserOutlined />,
+								},
+								{ type: "divider" },
 								role_id !== 1 && {
 									key: "1",
 									label: "Ubah Kata Sandi",
+									icon: <LockOutlined />,
 									onClick: () => showChangePassword(true),
 								},
 								{
 									key: "2",
 									label: "Keluar",
+									icon: <LoginOutlined />,
 									onClick: () => showConfirm(),
 								},
 							],
