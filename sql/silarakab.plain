@@ -5,7 +5,7 @@
 -- Dumped from database version 14.7
 -- Dumped by pg_dump version 14.7
 
--- Started on 2023-07-24 17:02:35 WIB
+-- Started on 2023-07-24 21:33:02 WIB
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -157,7 +157,7 @@ LIVO (20230518) : master cek password;';
 
 
 --
--- TOC entry 245 (class 1255 OID 16386)
+-- TOC entry 244 (class 1255 OID 16386)
 -- Name: get_auth(text); Type: FUNCTION; Schema: silarakab; Owner: postgres
 --
 
@@ -191,7 +191,7 @@ ALTER FUNCTION silarakab.get_auth(_username text, OUT token text) OWNER TO postg
 
 --
 -- TOC entry 4474 (class 0 OID 0)
--- Dependencies: 245
+-- Dependencies: 244
 -- Name: FUNCTION get_auth(_username text, OUT token text); Type: COMMENT; Schema: silarakab; Owner: postgres
 --
 
@@ -200,7 +200,7 @@ COMMENT ON FUNCTION silarakab.get_auth(_username text, OUT token text) IS 'BURGE
 
 
 --
--- TOC entry 246 (class 1255 OID 16387)
+-- TOC entry 245 (class 1255 OID 16387)
 -- Name: main_cud(text, text, text, jsonb); Type: FUNCTION; Schema: silarakab; Owner: postgres
 --
 
@@ -1090,7 +1090,7 @@ ALTER FUNCTION silarakab.main_cud(_mode text, _table text, _user text, _data jso
 
 --
 -- TOC entry 4475 (class 0 OID 0)
--- Dependencies: 246
+-- Dependencies: 245
 -- Name: FUNCTION main_cud(_mode text, _table text, _user text, _data jsonb, OUT __code integer, OUT __new_id integer, OUT __new_msg text); Type: COMMENT; Schema: silarakab; Owner: postgres
 --
 
@@ -1108,7 +1108,7 @@ COMMENT ON FUNCTION silarakab.main_cud(_mode text, _table text, _user text, _dat
 
 
 --
--- TOC entry 244 (class 1255 OID 16389)
+-- TOC entry 246 (class 1255 OID 16389)
 -- Name: main_read(integer, integer, text, text, text, jsonb); Type: FUNCTION; Schema: silarakab; Owner: postgres
 --
 
@@ -1817,9 +1817,34 @@ BEGIN
 
       -- process query (menyesuaikan sesuai function)
       _main_query := '    
-        WITH st AS(
-          SELECT st.*
+        WITH tpa AS ( -- AMBIL DATA TRANSAKSI ANGGARAN DAN KOTA YANG AKTIF
+          SELECT DISTINCT ON (st.account_object_id, st.city_id, EXTRACT(YEAR FROM st.trans_date))
+              st.id AS tpa_id,
+              st.account_object_id,
+              st.city_id,
+              sc.label AS city_label,
+              sc.logo AS city_logo,
+              st.plan_amount,
+              st.trans_date
           FROM silarakab.transaction st
+          JOIN silarakab.city sc ON sc.id=st.city_id 
+              AND sc.active
+          WHERE st.active
+              AND st.plan_amount>=0 AND st.real_amount=0
+          ORDER BY st.account_object_id, st.city_id, EXTRACT(YEAR FROM st.trans_date), st.id ASC
+        ), st AS(
+          SELECT 
+              st.id,
+              st.account_object_id,
+              st.city_id,
+              tpa.plan_amount,
+              st.real_amount,
+              st.trans_date,
+              st.active
+          FROM silarakab.transaction st
+          JOIN tpa ON tpa.account_object_id=st.account_object_id 
+              AND tpa.city_id=st.city_id
+              AND EXTRACT(YEAR FROM tpa.trans_date)=EXTRACT(YEAR FROM st.trans_date)
           WHERE st.active' || _user_clause || '
           ORDER BY st.id DESC LIMIT 1
         ) SELECT st.*, COUNT(st.*) OVER() AS total_count FROM st 
@@ -2437,7 +2462,7 @@ ALTER FUNCTION silarakab.main_read(_limit integer, _offset integer, _user text, 
 
 --
 -- TOC entry 4476 (class 0 OID 0)
--- Dependencies: 244
+-- Dependencies: 246
 -- Name: FUNCTION main_read(_limit integer, _offset integer, _user text, _function text, _order_by text, _filter jsonb, OUT __code integer, OUT __res_data jsonb, OUT __res_msg text, OUT __res_count integer); Type: COMMENT; Schema: silarakab; Owner: postgres
 --
 
@@ -3849,6 +3874,10 @@ COPY silarakab.log (id, "table", mode, start_value, end_value, created_at, creat
 698	silarakab."user"	C	\N	[{"id": "0", "title": "Admin  Kota Tanjung Pinang", "city_id": 27, "role_id": 2, "fullname": "Admin Tanjung Pinang", "password": "admintanjungpinang123", "username": "admintanjungpinang"}]	2023-07-22 16:12:35	superadmin
 699	silarakab.transaction	C	\N	[{"id": "0", "city_id": 30, "trans_date": "2023-07-24", "plan_amount": 0, "real_amount": 200000, "account_object_id": 3}]	2023-07-24 10:06:28	adminbintan
 700	silarakab."user"	C	\N	[{"id": "0", "title": "Admin Kota Anambas", "city_id": 31, "role_id": 2, "fullname": "Admin Anambas", "password": "adminanambas123", "username": "adminanambas"}]	2023-07-24 10:28:04	superadmin
+701	silarakab.transaction	C	\N	[{"id": "0", "city_id": 30, "trans_date": "2023-01-01", "plan_amount": 150000, "real_amount": 0, "account_object_id": 9}]	2023-07-24 20:49:34	adminbintan
+702	silarakab.transaction	C	\N	[{"id": "0", "city_id": 30, "trans_date": "2023-07-11", "plan_amount": 0, "real_amount": 0, "account_object_id": 9}]	2023-07-24 20:51:33	adminbintan
+703	silarakab.transaction	C	\N	[{"id": "0", "city_id": 30, "trans_date": "2023-07-24", "plan_amount": 0, "real_amount": 100000, "account_object_id": 9}]	2023-07-24 21:18:51	adminbintan
+704	silarakab.transaction	U	\N	[{"id": 515, "city_id": 21, "trans_date": "2023-01-01", "plan_amount": 1500000, "real_amount": 0, "account_object_id": null}]	2023-07-24 21:25:44	superadmin
 \.
 
 
@@ -3895,17 +3924,9 @@ COPY silarakab.signer (id, nip, fullname, title, active, "position") FROM stdin;
 --
 
 COPY silarakab.transaction (id, account_object_id, city_id, plan_amount, real_amount, trans_date, active) FROM stdin;
-502	3	28	0	0	2023-01-01	t
-505	9	28	0	0	2023-01-01	t
-507	3	28	0	8000000	2023-07-12	t
-506	3	28	0	100000	2023-07-13	t
-508	3	21	0	0	2023-01-01	t
-509	3	30	500000	0	2023-01-01	t
-512	60	21	6000000	0	2023-01-01	t
-513	60	21	0	9000000	2023-07-19	t
-514	3	30	0	200000	2023-07-24	t
-511	33	21	0	9000000	2022-07-19	t
-510	33	21	9000000	0	2022-01-01	t
+516	9	30	0	0	2023-07-11	t
+517	9	30	0	100000	2023-07-24	t
+515	9	30	1500000	0	2023-01-01	t
 \.
 
 
@@ -3918,9 +3939,9 @@ COPY silarakab.transaction (id, account_object_id, city_id, plan_amount, real_am
 COPY silarakab."user" (id, username, password, role_id, city_id, fullname, title, active, token) FROM stdin;
 8	adminbatam	50193f28a760e2d044b5822e508b643f	2	21	Admin Kota Batam	Admin Kota Batam	t	0fcc1b47583248ba019783c74c94fa2bc9f0f895fb98ab9159f51fd0297e236de3bf705011f8bf81cd8e164ce39fdd252
 10	adminnatuna	086f11d93ed4197ea55e53ecc4cecbfc	2	28	Admin Natuna	Admin Kota	t	2bae33d40185248dcf7f7396eb1f7ad4d3d9446802a44259755d38e6d163e820a530625693a278c2e34229bcf21377cc2
-9	adminbintan	363764e87df1fb44649540050924bce5	2	30	Admin Kota Bintaa	Admin Kota Bintan	t	7860c16f4c6bc9a5cacc6650067e5eba45c48cce2e2d7fbdea1afc51c7c6ad267fef1f06708516e78661cb86505965052
-7	superadmin	91838196f1d33e5bfb739adf3fdd254d	1	21	Super Admin	Super Admin	t	396ba224249c668cb5e3825ceee11e028f14e45fceea167a5a36dedd4bea254317c4520f6cfd1ab53d8745e84681eb491
 12	adminanambas	25a760fe2b93a2b8af96a6fedbed7239	2	31	Admin Anambas	Admin Kota Anambas	t	\N
+7	superadmin	91838196f1d33e5bfb739adf3fdd254d	1	21	Super Admin	Super Admin	t	6161aa304473c1167504c9f6a83859b38f14e45fceea167a5a36dedd4bea254317c4520f6cfd1ab53d8745e84681eb491
+9	adminbintan	363764e87df1fb44649540050924bce5	2	30	Admin Kota Bintaa	Admin Kota Bintan	t	7ad2a0dd78fda589c9662f5d9b100a2245c48cce2e2d7fbdea1afc51c7c6ad267fef1f06708516e78661cb86505965052
 11	admintanjungpinang	513a62311a0fc137fa1de5d5110eeee2	2	27	Admin Tanjung Pinang	Admin  Kota Tanjung Pinang	t	634d6888c96ddcec2632df3f2727de3d6512bd43d9caa6e02c990b0a82652dcaac2f0ddbe0b0e211d2b271d6d4f777252
 \.
 
@@ -3976,7 +3997,7 @@ SELECT pg_catalog.setval('silarakab.city_id_seq', 45, true);
 -- Name: log_id_seq; Type: SEQUENCE SET; Schema: silarakab; Owner: postgres
 --
 
-SELECT pg_catalog.setval('silarakab.log_id_seq', 700, true);
+SELECT pg_catalog.setval('silarakab.log_id_seq', 704, true);
 
 
 --
@@ -4012,7 +4033,7 @@ SELECT pg_catalog.setval('silarakab.signer_id_seq', 10, true);
 -- Name: transaction_id_seq; Type: SEQUENCE SET; Schema: silarakab; Owner: postgres
 --
 
-SELECT pg_catalog.setval('silarakab.transaction_id_seq', 514, true);
+SELECT pg_catalog.setval('silarakab.transaction_id_seq', 517, true);
 
 
 --
@@ -4347,7 +4368,7 @@ ALTER TABLE ONLY silarakab."user"
     ADD CONSTRAINT user_role_id_fkey FOREIGN KEY (role_id) REFERENCES silarakab.role(id) ON DELETE CASCADE;
 
 
--- Completed on 2023-07-24 17:02:35 WIB
+-- Completed on 2023-07-24 21:33:02 WIB
 
 --
 -- PostgreSQL database dump complete
