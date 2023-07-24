@@ -16,19 +16,6 @@ import { Column } from "@ant-design/plots";
 
 const { RangePicker } = DatePicker;
 
-const columnConfig = {
-	appendPadding: 20,
-	style: { height: 300 },
-	isGroup: true,
-	xField: "city",
-	yField: "value",
-	seriesField: "name",
-	legend: false,
-	color: ["#1ca9e6", "#f88c24"],
-	xAxis: { label: { autoRotate: true } },
-	scrollbar: { type: "horizontal" },
-};
-
 export default function AnggaranGabunganKota() {
 	const [data, setData] = useState([]);
 	const [cities, setCities] = useState([]);
@@ -45,6 +32,19 @@ export default function AnggaranGabunganKota() {
 	]);
 	const [cityFilter, setCityFilter] = useState([]);
 	const [tablePage, setTablePage] = useState(PAGINATION);
+
+	const columnConfig = {
+		appendPadding: 20,
+		style: { height: 300 },
+		isGroup: true,
+		xField: "city",
+		yField: "value",
+		seriesField: "name",
+		legend: false,
+		color: ["#1ca9e6", "#f88c24"],
+		xAxis: { label: { autoRotate: true } },
+		scrollbar: { type: "horizontal" },
+	};
 
 	const getData = (params) => {
 		setLoading(true);

@@ -18,24 +18,6 @@ import { getAccountList } from "../../services/account";
 
 const { RangePicker } = DatePicker;
 
-const pieConfig = {
-	appendPadding: 10,
-	style: { height: 250 },
-	angleField: "value",
-	colorField: "type",
-	radius: 0.75,
-	label: {
-		type: "spider",
-		labelHeight: 28,
-		content: "{name}\n{percentage}",
-		style: { fontSize: 12 },
-	},
-	legend: false,
-	tooltip: false,
-	color: ["#1ca9e6", "#f88c24", "#63daab"],
-	interactions: [{ type: "element-selected" }],
-};
-
 export default function AnggaranKota() {
 	const { is_super_admin } = useRole();
 	const [data, setData] = useState([]);
@@ -100,6 +82,24 @@ export default function AnggaranKota() {
 			"int"
 		),
 	];
+
+	const pieConfig = {
+		appendPadding: 10,
+		style: { height: 250 },
+		angleField: "value",
+		colorField: "type",
+		radius: 0.75,
+		label: {
+			type: "spider",
+			labelHeight: 28,
+			content: "{name}\n{percentage}",
+			style: { fontSize: 12 },
+		},
+		legend: false,
+		tooltip: false,
+		color: ["#1ca9e6", "#f88c24", "#63daab"],
+		interactions: [{ type: "element-selected" }],
+	};
 
 	const getData = (params) => {
 		setLoading(true);

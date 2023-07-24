@@ -5,6 +5,6 @@ export const getDashboard = (params) => {
 	return axios.get(getUrl("/api/dashboard", params));
 };
 
-export const getRecapYears = () => {
-	return axios.get("/api/dashboard/recap_years");
+export const getRecapYears = (params) => {
+	return axios.get(getUrl("/api/dashboard/recap_years", params));
 };

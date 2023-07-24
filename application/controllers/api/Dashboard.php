@@ -52,7 +52,11 @@ class Dashboard extends REST_Controller {
         $user = $this->Auth_model->check_token();
 
         if ($user) {
-            $data = $this->Dashboard_model->get_recap_years($user);
+            $limit = !empty($this->get('limit')) ? $this->get('limit') : 0; 
+            $offset = !empty($this->get('offset')) ? $this->get('offset') : 0; 
+            $order = !empty($this->get('order')) ? $this->get('order') : 'st.account_base_id desc'; 
+            $filter = !empty($this->get('filter')) ? $this->get('filter') : new stdClass();
+            $data = $this->Dashboard_model->get_recap_years($user, $limit, $offset, $order, $filter);
         
             if ($data['code'] != 0) {
                 $this->response($data, REST_Controller::HTTP_INTERNAL_SERVER_ERROR);

@@ -21,9 +21,10 @@ class Dashboard_model extends CI_Model {
         return model_response($query);
     }
     
-    function get_recap_years($user)
+    function get_recap_years($user, $limit, $offset, $order, $filter)
     {
-        $sql = "SELECT * FROM {$this->read}(0, 0, '".$user['username']."', '".$this->schema_recap."', '', '[{}]'::JSONB)";
+        $setOrder = set_order($order);
+        $sql = "SELECT * FROM {$this->read}($limit, $offset, '".$user['username']."', '".$this->schema_recap."', '".$setOrder."', '[".json_encode($filter)."]'::JSONB)";
         // echo $sql;exit;
         $query = $this->db->query($sql);
         return model_response($query);
