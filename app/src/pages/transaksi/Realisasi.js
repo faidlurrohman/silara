@@ -279,12 +279,16 @@ export default function Realisasi() {
 										<h4 className="md:inline">{`Tanggal Transaksi`}</h4>
 									</div>
 									<div>
+										<h4 className="md:inline">{`Anggaran (Rp)`}</h4>
+									</div>
+									<div>
 										<h4 className="md:inline">{`Realisasi (Rp)`}</h4>
 									</div>
 								</div>
 								<div className="flex-1 flex-col space-y-2">
 									<div>
 										<h4 className="md:inline">
+											:{" "}
 											{lastTransaction?.trans_date
 												? viewDate(lastTransaction?.trans_date)
 												: `-`}
@@ -292,6 +296,15 @@ export default function Realisasi() {
 									</div>
 									<div>
 										<h4 className="md:inline">
+											:{" "}
+											{lastTransaction?.plan_amount >= 0
+												? formatterNumber(lastTransaction?.plan_amount || 0)
+												: `-`}
+										</h4>
+									</div>
+									<div>
+										<h4 className="md:inline">
+											:{" "}
 											{lastTransaction?.real_amount >= 0
 												? formatterNumber(lastTransaction?.real_amount || 0)
 												: `-`}

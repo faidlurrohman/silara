@@ -278,6 +278,7 @@ export default function Anggaran() {
 								<div className="flex-1 flex-col space-y-2">
 									<div>
 										<h4 className="md:inline">
+											:{" "}
 											{lastTransaction?.trans_date
 												? viewDate(lastTransaction?.trans_date)
 												: `-`}
@@ -285,6 +286,7 @@ export default function Anggaran() {
 									</div>
 									<div>
 										<h4 className="md:inline">
+											:{" "}
 											{lastTransaction?.plan_amount >= 0
 												? formatterNumber(lastTransaction?.plan_amount || 0)
 												: `-`}
