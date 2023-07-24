@@ -24,6 +24,20 @@ const REGEX_USERNAME = /^[a-zA-Z0-9_\.]+$/;
 const DATE_UTC = "Asia/Jakarta";
 const DATE_FORMAT_DB = "YYYY-MM-DD";
 const DATE_FORMAT_VIEW = "DD MMMM YYYY";
+const MONTHS = [
+	"Januari",
+	"Februari",
+	"Maret",
+	"April",
+	"Mei",
+	"Juni",
+	"Juli",
+	"Agustus",
+	"September",
+	"Oktober",
+	"November",
+	"Desember",
+];
 const PAGINATION = { pagination: { current: 1, pageSize: 10 } };
 const MESSAGE = {
 	add: "Data berhasil ditambah",
@@ -222,4 +236,5 @@ export {
 	DATE_UTC,
 	DATE_FORMAT_VIEW,
 	DATE_FORMAT_DB,
+	MONTHS,
 };
