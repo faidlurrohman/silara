@@ -153,7 +153,7 @@ export default function Realisasi() {
 
 		setConfirmLoading(true);
 		addTransaction(cur).then(() => {
-			messageAction(true);
+			messageAction();
 			setConfirmLoading(false);
 			setShow(false);
 			reloadTable();
