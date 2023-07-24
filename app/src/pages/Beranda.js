@@ -31,23 +31,19 @@ import { parserNumber } from "../helpers/number";
 const { RangePicker } = DatePicker;
 
 export default function Beranda() {
+	// ambil tahun sekarang
+	let _cy = convertDate().endOf("year");
+	// ambil 3 tahun sebelumnya dari tahun sekarang
+	let _by = convertDate().startOf("year").subtract(2, "year");
+
 	const { is_super_admin } = useRole();
 	const [data, setData] = useState([]);
 	const [recap, setRecap] = useState([]);
 	const [isNoFilter, setIsNoFilter] = useState(true);
 	const [cities, setCities] = useState([]);
 	const [loading, setLoading] = useState(false);
-	const [dateRangeFilter, setDateRangeFilter] = useState([
-		convertDate().startOf("year"),
-		convertDate(),
-	]);
+	const [dateRangeFilter, setDateRangeFilter] = useState([_by, _cy]);
 	const [cityFilter, setCityFilter] = useState([]);
-
-	// ambil tahun sekarang
-	let _cy = convertDate().endOf("year");
-
-	// ambil 3 tahun sebelumnya dari tahun sekarang
-	let _by = convertDate().startOf("year").subtract(2, "year");
 
 	// config graph
 	const lineConfig = {
@@ -228,15 +224,13 @@ export default function Beranda() {
 
 	const resetData = () => {
 		setIsNoFilter(true);
-		setDateRangeFilter([convertDate().startOf("year"), convertDate()]);
+		setDateRangeFilter([_by, _cy]);
 		setCityFilter([]);
 		getData(
 			{
 				...PAGINATION,
 				filters: {
-					trans_date: [
-						[dbDate(convertDate().startOf("year")), dbDate(convertDate())],
-					],
+					trans_date: [[dbDate(_by), dbDate(_cy)]],
 					...(is_super_admin && { city_id: null }),
 				},
 			},
