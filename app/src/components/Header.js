@@ -72,7 +72,7 @@ export default function Header({ onDrawer }) {
 	return (
 		<HeaderAntd
 			className="bg-main px-2.5 sticky top-0 w-full"
-			style={{ zIndex: 11111 }}
+			style={{ zIndex: 100 }}
 		>
 			<div className="flex justify-between">
 				<div className="relative grid items-center lg:hidden">

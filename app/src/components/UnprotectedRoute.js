@@ -1,12 +1,26 @@
 import { Navigate } from "react-router-dom";
 import { useAppSelector } from "../hooks/useRedux";
+import { useEffect, useState } from "react";
+import Loader from "./Loader";
 
 export default function UnprotectedRoute({ children }) {
-  const session = useAppSelector((state) => state.session.user);
+	const session = useAppSelector((state) => state.session.user);
+	const [loader, setLoader] = useState(true);
 
-  if (session) {
-    return <Navigate to={"/"} replace />;
-  }
+	useEffect(() => {
+		setTimeout(() => {
+			setLoader(false);
+		}, 1500);
+	}, []);
 
-  return children;
+	if (session) {
+		return <Navigate to={"/"} replace />;
+	}
+
+	return (
+		<>
+			<Loader spinning={loader} />
+			{children}
+		</>
+	);
 }
