@@ -90,7 +90,15 @@ export default function Header({ onDrawer }) {
 						menu={{
 							items: [
 								{
-									label: `Hi, ${session?.username}!`,
+									label: (
+										<span>
+											Hi,{" "}
+											<span className="font-bold underline">
+												{session?.username}
+											</span>
+											!
+										</span>
+									),
 									key: "0",
 									icon: <UserOutlined />,
 								},

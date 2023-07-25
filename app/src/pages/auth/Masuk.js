@@ -38,19 +38,19 @@ export default function Masuk() {
 	}, []);
 
 	return (
-		<section className="flex w-full h-screen place-items-center items-center flex-col">
-			<div className="relative mx-0 my-auto rounded-md p-8 h-auto bg-main shadow-lg md:m-auto md:w-6/12 lg:w-3/12">
+		<section className="flex flex-col w-full h-screen place-items-center items-center">
+			<div className="relative w-full m-auto">
 				<div className="flex flex-col items-center">
-					<img alt="Logo" className="w-20 mb-2 md:w-28" src={logoPortal} />
-					<h1 className="font-bold text-xl mt-2 text-white tracking-wider md:text-2xl">
+					<img alt="Logo" className="w-20 md:w-28" src={logoPortal} />
+					<h1 className="font-black text-xl text-main tracking-wider">
 						{process.env.REACT_APP_NAME}
 					</h1>
 				</div>
 				<Form
 					form={form}
 					layout="vertical"
-					name="basic"
 					onFinish={handleSubmit}
+					className="bg-main px-4 pt-4 pb-1 rounded-lg shadow-lg m-4 md:m-auto lg:m-auto md:w-1/3 lg:w-1/4"
 				>
 					<Form.Item
 						label={<span className="text-white">Nama Pengguna</span>}
@@ -61,7 +61,6 @@ export default function Masuk() {
 					>
 						<Input allowClear />
 					</Form.Item>
-
 					<Form.Item
 						label={<span className="text-white">Kata Sandi</span>}
 						name="password"
@@ -74,14 +73,8 @@ export default function Masuk() {
 					<Form.Item name="remember" valuePropName="checked">
 						<Checkbox className="checkbox-login">Pengingat Saya</Checkbox>
 					</Form.Item>
-					<Form.Item className="mt-8">
-						<Button
-							loading={loading}
-							block
-							shape="round"
-							type="primary"
-							htmlType="submit"
-						>
+					<Form.Item>
+						<Button loading={loading} block type="primary" htmlType="submit">
 							Masuk
 						</Button>
 					</Form.Item>
