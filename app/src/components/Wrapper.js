@@ -99,7 +99,7 @@ export default function Wrapper({ children }) {
 
 				const ftrg = [];
 
-				trg[pathSnippets[1] || pathSnippets[0]].map((path, index) => {
+				_.map(trg[pathSnippets[1] || pathSnippets[0]], (path) => {
 					if (MENU_NAVIGATION[path]) {
 						ftrg.push({
 							key: path,
@@ -114,7 +114,7 @@ export default function Wrapper({ children }) {
 
 				setNavLink(initLink.concat(ftrg));
 			} else {
-				pathSnippets.map((_, index) => {
+				_.map(pathSnippets, (_, index) => {
 					const url = `/${pathSnippets.slice(0, index + 1).join("/")}`;
 
 					if (MENU_NAVIGATION[url]) {
