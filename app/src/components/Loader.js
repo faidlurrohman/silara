@@ -7,7 +7,7 @@ export default function Loader({ spinning = false }) {
 		<div
 			className={`flex bg-white items-center justify-center opacity-100 text-center w-full fixed top-0 bottom-0 left-0 z-[100000] ${
 				!spinning &&
-				`-z-[1] opacity-0 transition-all ease-in-out delay-200 duration-500`
+				`-z-[100000] opacity-0 transition-all ease-in-out delay-200 duration-500`
 			} `}
 		>
 			<div className="w-[200px] h-[100px] inline-flex flex-col justify-around">
