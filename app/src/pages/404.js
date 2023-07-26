@@ -20,6 +20,7 @@ export default function NotFound({ useNav = true }) {
 				An art by{" "}
 				<a
 					target="_blank"
+					rel="noopener noreferrer"
 					href="https://dribbble.com/frasierfanclub"
 					className="text-secondary hover:text-secondary"
 				>

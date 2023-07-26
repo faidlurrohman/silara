@@ -17,7 +17,7 @@ const COLORS = {
   - Dots (.)
   - Underscores (_)
 */
-const REGEX_USERNAME = /^[a-zA-Z0-9_\.]+$/;
+const REGEX_USERNAME = /^[a-zA-Z0-9_.]+$/;
 const DATE_UTC = "Asia/Jakarta";
 const DATE_FORMAT_DB = "YYYY-MM-DD";
 const DATE_FORMAT_VIEW = "DD MMMM YYYY";

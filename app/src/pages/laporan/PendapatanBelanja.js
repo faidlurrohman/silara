@@ -352,63 +352,6 @@ export default function PendapatanBelanja() {
 		return results;
 	};
 
-	const recursiveRecord = (data, results = [], base = null, group = null) => {
-		_.map(data, (item) => {
-			results.push(item);
-
-			if (item?.children && !!item.children.length) {
-				recursiveRecord(item?.children, results, item?.code, item?.code);
-			}
-
-			if (item?.code !== group && item?.code.split(".").length === 2) {
-				group = item?.code;
-				results.push(
-					{
-						code: "",
-						origin: item?.origin,
-						label: `JUMLAH ${item?.label}`,
-						plan_amount: item?.plan_amount,
-						real_amount: item?.real_amount,
-						percentage: item?.percentage,
-					},
-					{
-						code: "",
-						label: "",
-						plan_amount: "",
-						real_amount: "",
-						percentage: "",
-					}
-				);
-			}
-
-			if (item?.code !== base && item?.code.length === 1) {
-				base = item?.code;
-
-				results.push(
-					{
-						code: "",
-						label: `JUMLAH ${item?.label}`,
-						origin: item?.origin,
-						plan_amount: item?.plan_amount,
-						real_amount: item?.real_amount,
-						percentage: item?.percentage,
-					},
-					{
-						code: "",
-						label: "",
-						plan_amount: "",
-						real_amount: "",
-						percentage: "",
-					}
-				);
-			}
-
-			return item;
-		});
-
-		return results;
-	};
-
 	const sumPercentage = (value1 = 0, value2 = 0, results = 0) => {
 		if ([null, undefined, ""].includes(value1)) value1 = 0;
 		if ([null, undefined, ""].includes(value2)) value2 = 0;

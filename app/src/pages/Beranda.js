@@ -125,13 +125,14 @@ export default function Beranda() {
 			for (b; b < tb; b++) {
 				// set month index untuk kebutuhan filter
 				let _mi = b + 1 < 10 ? `0${b + 1}` : String(b + 1);
+				let _sy = String(_startYear);
 
 				// cari data untuk pendapatan
 				let _fpl = _.filter(
 					values,
 					(o) =>
 						lower(o?.account_base_label).includes(lower("pendapatan")) &&
-						o?.trans_date.split("-")[0] === String(_startYear) &&
+						o?.trans_date.split("-")[0] === _sy &&
 						o?.trans_date.split("-")[1] === _mi
 				);
 
@@ -140,7 +141,7 @@ export default function Beranda() {
 					values,
 					(o) =>
 						lower(o?.account_base_label).includes(lower("pembiayaan")) &&
-						o?.trans_date.split("-")[0] === String(_startYear) &&
+						o?.trans_date.split("-")[0] === _sy &&
 						o?.trans_date.split("-")[1] === _mi
 				);
 
@@ -149,7 +150,7 @@ export default function Beranda() {
 					values,
 					(o) =>
 						lower(o?.account_base_label).includes(lower("belanja")) &&
-						o?.trans_date.split("-")[0] === String(_startYear) &&
+						o?.trans_date.split("-")[0] === _sy &&
 						o?.trans_date.split("-")[1] === _mi
 				);
 
@@ -157,13 +158,13 @@ export default function Beranda() {
 				if (_fpl && !!_fpl.length) {
 					_result.push({
 						name: "Pendapatan",
-						month_year: `${MONTHS[b]} (${String(_startYear)})`,
+						month_year: `${MONTHS[b]} (${_sy})`,
 						value: _.sumBy(_fpl, "account_base_real_amount"),
 					});
 				} else {
 					_result.push({
 						name: "Pendapatan",
-						month_year: `${MONTHS[b]} (${String(_startYear)})`,
+						month_year: `${MONTHS[b]} (${_sy})`,
 						value: 0,
 					});
 				}
@@ -172,13 +173,13 @@ export default function Beranda() {
 				if (_fpl2 && !!_fpl2.length) {
 					_result.push({
 						name: "Pembiayaan",
-						month_year: `${MONTHS[b]} (${String(_startYear)})`,
+						month_year: `${MONTHS[b]} (${_sy})`,
 						value: _.sumBy(_fpl2, "account_base_real_amount"),
 					});
 				} else {
 					_result.push({
 						name: "Pembiayaan",
-						month_year: `${MONTHS[b]} (${String(_startYear)})`,
+						month_year: `${MONTHS[b]} (${_sy})`,
 						value: 0,
 					});
 				}
@@ -187,13 +188,13 @@ export default function Beranda() {
 				if (_fpl3 && !!_fpl3.length) {
 					_result.push({
 						name: "Belanja",
-						month_year: `${MONTHS[b]} (${String(_startYear)})`,
+						month_year: `${MONTHS[b]} (${_sy})`,
 						value: _.sumBy(_fpl3, "account_base_real_amount"),
 					});
 				} else {
 					_result.push({
 						name: "Belanja",
-						month_year: `${MONTHS[b]} (${String(_startYear)})`,
+						month_year: `${MONTHS[b]} (${_sy})`,
 						value: 0,
 					});
 				}
@@ -316,7 +317,7 @@ export default function Beranda() {
 		return upper(
 			`GRAFIK REALISASI PERIODE ${sd1[1]} ${sd1[2]} - ${sd2[1]} ${sd2[2]}`
 		);
-	}, [isNoFilter, dateRangeFilter]);
+	}, [isNoFilter, dateRangeFilter, _cy, _by]);
 
 	useEffect(() => getData(PAGINATION), []);
 
@@ -445,7 +446,7 @@ export default function Beranda() {
 								_.sumBy(data, "account_base_real_amount") / 2,
 								_.sumBy(data, "account_base_plan_amount")
 							)}
-							size={[, 25]}
+							size={[_, 25]}
 							strokeColor={COLORS.secondary}
 							status="normal"
 						/>
@@ -512,7 +513,7 @@ export default function Beranda() {
 								countBy("pendapatan", "real"),
 								countBy("pendapatan", "plan")
 							)}
-							size={[, 25]}
+							size={[_, 25]}
 							strokeColor={COLORS.success}
 							status="normal"
 						/>
@@ -577,7 +578,7 @@ export default function Beranda() {
 								countBy("pembiayaan", "real"),
 								countBy("pembiayaan", "plan")
 							)}
-							size={[, 25]}
+							size={[_, 25]}
 							strokeColor={COLORS.info}
 							status="normal"
 						/>
@@ -642,7 +643,7 @@ export default function Beranda() {
 								countBy("belanja", "real"),
 								countBy("belanja", "plan")
 							)}
-							size={[, 25]}
+							size={[_, 25]}
 							strokeColor={COLORS.danger}
 							status="normal"
 						/>

@@ -1,3 +1,5 @@
+import _ from "lodash";
+
 export const getUrl = (url = "", params = {}) => {
 	let limit = params?.pagination?.pageSize;
 	let offset = params?.pagination?.pageSize * (params?.pagination?.current - 1);
@@ -17,11 +19,11 @@ export const getUrl = (url = "", params = {}) => {
 	}
 
 	if (params?.filters) {
-		Object.keys(params?.filters).map((key) => {
+		_.mapValues(params?.filters, (__, key) => {
 			if (params?.filters[key]) {
 				// for date range
 				if (key.includes("date") && params?.filters[key][0].length > 1) {
-					params?.filters[key][0].map((f, i) => {
+					_.map(params?.filters[key][0], (f, i) => {
 						filters.push(`&filter[${key}_${i === 0 ? `start` : `end`}]=${f}`);
 					});
 				} else {
