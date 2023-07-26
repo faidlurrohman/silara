@@ -136,8 +136,6 @@ const MENU_NAVIGATION = {
 	"/laporan/rekapitulasi-pendapatan-dan-belanja":
 		"Laporan Rekapitulasi Pendapatan & Belanja",
 	"/pengaturan/kota": "Pengaturan Kota",
-	"/pengaturan/kota": "Pengaturan Kota",
-	"/pengaturan/kota": "Pengaturan Kota",
 	"/pengaturan/penanda-tangan": "Pengaturan Penanda Tangan",
 	"/pengaturan/pengguna": "Pengaturan Pengguna",
 };
